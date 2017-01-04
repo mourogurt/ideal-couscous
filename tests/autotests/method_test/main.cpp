@@ -5,15 +5,15 @@
 class TestMethod : public QObject {
     Q_OBJECT
     bool value {false};
-    void simple_method (bool cond) { QVERIFY(cond); }
+    void bool_method (bool cond) { QVERIFY(cond); }
     bool int_method () { return true;}
-    void change_method (bool& cond) { cond = value;}
+    void bool_method (bool& cond) { cond = value;}
 
 public:
     METACLASS_DEFENITION(TestMethod)
-    REFLECT_METHOD(simple_method,bool)
+    REFLECT_METHOD(bool_method,bool)
     REFLECT_METHOD(int_method)
-    REFLECT_METHOD(change_method,bool&)
+    REFLECT_METHOD(bool_method,bool&)
 private slots:
     void emit_method();
     void get_method_value();
@@ -60,6 +60,11 @@ void TestMethod::constexpr_method() {
     Constexpr_class obj;
     constexpr bool res = reflect::emit_method(obj,boost::hana::size_c<0>);
     QVERIFY(res);
+    /*
+     * constexpr Constexpr_class obj2;
+     * res = reflect::emit_method(obj2,boost::hana::size_c<0>);
+    */
+    QVERIFY(false);
 }
 
 void TestMethod::static_method() {
@@ -67,7 +72,9 @@ void TestMethod::static_method() {
 }
 
 void TestMethod::find_method() {
-    QVERIFY(false);
+    QCOMPARE(boost::hana::size(reflect::find_method_name<decltype(*this)>(HANA_STR("bool_method"))),boost::hana::size_c<2>);
+    QCOMPARE(boost::hana::size(reflect::find_method_name<decltype(*this)>(HANA_STR("int_method"))),boost::hana::size_c<1>);
+    QCOMPARE(boost::hana::size(reflect::find_method_name<decltype(*this)>(HANA_STR("nothing"))),boost::hana::size_c<0>);
 }
 
 void TestMethod::try_emit_method() {
