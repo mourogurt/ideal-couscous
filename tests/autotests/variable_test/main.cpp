@@ -41,7 +41,8 @@ void TestVariable::variable_type() {
 }
 
 void TestVariable::variable_counter() {
-    QCOMPARE(decltype(std::decay_t<decltype(*this)>::Variable_counter(counter<>{}))::value,2);
+    using Counter_type = decltype(decltype(std::decay_t<decltype(*this)>::Variable_counter(counter<>{}))::value);
+    QCOMPARE(Counter_type(decltype(std::decay_t<decltype(*this)>::Variable_counter(counter<>{}))::value),2);
 }
 
 void TestVariable::static_variable() {

@@ -49,7 +49,7 @@ struct is_reflected
 
 template <class T> constexpr bool is_reflected_v = is_reflected<T>::value;
 
-template <class T, typename std::enable_if_t<is_reflected_v<T>,bool> = 0>
+template <class T, typename std::enable_if_t<is_reflected_v<T>,bool> = 1>
 struct MetaClass {
     static constexpr auto name              {ClassName(static_cast<const T*>(nullptr))};
     static constexpr auto vars_names        {detail::vars_names_tuple<T>(std::make_index_sequence<decltype(T::Variable_counter(counter<>{}))::value>{})};

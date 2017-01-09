@@ -130,34 +130,40 @@ decltype(auto) print_hana_string(Tp&& t, std::basic_ostream<Char,Traits>& out) {
 
 namespace reflect {
 
-template <class Obj, class T, typename std::enable_if_t<is_reflected_v<std::decay_t<Obj>>,bool> = 0>
+template <class Obj, class T, typename std::enable_if_t<is_reflected_v<std::decay_t<Obj>>,bool> = 1>
 constexpr decltype(auto) find_variable_name (T&& name) {
-    return detail::find_values(name,MetaClass<typename std::decay_t<Obj>>::vars_names);
+    auto tmp = MetaClass<typename std::decay_t<Obj>>::vars_names;
+    return detail::find_values(name,tmp);
 }
 
-template <class Obj, class T, typename std::enable_if_t<is_reflected_v<std::decay_t<Obj>>,bool> = 0>
+template <class Obj, class T, typename std::enable_if_t<is_reflected_v<std::decay_t<Obj>>,bool> = 1>
 constexpr decltype(auto) find_method_name (T&& name) {
-    return detail::find_values(name,MetaClass<typename std::decay_t<Obj> >::methods_names);
+    auto tmp = MetaClass<typename std::decay_t<Obj> >::methods_names;
+    return detail::find_values(name,tmp);
 }
 
-template <std::size_t I, class T, typename std::enable_if_t<is_reflected_v<std::decay_t<T>>,bool> = 0>
+template <std::size_t I, class T, typename std::enable_if_t<is_reflected_v<std::decay_t<T>>,bool> = 1>
 constexpr decltype(auto) get_variable (const T& obj) {
-    return boost::hana::at_c<I>(MetaClass<typename std::decay_t<T> >::vars_metadata)(obj);
+    auto tmp = MetaClass<typename std::decay_t<T> >::vars_metadata;
+    return boost::hana::at_c<I>(tmp)(obj);
 }
 
-template <class Index, class T, typename std::enable_if_t<is_reflected_v<std::decay_t<T>>,bool> = 0>
+template <class Index, class T, typename std::enable_if_t<is_reflected_v<std::decay_t<T>>,bool> = 1>
 constexpr decltype(auto) get_variable (T&& obj, Index&& i) {
-    return boost::hana::at(MetaClass<typename std::decay_t<T> >::vars_metadata,i)(std::forward<T>(obj));
+    auto tmp = MetaClass<typename std::decay_t<T> >::vars_metadata;
+    return boost::hana::at(tmp,i)(std::forward<T>(obj));
 }
 
 template <class T, class Index, class... Args>
 constexpr decltype(auto) emit_method (T&& obj, Index&& i, Args&&... args) {
-    return boost::hana::at(MetaClass<typename std::decay_t<T> >::methods_metadata,i)(std::forward<T>(obj),std::forward<Args>(args)...);
+    auto tmp = MetaClass<typename std::decay_t<T> >::methods_metadata;
+    return boost::hana::at(tmp,i)(std::forward<T>(obj),std::forward<Args>(args)...);
 }
 
-template <class T, class Index, class... Args, typename std::enable_if_t<is_reflected_v<std::decay_t<T>>,bool> = 0>
+template <class T, class Index, class... Args, typename std::enable_if_t<is_reflected_v<std::decay_t<T>>,bool> = 1>
 constexpr decltype(auto) emit_method (const T& obj, Index&& i, Args&&... args) {
-    return boost::hana::at(MetaClass<typename std::decay_t<T> >::methods_metadata,i)(obj,std::forward<Args>(args)...);
+    auto tmp = MetaClass<typename std::decay_t<T> >::methods_metadata;
+    return boost::hana::at(tmp,i)(obj,std::forward<Args>(args)...);
 }
 
 }
