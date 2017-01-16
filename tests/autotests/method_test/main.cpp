@@ -8,12 +8,14 @@ class TestMethod : public QObject {
     void bool_method (bool cond) { QVERIFY(cond); }
     bool int_method () { return true;}
     void bool_method (bool& cond) { cond = value;}
+    static void static_method (bool cond) { QVERIFY(cond); }
 
 public:
     METACLASS_DEFENITION(TestMethod)
     REFLECT_METHOD(bool_method,bool)
     REFLECT_METHOD(int_method)
     REFLECT_METHOD(bool_method,bool&)
+    REFLECT_STATIC_METHOD(static_method,bool)
 private slots:
     void emit_method();
     void get_method_value();
