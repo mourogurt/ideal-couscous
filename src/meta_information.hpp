@@ -21,22 +21,65 @@ public:
     constexpr decltype(auto) operator()(Obj& obj, Args&&... args) const {
         return constexpr_invoke(p, obj, std::forward<Args>(args)...);
     }
-    template <class T>
-    constexpr void set (Obj& obj, Args&&... args, T&& value) const {
-        constexpr_invoke(p, obj, std::forward<Args>(args)...) = value;
+};
+
+template <class Result, class Obj, class... Args>
+class static_fn_t {
+    Obj* p;
+public:
+    using result_type = Result;
+    using type = Obj*;
+    static constexpr bool is_static () {return true;}
+    constexpr static auto args_type {boost::hana::tuple_t<Args...>};
+    constexpr static_fn_t(type p) : p(p) {}
+    constexpr decltype(auto) operator()(Args&&... args) const {
+        return constexpr_invoke(p, std::forward<Args>(args)...);
+    }
+    constexpr decltype(auto) operator()(Args&... args) const {
+        return constexpr_invoke(p,args...);
     }
 };
 
-template< class R, class T, class... Args  >
-constexpr auto constexpr_mem_fn(R T::* pm) -> mem_fn_t<R, T, Args...> {
-    return {pm};
-}
+template <class Obj>
+class static_mem_t {
+    Obj* p;
+public:
+    using result_type = Obj*;
+    using type = Obj*;
+    static constexpr bool is_static () {return true;}
+    constexpr static auto args_type {boost::hana::tuple_t<Obj>};
+    constexpr static_mem_t(type p) : p(p) {}
+    constexpr decltype(auto) operator()() const {
+        return *p;
+    }
+};
 
 template<typename T, typename... Args>
 struct MethodInfo {
     template<typename Ret>
     static constexpr auto get(Ret(T::*)(Args...)) -> Ret(T::*)(Args...);
 };
+
+template <class... Args>
+struct FunctionInfo {
+    template<typename Ret>
+    static constexpr auto get() -> Ret(*)(Args...);
+};
+
+template< class R, class T, class... Args  >
+constexpr auto make_mem_fn(R T::* pm) -> mem_fn_t<R, T, Args...> {
+    return {pm};
+}
+
+template<class R, class... Args  >
+constexpr auto make_static_fn(decltype(FunctionInfo<Args...>::template get<R>()) pm) -> static_fn_t<R, std::remove_pointer_t<decltype(FunctionInfo<Args...>::template get<R>())>, Args...> {
+    return {pm};
+}
+
+template <class T>
+constexpr auto make_static_member (T* pm) -> static_mem_t<T> {
+    return {pm};
+}
 
 template <class T>
 struct is_reflected
@@ -48,6 +91,18 @@ struct is_reflected
 };
 
 template <class T> constexpr bool is_reflected_v = is_reflected<T>::value;
+
+template <class T>
+struct is_static
+{
+
+    template <class C> static constexpr std::true_type check(decltype(&C::is_static));
+    template <class> static constexpr std::false_type check(...);
+    static constexpr bool value = std::is_same<std::true_type, decltype(check<T>(nullptr))>::value;
+};
+
+template <class T> constexpr bool is_static_v = is_static<T>::value;
+
 
 template <class T, typename std::enable_if_t<is_reflected_v<T>,bool> = 1>
 struct MetaClass {
@@ -73,17 +128,21 @@ struct MetaClass {
             const Type*) \
         RETURN( boost::hana::make_tuple(__VA_ARGS__))
 
-#define TUPLE_APPEND2(STATE, COUNTER, RESULT, NAME, ...) \
-    TUPLE_APPEND(STATE, COUNTER,constexpr_mem_fn<RESULT, Type, ##__VA_ARGS__>(&Type::NAME)) \
+#define TUPLE_APPEND2(STATE, COUNTER, ...) \
+    TUPLE_APPEND(STATE, COUNTER, __VA_ARGS__) \
     constexpr static counter<decltype(COUNTER(counter<>{}))::value+1u> COUNTER (counter<decltype(COUNTER(counter<>{}))::value+1u>);
 
 #define REFLECT_VARIABLE(NAME) \
     TUPLE_APPEND (VariableNames,Variable_counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND2(VariablePtrs,Variable_counter,decltype(NAME),NAME) \
+    TUPLE_APPEND2(VariablePtrs,Variable_counter,make_mem_fn<decltype(NAME), Type>(&Type::NAME))
 
 #define REFLECT_METHOD(NAME,...) \
     TUPLE_APPEND (MethodNames,Method_counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND2(MethodPtrs,Method_counter,incomplete_result_of<decltype(MethodInfo<Type, ##__VA_ARGS__>::get(&Type::NAME))(Type, ##__VA_ARGS__)>::type (__VA_ARGS__),NAME, ##__VA_ARGS__)
+    TUPLE_APPEND2(MethodPtrs,Method_counter,make_mem_fn<incomplete_result_of<decltype(MethodInfo<Type, ##__VA_ARGS__>::get(&Type::NAME))(Type, ##__VA_ARGS__)>::type (__VA_ARGS__), \
+    Type, ##__VA_ARGS__>(&Type::NAME))
 
+#define REFLECT_STATIC_VARIABLE(NAME) \
+    TUPLE_APPEND (VariableNames,Variable_counter,HANA_STR(#NAME)) \
+    TUPLE_APPEND2(VariablePtrs,Variable_counter,make_static_member(&Type::NAME))
 
 #endif // META_INFORMATION_HPP

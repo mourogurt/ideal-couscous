@@ -201,5 +201,7 @@ template <class> struct incomplete_result_of;
 template <class F, class... ArgTypes>
 struct incomplete_result_of<F(ArgTypes...)> : detail::result_of<F(ArgTypes...)> {};
 
+template <class T>
+using incomplete_result_of_t = typename incomplete_result_of<T>::type;
 
 #endif // UTILS_HPP

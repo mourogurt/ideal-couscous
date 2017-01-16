@@ -6,10 +6,14 @@ class TestVariable : public QObject {
     Q_OBJECT
     int var {1};
     const int const_var {2};
+    static int static_var;
+    //constexpr static int constexpr_static_var {4};
 public:
     METACLASS_DEFENITION(TestVariable)
     REFLECT_VARIABLE(var)
     REFLECT_VARIABLE(const_var)
+    REFLECT_STATIC_VARIABLE(static_var)
+
 private slots:
     void get_variable();
     void set_variable();
@@ -18,6 +22,8 @@ private slots:
     void variable_counter();
     void static_variable();
 };
+
+int TestVariable::static_var = 3;
 
 void TestVariable::get_variable() {
     QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<0>),1);
@@ -42,11 +48,11 @@ void TestVariable::variable_type() {
 
 void TestVariable::variable_counter() {
     using Counter_type = decltype(decltype(std::decay_t<decltype(*this)>::Variable_counter(counter<>{}))::value);
-    QCOMPARE(Counter_type(decltype(std::decay_t<decltype(*this)>::Variable_counter(counter<>{}))::value),2);
+    QCOMPARE(Counter_type(decltype(std::decay_t<decltype(*this)>::Variable_counter(counter<>{}))::value),3);
 }
 
 void TestVariable::static_variable() {
-    QVERIFY(false);
+    QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<2>),3);
 }
 
 QTEST_MAIN(TestVariable)
