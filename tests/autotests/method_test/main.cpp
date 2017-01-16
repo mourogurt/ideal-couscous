@@ -37,11 +37,11 @@ public:
 };
 
 void TestMethod::emit_method() {
-    reflect::emit_method(*this,boost::hana::size_c<0>,true);
+    reflect::invoke_method(*this,boost::hana::size_c<0>,true);
 }
 
 void TestMethod::get_method_value() {
-    QCOMPARE (reflect::emit_method(*this,boost::hana::size_c<1>),true);
+    QCOMPARE (reflect::invoke_method(*this,boost::hana::size_c<1>),true);
 }
 
 void TestMethod::get_method_types() {
@@ -50,7 +50,7 @@ void TestMethod::get_method_types() {
 
 void TestMethod::reference_method() {
     bool res = true;
-    reflect::emit_method(*this,boost::hana::size_c<2>,res);
+    reflect::invoke_method(*this,boost::hana::size_c<2>,res);
     QCOMPARE (res,value);
 }
 
@@ -60,7 +60,7 @@ void TestMethod::const_method() {
 
 void TestMethod::constexpr_method() {
     Constexpr_class obj;
-    constexpr bool res = reflect::emit_method(obj,boost::hana::size_c<0>);
+    constexpr bool res = reflect::invoke_method(obj,boost::hana::size_c<0>);
     QVERIFY(res);
     /*
      * constexpr Constexpr_class obj2;
@@ -70,7 +70,7 @@ void TestMethod::constexpr_method() {
 }
 
 void TestMethod::static_method() {
-    QVERIFY(false);
+    reflect::invoke_method(*this,boost::hana::size_c<3>,true);
 }
 
 void TestMethod::find_method() {
