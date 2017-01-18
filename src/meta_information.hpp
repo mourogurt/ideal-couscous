@@ -60,6 +60,12 @@ struct MethodInfo {
     static constexpr auto get(Ret(T::*)(Args...)) -> Ret(T::*)(Args...);
 };
 
+template<typename T, typename... Args>
+struct ConstMethodInfo {
+    template<typename Ret>
+    static constexpr auto get(Ret(T::*)(Args...) const) -> Ret(T::*)(Args...) const;
+};
+
 template <class... Args>
 struct FunctionInfo {
     template<class Ret>
@@ -151,5 +157,10 @@ struct MetaClass {
 #define REFLECT_STATIC_METHOD(NAME,...) \
     TUPLE_APPEND (MethodNames,Method_counter,HANA_STR(#NAME)) \
     TUPLE_APPEND2(MethodPtrs,Method_counter,make_static_fn<incomplete_result_of_t<decltype(FunctionInfo<__VA_ARGS__>::get(&Type::NAME))(__VA_ARGS__)>, ##__VA_ARGS__>(Type::NAME))
+
+#define REFLECT_CONST_METHOD(NAME,...) \
+    TUPLE_APPEND (MethodNames,Method_counter,HANA_STR(#NAME)) \
+    TUPLE_APPEND2(MethodPtrs,Method_counter,make_mem_fn<incomplete_result_of_t<decltype(ConstMethodInfo<Type, ##__VA_ARGS__>::get(&Type::NAME))(Type, ##__VA_ARGS__)> (__VA_ARGS__) const, \
+    Type, ##__VA_ARGS__>(&Type::NAME))
 
 #endif // META_INFORMATION_HPP

@@ -9,6 +9,7 @@ class TestMethod : public QObject {
     bool int_method () { return true;}
     void bool_method (bool& cond) { cond = value;}
     static void static_method (bool cond) { QVERIFY(cond); }
+    void const_method(bool cond) const { QVERIFY(cond); }
 
 public:
     METACLASS_DEFENITION(TestMethod)
@@ -16,8 +17,9 @@ public:
     REFLECT_METHOD(int_method)
     REFLECT_METHOD(bool_method,bool&)
     REFLECT_STATIC_METHOD(static_method,bool)
+    REFLECT_CONST_METHOD(const_method,bool)
 private slots:
-    void emit_method();
+    void invoke_method();
     void get_method_value();
     void get_method_types();
     void reference_method();
@@ -36,7 +38,7 @@ public:
 
 };
 
-void TestMethod::emit_method() {
+void TestMethod::invoke_method() {
     reflect::invoke_method(*this,boost::hana::size_c<0>,true);
 }
 
@@ -55,17 +57,15 @@ void TestMethod::reference_method() {
 }
 
 void TestMethod::const_method() {
-    QVERIFY(false);
+    reflect::invoke_method(*this,boost::hana::size_c<4>,true);
 }
 
 void TestMethod::constexpr_method() {
     Constexpr_class obj;
     constexpr bool res = reflect::invoke_method(obj,boost::hana::size_c<0>);
     QVERIFY(res);
-    /*
-     * constexpr Constexpr_class obj2;
-     * res = reflect::emit_method(obj2,boost::hana::size_c<0>);
-    */
+    //constexpr Constexpr_class obj2;
+    //res = reflect::invoke_method(obj2,boost::hana::size_c<0>);
     QVERIFY(false);
 }
 
