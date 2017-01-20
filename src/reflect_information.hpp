@@ -1,7 +1,7 @@
 #ifndef META_INFORMATION_HPP
 #define META_INFORMATION_HPP
 
-#include "detail.hpp"
+#include "utils.hpp"
 
 namespace reflect {
 
