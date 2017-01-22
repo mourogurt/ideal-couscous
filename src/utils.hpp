@@ -19,16 +19,25 @@ constexpr bool is_member_pointer_v = is_member_pointer<T>::value;
 template< class T, class U >
 constexpr bool is_same_v = is_same<T, U>::value;
 
+template< class T, class U >
+constexpr bool is_convertible_v = is_convertible<T, U>::value;
+
+template< class T >
+constexpr bool is_void_v = is_void<T>::value;
+
 }
 
 namespace reflect {
 
 //INVOKE details
 namespace detail {
+
 template <class T>
 struct is_reference_wrapper : ::std::false_type {};
+
 template <class U>
 struct is_reference_wrapper<::std::reference_wrapper<U>> : ::std::true_type {};
+
 template <class T>
 constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value;
 
@@ -146,7 +155,7 @@ constexpr decltype(auto) multiple_concat (T&& value , Args&&... args) {
 
 template<::std::size_t Index, class A, class B, ::std::enable_if_t<::std::is_same_v<A,B>,bool> = 0>
 constexpr decltype(auto) compare_types(A const&, B const&) {
-    return ::boost::hana::make_tuple(boost::hana::size_c<Index>);
+    return ::boost::hana::make_tuple(::boost::hana::size_c<Index>);
 }
 
 template<::std::size_t Index, class A, class B, ::std::enable_if_t<!::std::is_same_v<A,B>,bool> = 0>
@@ -189,8 +198,6 @@ template<int N = 255> struct counter : public counter<N - 1> {
     static constexpr int value = N;
 };
 template<> struct counter<0> { static constexpr int value = 0; };
-
-}
 
 //Normal foreach loop with no results
 
@@ -255,6 +262,8 @@ constexpr decltype(auto) for_each_tuple_args_ret_index(Callable&& f, Tuple&& tup
     constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<Tuple>(tuple)))::value;
     return detail::for_each_impl_ret_index(std::forward<Callable>(f), ::std::forward<Tuple>(tuple),
                   ::std::make_index_sequence<N>{}, ::std::forward<Args>(args)...);
+}
+
 }
 
 }

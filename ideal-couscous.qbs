@@ -8,7 +8,8 @@ Project {
     qbsSearchPaths: "qbs"
     references: [
         "src/src.qbs",
-        "tests/tests.qbs"
+        "tests/tests.qbs",
+        "examples/examples.qbs"
     ]
     AutotestRunner {
         Depends { name: "Qt.core" }
