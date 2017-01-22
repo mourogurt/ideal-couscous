@@ -47,7 +47,10 @@ void TestMethod::get_method_value() {
 }
 
 void TestMethod::get_method_types() {
-    QVERIFY(false);
+    QCOMPARE(typeid(reflect::method_arg_type_t<decltype (*this),0,0>),typeid(bool));
+    QCOMPARE(typeid(reflect::method_return_type_t<decltype (*this),1>),typeid(bool));
+    QCOMPARE(typeid(reflect::method_arg_type_t<decltype (*this),2,0>),typeid(decltype(reflect::method_arg_type(*this,::boost::hana::size_c<2>,::boost::hana::size_c<0>))));
+    QCOMPARE(typeid(reflect::method_return_type_t<decltype (*this),1>),typeid(decltype(reflect::method_return_type(*this,::boost::hana::size_c<1>))));
 }
 
 void TestMethod::reference_method() {

@@ -89,6 +89,44 @@ constexpr decltype (auto) try_invoke_method_impl (T&& obj, Tuple&& tuple, ::std:
     return utils::multiple_concat(try_invoke_method_impl_index(::std::forward<T>(obj),::boost::hana::at_c<Indices>(tuple),::std::forward<Args>(args)...)...);
 }
 
+template <class... Args> struct get_types {constexpr static auto value {::boost::hana::tuple_t<Args...>};};
+template <class... Args> struct get_types<::boost::hana::tuple<Args...>> {constexpr static auto value {::boost::hana::tuple_t<Args...>};};
+
+template <class T, class I, class J>
+constexpr decltype (auto) get_method_arg_type_impl (T&&, I&& i, J&& j) {
+    return ::boost::hana::at(get_types<typename ::std::decay_t<decltype(::boost::hana::at(info::MetaClass<typename ::std::decay_t<T> >::methods_metadata,i))>::args_type>::value,j);
+}
+
+template <class T, std::size_t I, std::size_t J>
+constexpr decltype (auto) get_method_arg_type_impl () {
+    return ::boost::hana::at_c<J>(get_types<typename ::std::decay_t<decltype(::boost::hana::at_c<I>(info::MetaClass<typename ::std::decay_t<T> >::methods_metadata))>::args_type>::value);
+}
+
+template <class T, class Index>
+constexpr decltype (auto) get_method_return_type_impl (T&&, Index&& i) {
+    return ::boost::hana::type_c<typename ::std::decay_t<decltype(::boost::hana::at(info::MetaClass<typename ::std::decay_t<T> >::methods_metadata,i))>::return_type>;
+}
+
+template <class T, std::size_t Index>
+constexpr decltype (auto) get_method_return_type_impl () {
+    return ::boost::hana::type_c<typename ::std::decay_t<decltype(::boost::hana::at_c<Index>(info::MetaClass<typename ::std::decay_t<T> >::methods_metadata))>::return_type>;
+}
+
+template <class T, class I, class J> struct get_method_arg_type_struct {
+    using type = typename decltype(std::decay_t<decltype(get_method_arg_type_impl(::std::declval<T>(),::std::declval<I>(),::std::declval<J>()))>())::type;
+};
+template <class T, std::size_t I, std::size_t J> struct get_method_arg_type_struct_2 {
+    using type = typename decltype(::std::decay_t<decltype(get_method_arg_type_impl<T,I,J>())>())::type;
+};
+
+template <class T, class I> struct get_method_return_type_struct {
+    using type = typename decltype(::std::decay_t<decltype(get_method_return_type_impl(::std::declval<T>(),::std::declval<I>()))>())::type;
+};
+
+template <class T, ::std::size_t I> struct get_method_return_type_struct_2 {
+    using type = typename decltype(::std::decay_t<decltype(get_method_return_type_impl<T,I>())>())::type;
+};
+
 }
 
 template <class Obj, class T, typename ::std::enable_if_t<info::is_reflected_v<::std::decay_t<Obj>>,bool> = 1>
@@ -157,6 +195,40 @@ constexpr decltype (auto) try_invoke_method (T&& obj, IndTuple&& indices, Args&&
     constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<IndTuple>(indices)))::value;
     return detail::try_invoke_method_impl(::std::forward<T>(obj),::std::forward<IndTuple>(indices),::std::make_index_sequence<N>(),::std::forward<Args>(args)...);
 }
+
+template <class T, class Index>
+constexpr decltype (auto) get_method_args_types (T&&, Index&& i) {
+    return detail::get_types<typename ::std::decay_t<decltype(::boost::hana::at(info::MetaClass<typename ::std::decay_t<T> >::methods_metadata,i))>::args_type>::value;
+}
+
+template <class T, std::size_t Index>
+constexpr decltype (auto) get_method_args_types () {
+    return detail::get_types<typename ::std::decay_t<decltype(::boost::hana::at_c<Index>(info::MetaClass<typename ::std::decay_t<T> >::methods_metadata))>::args_type>::value;
+}
+
+template <class T, class Index>
+constexpr decltype (auto) get_method_return_type (T&& obj, Index&& i) {
+    return detail::get_method_return_type_impl(std::forward<T>(obj),std::forward<Index>(i));
+}
+
+template <class T, std::size_t Index>
+constexpr decltype (auto) get_method_return_type () {
+    return detail::get_method_return_type_impl<T,Index>();
+}
+
+template< class T, class I, class J >
+constexpr auto method_arg_type (T&&, I&&, J&&)
+ -> typename decltype(detail::get_method_arg_type_struct<T,I,J>{})::type;
+
+template< class T, ::std::size_t I, ::std::size_t J >
+using method_arg_type_t = typename detail::get_method_arg_type_struct_2<T,I,J>::type;
+
+template< class T, class I>
+constexpr auto method_return_type (T&&,I&&)
+ -> typename decltype(detail::get_method_return_type_struct<T,I>{})::type;
+
+template< class T, ::std::size_t I>
+using method_return_type_t = typename detail::get_method_return_type_struct_2<T,I>::type;
 
 }
 
