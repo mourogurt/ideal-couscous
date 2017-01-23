@@ -135,6 +135,16 @@ constexpr decltype(auto) for_each_impl_ret_index(Callable&& f,Tuple&& tuple, ::s
     return ::boost::hana::make_tuple (f(::std::forward<::std::size_t>(Indices),::boost::hana::at_c<Indices>(::std::forward<Tuple>(tuple)),args...)...);
 }
 
+template<::std::size_t Index, class A, class B, ::std::enable_if_t<::std::is_same_v<A,B>,bool> = 0>
+constexpr decltype(auto) compare_types_impl(A&&, B&&) {
+    return ::boost::hana::make_tuple(::boost::hana::size_c<Index>);
+}
+
+template<::std::size_t Index, class A, class B, ::std::enable_if_t<!::std::is_same_v<A,B>,bool> = 0>
+constexpr decltype(auto) compare_types_impl(A&&, B&&) {
+    return ::boost::hana::make_tuple();
+}
+
 }
 
 namespace utils {
@@ -148,24 +158,24 @@ constexpr decltype(auto) multiple_concat (T&& value) {
     return ::std::forward<T>(value);
 }
 
+template<class A, class B, ::std::enable_if_t<::std::is_same_v<std::decay_t<A>,std::decay_t<B>>,bool> = 0>
+constexpr decltype(auto) compare_types(A&&, B&&) {
+    return true;
+}
+
+template<class A, class B, ::std::enable_if_t<!::std::is_same_v<std::decay_t<A>,std::decay_t<B>>,bool> = 0>
+constexpr decltype(auto) compare_types(A&&, B&&) {
+    return false;
+}
+
 template <class T, class... Args>
 constexpr decltype(auto) multiple_concat (T&& value , Args&&... args) {
     return ::boost::hana::concat(value,multiple_concat(::std::forward<Args>(args)...));
 }
 
-template<::std::size_t Index, class A, class B, ::std::enable_if_t<::std::is_same_v<A,B>,bool> = 0>
-constexpr decltype(auto) compare_types(A const&, B const&) {
-    return ::boost::hana::make_tuple(::boost::hana::size_c<Index>);
-}
-
-template<::std::size_t Index, class A, class B, ::std::enable_if_t<!::std::is_same_v<A,B>,bool> = 0>
-constexpr decltype(auto) compare_types(A const&, B const&) {
-    return ::boost::hana::make_tuple();
-}
-
 template <class T, class Tp, ::std::size_t... Indices>
 constexpr decltype(auto) find_values_args (::std::index_sequence< Indices... >&&, T&& value, Tp&& tup) {
-    return utils::multiple_concat(compare_types<Indices>(::std::forward<T>(value),::boost::hana::at_c<Indices>(::std::forward<Tp>(tup)))...);
+    return utils::multiple_concat(detail::compare_types_impl<Indices>(::std::forward<T>(value),::boost::hana::at_c<Indices>(::std::forward<Tp>(tup)))...);
 }
 
 template<class T, class ... Args>

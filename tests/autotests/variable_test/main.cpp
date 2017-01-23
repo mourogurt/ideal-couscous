@@ -20,6 +20,8 @@ private slots:
     void variable_type();
     void variable_counter();
     void static_variable();
+    void class_name();
+    void var_name();
 };
 
 int TestVariable::static_var = 3;
@@ -52,6 +54,14 @@ void TestVariable::variable_counter() {
 
 void TestVariable::static_variable() {
     QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<2>),3);
+}
+
+void TestVariable::class_name() {
+    QCOMPARE(reflect::get_class_name<decltype (*this)>(),HANA_STR("TestVariable"));
+}
+
+void TestVariable::var_name() {
+    QCOMPARE(reflect::get_variable_name(*this,::boost::hana::size_c<0>),HANA_STR("var"));
 }
 
 QTEST_MAIN(TestVariable)

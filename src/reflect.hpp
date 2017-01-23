@@ -230,6 +230,35 @@ constexpr auto method_return_type (T&&,I&&)
 template< class T, ::std::size_t I>
 using method_return_type_t = typename detail::get_method_return_type_struct_2<T,I>::type;
 
+template <class T>
+constexpr decltype(auto) get_class_name () {
+    return info::MetaClass<typename ::std::decay_t<T> >::name;
+}
+
+template <class T, class I>
+constexpr decltype(auto) get_variable_name (T&&, I&& i) {
+    constexpr auto tmp = info::MetaClass<typename ::std::decay_t<T> >::vars_names;
+    return ::boost::hana::at(tmp,i);
+}
+
+template <class T, std::size_t I>
+constexpr decltype(auto) get_variable_name () {
+    constexpr auto tmp = info::MetaClass<typename ::std::decay_t<T> >::vars_names;
+    return ::boost::hana::at_c<I>(tmp);
+}
+
+template <class T, class I>
+constexpr decltype(auto) get_method_name (T&&, I&& i) {
+    constexpr auto tmp = info::MetaClass<typename ::std::decay_t<T> >::methods_names;
+    return ::boost::hana::at(tmp,i);
+}
+
+template <class T, std::size_t I>
+constexpr decltype(auto) get_method_name () {
+    constexpr auto tmp = info::MetaClass<typename ::std::decay_t<T> >::methods_names;
+    return ::boost::hana::at_c<I>(tmp);
+}
+
 }
 
 #endif // UTILS_HPP
