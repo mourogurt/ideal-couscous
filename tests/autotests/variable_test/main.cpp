@@ -18,7 +18,7 @@ private slots:
     void set_variable();
     void find_variable();
     void variable_type();
-    void variable_counter();
+    void variables_counter();
     void static_variable();
     void class_name();
     void var_name();
@@ -47,9 +47,8 @@ void TestVariable::variable_type() {
     QCOMPARE(typeid(reflect::get_variable(*this,boost::hana::size_c<1>)),typeid(const int));
 }
 
-void TestVariable::variable_counter() {
-    using Counter_type = decltype(decltype(std::decay_t<decltype(*this)>::Variable_counter(::reflect::utils::counter<>{}))::value);
-    QCOMPARE(Counter_type(decltype(std::decay_t<decltype(*this)>::Variable_counter(::reflect::utils::counter<>{}))::value),3);
+void TestVariable::variables_counter() {
+    QVERIFY(reflect::get_variables_count<decltype(*this)>() == 3);
 }
 
 void TestVariable::static_variable() {

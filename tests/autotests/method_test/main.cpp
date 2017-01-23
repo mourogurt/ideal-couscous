@@ -29,6 +29,7 @@ private slots:
     void find_method();
     void try_invoke_method();
     void method_name();
+    void methods_counter();
 };
 
 class Constexpr_class {
@@ -89,6 +90,10 @@ void TestMethod::try_invoke_method() {
 
 void TestMethod::method_name() {
     QCOMPARE(reflect::get_method_name(*this,::boost::hana::size_c<0>),HANA_STR("bool_method"));
+}
+
+void TestMethod::methods_counter() {
+    QVERIFY(reflect::get_methods_count<decltype(*this)>() == 5);
 }
 
 

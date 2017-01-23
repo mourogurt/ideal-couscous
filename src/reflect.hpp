@@ -288,6 +288,16 @@ constexpr decltype(auto) get_method_name () {
     return ::boost::hana::at_c<I>(tmp);
 }
 
+template <class T>
+constexpr decltype(auto) get_variables_count () {
+    return ::std::move(decltype(::boost::hana::size(info::MetaClass<typename ::std::decay_t<T> >::vars_metadata))::value);
+}
+
+template <class T>
+constexpr decltype(auto) get_methods_count () {
+    return ::std::move(decltype(::boost::hana::size(info::MetaClass<typename ::std::decay_t<T> >::methods_metadata))::value);
+}
+
 }
 
 #endif // UTILS_HPP
