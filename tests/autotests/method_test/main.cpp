@@ -84,6 +84,7 @@ void TestMethod::find_method() {
 
 void TestMethod::try_invoke_method() {
     QVERIFY(boost::hana::at_c<0>(reflect::try_invoke_method(*this,reflect::find_method_name<decltype(*this)>(HANA_STR("bool_method")))));
+    QCOMPARE(reflect::check_invoke_method<decltype(*this)>(reflect::find_method_name<decltype(*this)>(HANA_STR("bool_method"))),::boost::hana::make_tuple(false,true,false));
 }
 
 void TestMethod::method_name() {

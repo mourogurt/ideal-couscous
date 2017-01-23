@@ -58,36 +58,58 @@ constexpr decltype(auto) invoke_method_impl (T&& value, Obj&& p, Args&& ...args)
 }
 
 template <class T, class Obj, class... Args, typename ::std::enable_if_t<::std::is_void_v<typename std::decay_t<T>::return_type>,bool> = 1>
-constexpr decltype(auto) try_invoke_method_impl_check_void (T&& value, Obj&& p, Args&&... args) {
+constexpr decltype(auto) try_invoke_method_check_void_impl (T&& value, Obj&& p, Args&&... args) {
     invoke_method_impl(std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...);
     return ::boost::hana::make_tuple();
 }
 
 template <class T, class Obj, class... Args, typename ::std::enable_if_t<!::std::is_void_v<typename std::decay_t<T>::return_type>,bool> = 1>
-constexpr decltype(auto) try_invoke_method_impl_check_void (T&& value, Obj&& p, Args&&... args) {
+constexpr decltype(auto) try_invoke_method_check_void_impl (T&& value, Obj&& p, Args&&... args) {
     return ::boost::hana::make_tuple(invoke_method_impl(::std::forward<T>(value),std::forward<Obj>(p),::std::forward<Args>(args)...));
 }
 
 template <class T, class Obj, class... Args, typename ::std::enable_if_t<info::is_suitable_types<typename std::decay_t<T>,Args...>(),bool> = 1>
-constexpr decltype(auto) try_invoke_method_impl_sfinae (T&& value, Obj&& p, Args&&... args) {
-    return try_invoke_method_impl_check_void(::std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...);
+constexpr decltype(auto) try_invoke_method_sfinae_impl (T&& value, Obj&& p, Args&&... args) {
+    return try_invoke_method_check_void_impl(::std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...);
 }
 
 template <class T, class... Args, typename ::std::enable_if_t<!info::is_suitable_types<typename std::decay_t<T>,Args...>(),bool> = 1>
-constexpr decltype(auto) try_invoke_method_impl_sfinae (T&&, Args&&...) {
+constexpr decltype(auto) try_invoke_method_sfinae_impl (T&&, Args&&...) {
     return ::boost::hana::make_tuple();
 }
 
-template<class T, class Index, class... Args>
-constexpr decltype (auto) try_invoke_method_impl_index (T&& obj, Index&& index, Args&&... args) {
-    constexpr auto tmp = reflect::info::MetaClass<::std::decay_t<T>>::methods_metadata;
-    return try_invoke_method_impl_sfinae(::boost::hana::at(tmp,index),::std::forward<T>(obj),::std::forward<Args>(args)...);
+template <class T, class... Args, typename ::std::enable_if_t<info::is_suitable_types<typename std::decay_t<T>,Args...>(),bool> = 1>
+constexpr decltype(auto) check_invoke_method_sfinae_impl (T&&, Args&&...) {
+    return ::boost::hana::make_tuple(true);
+}
+
+template <class T, class... Args, typename ::std::enable_if_t<!info::is_suitable_types<typename std::decay_t<T>,Args...>(),bool> = 1>
+constexpr decltype(auto) check_invoke_method_sfinae_impl (T&&, Args&&...) {
+    return ::boost::hana::make_tuple(false);
+}
+
+template<class T, class Index, class TmpTuple, class... Args>
+constexpr decltype (auto) try_invoke_method_index_impl (T&& obj, Index&& index, TmpTuple const& tmp, Args&&... args) {
+    return try_invoke_method_sfinae_impl(::boost::hana::at(tmp,index),::std::forward<T>(obj),::std::forward<Args>(args)...);
+}
+
+template<class T, class Index, class TmpTuple, class... Args>
+constexpr decltype (auto) check_invoke_method_index_impl (Index&& index, TmpTuple const& tmp, Args&&... args) {
+    return check_invoke_method_sfinae_impl(::boost::hana::at(tmp,index),::std::forward<Args>(args)...);
 }
 
 template<class T, class Tuple, ::std::size_t ...Indices, class... Args>
 constexpr decltype (auto) try_invoke_method_impl (T&& obj, Tuple&& tuple, ::std::index_sequence<Indices...>&&, Args&&... args) {
-    return utils::multiple_concat(try_invoke_method_impl_index(::std::forward<T>(obj),::boost::hana::at_c<Indices>(tuple),::std::forward<Args>(args)...)...);
+    constexpr auto tmp = reflect::info::MetaClass<::std::decay_t<T>>::methods_metadata;
+    return utils::multiple_concat(try_invoke_method_index_impl(::std::forward<T>(obj),::boost::hana::at_c<Indices>(tuple),tmp,::std::forward<Args>(args)...)...);
 }
+
+template<class T, class Tuple, ::std::size_t ...Indices, class... Args>
+constexpr decltype (auto) check_invoke_method_impl (Tuple&& tuple, ::std::index_sequence<Indices...>&&, Args&&... args) {
+    constexpr auto tmp = reflect::info::MetaClass<::std::decay_t<T>>::methods_metadata;
+    return utils::multiple_concat(check_invoke_method_index_impl<T>(::boost::hana::at_c<Indices>(tuple),tmp,::std::forward<Args>(args)...)...);
+}
+
 
 template <class... Args> struct get_types {constexpr static auto value {::boost::hana::tuple_t<Args...>};};
 template <class... Args> struct get_types<::boost::hana::tuple<Args...>> {constexpr static auto value {::boost::hana::tuple_t<Args...>};};
@@ -194,6 +216,13 @@ constexpr decltype (auto) try_invoke_method (T&& obj, IndTuple&& indices, Args&&
 
     constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<IndTuple>(indices)))::value;
     return detail::try_invoke_method_impl(::std::forward<T>(obj),::std::forward<IndTuple>(indices),::std::make_index_sequence<N>(),::std::forward<Args>(args)...);
+}
+
+template<class T, class IndTuple, class... Args>
+constexpr decltype (auto) check_invoke_method (IndTuple&& indices, Args&&... args) {
+
+    constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<IndTuple>(indices)))::value;
+    return detail::check_invoke_method_impl<T>(::std::forward<IndTuple>(indices),::std::make_index_sequence<N>(),::std::forward<Args>(args)...);
 }
 
 template <class T, class Index>
