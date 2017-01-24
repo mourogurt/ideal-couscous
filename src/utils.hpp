@@ -158,14 +158,10 @@ constexpr decltype(auto) multiple_concat (T&& value) {
     return ::std::forward<T>(value);
 }
 
-template<class A, class B, ::std::enable_if_t<::std::is_same_v<std::decay_t<A>,std::decay_t<B>>,bool> = 0>
+template<class A, class B>
 constexpr decltype(auto) compare_types(A&&, B&&) {
-    return true;
-}
-
-template<class A, class B, ::std::enable_if_t<!::std::is_same_v<std::decay_t<A>,std::decay_t<B>>,bool> = 0>
-constexpr decltype(auto) compare_types(A&&, B&&) {
-    return false;
+    if constexpr (::std::is_same_v<std::decay_t<A>,std::decay_t<B>>) return true;
+    else return false;
 }
 
 template <class T, class... Args>

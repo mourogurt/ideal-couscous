@@ -4,88 +4,46 @@
 
 namespace reflect {
 
-/*template<class Tp, class Char, class Traits>
-decltype(auto) print(Tp const& t, std::basic_ostream<Char,Traits>& out) {
-    utils::for_each_tuple_args([](auto&& elem ,auto& out) {
-        out << elem << " ";
-    },t, out);
-    return out;
-}
-
-template<class Tp, class Char, class Traits>
-decltype(auto) print(Tp&& t, std::basic_ostream<Char,Traits>& out) {
-    utils::for_each_tuple_args([](auto&& elem ,auto& out) {
-        out << elem << " ";
-    },std::forward<Tp>(t), out);
-    return out;
-}
-
-template<class Tp, class Char, class Traits>
-decltype(auto) print_hana_string(Tp const& t, std::basic_ostream<Char,Traits>& out) {
-    utils::for_each_tuple_args([](auto&& elem ,auto& out) {
-        out << boost::hana::to<const char*>(elem) << " ";
-    },t, out);
-    return out;
-}
-
-template<class Tp, class Char, class Traits>
-decltype(auto) print_hana_string(Tp&& t, std::basic_ostream<Char,Traits>& out) {
-    utils::for_each_tuple_args([](auto&& elem ,auto& out) {
-        out << boost::hana::to<const char*>(elem) << " ";
-    },std::forward<Tp>(t), out);
-    return out;
-}*/
-
 namespace detail {
-template <class T, class Obj, typename ::std::enable_if_t<info::is_static_v<::std::decay_t<T>>,bool> = 1>
-constexpr decltype(auto) get_variable_impl (T&& value, Obj&&) {
-    return value();
-}
 
-template <class T, class Obj, typename ::std::enable_if_t<!info::is_static_v<::std::decay_t<T>>,bool> = 1>
+template <class T, class Obj>
 constexpr decltype(auto) get_variable_impl (T&& value, Obj&& p) {
-    return value(::std::forward<Obj>(p));
+    if constexpr (!info::is_static_v<::std::decay_t<T>>) return value(::std::forward<Obj>(p));
+    else return value();
 }
 
-template <class T, class Obj, class... Args, typename ::std::enable_if_t<info::is_static_v<::std::decay_t<T>>,bool> = 1>
-constexpr decltype(auto) invoke_method_impl (T&& value, Obj&&, Args&& ...args) {
-    return value(::std::forward<Args>(args)...);
-}
-
-template <class T, class Obj, class... Args, typename ::std::enable_if_t<!info::is_static_v<::std::decay_t<T>>,bool> = 1>
+template <class T, class Obj, class... Args>
 constexpr decltype(auto) invoke_method_impl (T&& value, Obj&& p, Args&& ...args) {
-    return value(::std::forward<Obj>(p),::std::forward<Args>(args)...);
+    if constexpr (!info::is_static_v<::std::decay_t<T>>)
+        return value(::std::forward<Obj>(p),::std::forward<Args>(args)...);
+    else return value(::std::forward<Args>(args)...);
 }
 
-template <class T, class Obj, class... Args, typename ::std::enable_if_t<::std::is_void_v<typename std::decay_t<T>::return_type>,bool> = 1>
+template <class T, class Obj, class... Args>
 constexpr decltype(auto) try_invoke_method_check_void_impl (T&& value, Obj&& p, Args&&... args) {
-    invoke_method_impl(std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...);
-    return ::boost::hana::make_tuple();
+    if constexpr (::std::is_void_v<typename ::std::decay_t<T>::return_type>) {
+        invoke_method_impl(std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...);
+        return ::boost::hana::make_tuple();
+    }
+    else
+        return ::boost::hana::make_tuple(invoke_method_impl(::std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...));
 }
 
-template <class T, class Obj, class... Args, typename ::std::enable_if_t<!::std::is_void_v<typename std::decay_t<T>::return_type>,bool> = 1>
-constexpr decltype(auto) try_invoke_method_check_void_impl (T&& value, Obj&& p, Args&&... args) {
-    return ::boost::hana::make_tuple(invoke_method_impl(::std::forward<T>(value),std::forward<Obj>(p),::std::forward<Args>(args)...));
-}
-
-template <class T, class Obj, class... Args, typename ::std::enable_if_t<info::is_suitable_types<typename std::decay_t<T>,Args...>(),bool> = 1>
+template <class T, class Obj, class... Args>
 constexpr decltype(auto) try_invoke_method_sfinae_impl (T&& value, Obj&& p, Args&&... args) {
-    return try_invoke_method_check_void_impl(::std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...);
+
+    if constexpr (info::is_suitable_types<typename ::std::decay_t<T>,Args...>())
+        return try_invoke_method_check_void_impl(::std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...);
+    else
+        return ::boost::hana::make_tuple();
 }
 
-template <class T, class... Args, typename ::std::enable_if_t<!info::is_suitable_types<typename std::decay_t<T>,Args...>(),bool> = 1>
-constexpr decltype(auto) try_invoke_method_sfinae_impl (T&&, Args&&...) {
-    return ::boost::hana::make_tuple();
-}
-
-template <class T, class... Args, typename ::std::enable_if_t<info::is_suitable_types<typename std::decay_t<T>,Args...>(),bool> = 1>
+template <class T, class... Args>
 constexpr decltype(auto) check_invoke_method_sfinae_impl (T&&, Args&&...) {
-    return ::boost::hana::make_tuple(true);
-}
-
-template <class T, class... Args, typename ::std::enable_if_t<!info::is_suitable_types<typename std::decay_t<T>,Args...>(),bool> = 1>
-constexpr decltype(auto) check_invoke_method_sfinae_impl (T&&, Args&&...) {
-    return ::boost::hana::make_tuple(false);
+    if constexpr (info::is_suitable_types<typename std::decay_t<T>,Args...>())
+        return ::boost::hana::make_tuple(true);
+    else
+        return ::boost::hana::make_tuple(false);
 }
 
 template<class T, class Index, class TmpTuple, class... Args>

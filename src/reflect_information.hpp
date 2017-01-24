@@ -58,14 +58,10 @@ struct FunctionInfo {
      -> Ret(*)(Args...);
 };
 
-template<class Args_tuple, class ... Args, typename ::std::enable_if_t<::std::is_convertible_v<::boost::hana::tuple<Args...>,Args_tuple>,bool> = 1>
+template<class Args_tuple, class ... Args>
 constexpr bool is_suitable_types_impl () {
-    return true;
-}
-
-template<class Args_tuple, class ... Args, typename ::std::enable_if_t<!::std::is_convertible_v<::boost::hana::tuple<Args...>,Args_tuple>,bool> = 1>
-constexpr bool is_suitable_types_impl () {
-    return false;
+    if constexpr (::std::is_convertible_v<::boost::hana::tuple<Args...>,Args_tuple>) return true;
+    else return false;
 }
 
 }
@@ -103,12 +99,15 @@ public:
     using result_type = Result;
     using type = Obj*;
     using args_type = ::boost::hana::tuple<Args...>;
+    using return_type = decltype(utils::constexpr_invoke(std::declval<type>(),std::declval<Args>()...));
     static constexpr bool is_static () {return true;}
     constexpr static_fn_t(type p) : p(p) {}
-    constexpr decltype(auto) operator()(Args&&... args) const {
-        return utils::constexpr_invoke(p, ::std::forward<Args>(args)...);
+    template <class... Args2>
+    constexpr decltype(auto) operator()(Args2&&... args) const {
+        return utils::constexpr_invoke(p, ::std::forward<Args2>(args)...);
     }
-    constexpr decltype(auto) operator()(Args&... args) const {
+    template <class... Args2>
+    constexpr decltype(auto) operator()(Args2&... args) const {
         return utils::constexpr_invoke(p,args...);
     }
 };
