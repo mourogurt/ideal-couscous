@@ -95,6 +95,7 @@ constexpr decltype (auto) get_method_return_type_impl () {
 template <class T, class I, class J> struct get_method_arg_type_struct {
     using type = typename decltype(std::decay_t<decltype(get_method_arg_type_impl(::std::declval<T>(),::std::declval<I>(),::std::declval<J>()))>())::type;
 };
+
 template <class T, std::size_t I, std::size_t J> struct get_method_arg_type_struct_2 {
     using type = typename decltype(::std::decay_t<decltype(get_method_arg_type_impl<T,I,J>())>())::type;
 };
@@ -105,6 +106,24 @@ template <class T, class I> struct get_method_return_type_struct {
 
 template <class T, ::std::size_t I> struct get_method_return_type_struct_2 {
     using type = typename decltype(::std::decay_t<decltype(get_method_return_type_impl<T,I>())>())::type;
+};
+
+template <class T, class Index>
+constexpr decltype (auto) get_variable_type_impl (T&&, Index&& i) {
+    return ::boost::hana::type_c<typename ::std::decay_t<decltype(::boost::hana::at(info::MetaClass<typename ::std::decay_t<T> >::vars_metadata,i))>::return_type>;
+}
+
+template <class T, std::size_t Index>
+constexpr decltype (auto) get_variable_type_impl () {
+    return ::boost::hana::type_c<typename ::std::decay_t<decltype(::boost::hana::at_c<Index>(info::MetaClass<typename ::std::decay_t<T> >::vars_metadata))>::return_type>;
+}
+
+template <class T, class I> struct get_variable_arg_type_struct {
+    using type = typename decltype(std::decay_t<decltype(get_variable_type_impl(::std::declval<T>(),::std::declval<I>()))>())::type;
+};
+
+template <class T, std::size_t I> struct get_variable_arg_type_struct_2 {
+    using type = typename decltype(::std::decay_t<decltype(get_variable_type_impl<T,I>())>())::type;
 };
 
 }
@@ -193,6 +212,16 @@ constexpr decltype (auto) get_method_args_types () {
     return detail::get_types<typename ::std::decay_t<decltype(::boost::hana::at_c<Index>(info::MetaClass<typename ::std::decay_t<T> >::methods_metadata))>::args_type>::value;
 }
 
+template <class T, std::size_t Index>
+constexpr decltype (auto) get_methods_args_count () {
+    return ::std::move(decltype(::boost::hana::size(typename ::std::decay_t<decltype(::boost::hana::at_c<Index>(info::MetaClass<typename ::std::decay_t<T> >::methods_metadata))>::args_type{}))::value);
+}
+
+template <class T, class Index>
+constexpr decltype (auto) get_methods_args_count (Index&& i) {
+    return ::std::move(decltype(::boost::hana::size(typename ::std::decay_t<decltype(::boost::hana::at(info::MetaClass<typename ::std::decay_t<T> >::methods_metadata,i))>::args_type{}))::value);
+}
+
 template <class T, class Index>
 constexpr decltype (auto) get_method_return_type (T&& obj, Index&& i) {
     return detail::get_method_return_type_impl(std::forward<T>(obj),std::forward<Index>(i));
@@ -203,19 +232,36 @@ constexpr decltype (auto) get_method_return_type () {
     return detail::get_method_return_type_impl<T,Index>();
 }
 
+template<class T, std::size_t Index>
+constexpr decltype (auto) get_variable_type() {
+    return detail::get_variable_type_impl<T,Index>();
+}
+
+template <class T, class Index>
+constexpr decltype (auto) get_variable_type (T&& obj, Index&& i) {
+    return detail::get_variable_type_impl(std::forward<T>(obj),std::forward<Index>(i));
+}
+
 template< class T, class I, class J >
-constexpr auto method_arg_type (T&&, I&&, J&&)
+constexpr auto method_arg_type (I&&, J&&)
  -> typename decltype(detail::get_method_arg_type_struct<T,I,J>{})::type;
 
 template< class T, ::std::size_t I, ::std::size_t J >
 using method_arg_type_t = typename detail::get_method_arg_type_struct_2<T,I,J>::type;
 
 template< class T, class I>
-constexpr auto method_return_type (T&&,I&&)
+constexpr auto method_return_type (I&&)
  -> typename decltype(detail::get_method_return_type_struct<T,I>{})::type;
 
 template< class T, ::std::size_t I>
 using method_return_type_t = typename detail::get_method_return_type_struct_2<T,I>::type;
+
+template< class T, class I>
+constexpr auto variable_type (I&&)
+ -> typename decltype(detail::get_variable_arg_type_struct<T,I>{})::type;
+
+template< class T, ::std::size_t I>
+using variable_type_t = typename detail::get_variable_arg_type_struct_2<T,I>::type;
 
 template <class T>
 constexpr decltype(auto) get_class_name () {
@@ -223,7 +269,7 @@ constexpr decltype(auto) get_class_name () {
 }
 
 template <class T, class I>
-constexpr decltype(auto) get_variable_name (T&&, I&& i) {
+constexpr decltype(auto) get_variable_name (I&& i) {
     constexpr auto tmp = info::MetaClass<typename ::std::decay_t<T> >::vars_names;
     return ::boost::hana::at(tmp,i);
 }
@@ -235,7 +281,7 @@ constexpr decltype(auto) get_variable_name () {
 }
 
 template <class T, class I>
-constexpr decltype(auto) get_method_name (T&&, I&& i) {
+constexpr decltype(auto) get_method_name (I&& i) {
     constexpr auto tmp = info::MetaClass<typename ::std::decay_t<T> >::methods_names;
     return ::boost::hana::at(tmp,i);
 }

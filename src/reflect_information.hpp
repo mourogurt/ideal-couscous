@@ -118,6 +118,7 @@ class static_mem_t {
 public:
     using result_type = Obj*;
     using type = Obj*;
+    using return_type = Obj;
     static constexpr bool is_static () {return true;}
     constexpr static auto args_type {::boost::hana::tuple_t<Obj>};
     constexpr static_mem_t(type p) : p(p) {}

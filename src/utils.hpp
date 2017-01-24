@@ -29,7 +29,24 @@ constexpr bool is_void_v = is_void<T>::value;
 
 namespace reflect {
 
-//INVOKE details
+namespace utils {
+
+constexpr decltype(auto) multiple_concat () {
+    return boost::hana::make_tuple();
+}
+
+template <class T>
+constexpr decltype(auto) multiple_concat (T&& value) {
+    return ::std::forward<T>(value);
+}
+
+template <class T, class... Args>
+constexpr decltype(auto) multiple_concat (T&& value , Args&&... args) {
+    return ::boost::hana::concat(value,multiple_concat(::std::forward<Args>(args)...));
+}
+
+}
+
 namespace detail {
 
 template <class T>
@@ -113,60 +130,44 @@ struct result_of<F(Args...),
     using type = decltype(INVOKE(::std::declval<F>(), ::std::declval<Args>()...));
 };
 
-template <class Callable, class Tuple, ::std::size_t ...Indices, class... Args>
-constexpr void for_each_impl(Callable&& f,Tuple&& tuple, ::std::index_sequence<Indices...>, Args&... args) {
-    using swallow = int[];
-        (void)swallow{1,(f(::boost::hana::at_c<Indices>(::std::forward<Tuple>(tuple)),args...), void(), int{})...};
-}
-
-template <class Callable, class Tuple, ::std::size_t ...Indices, class... Args>
-constexpr decltype(auto) for_each_impl_ret(Callable&& f,Tuple&& tuple, ::std::index_sequence<Indices...>, Args&... args) {
-    return ::boost::hana::make_tuple (f(::boost::hana::at_c<Indices>(::std::forward<Tuple>(tuple)),args...)...);
-}
-
-template <class Callable, class Tuple, ::std::size_t ...Indices, class... Args>
-constexpr void for_each_impl_index(Callable&& f,Tuple&& tuple, ::std::index_sequence<Indices...>&&, Args&... args) {
-    using swallow = int[];
-        (void)swallow{1,(f(::std::forward<::std::size_t>(Indices),::boost::hana::at_c<Indices>(::std::forward<Tuple>(tuple)),args...), void(), int{})...};
-}
-
-template <class Callable, class Tuple, ::std::size_t ...Indices, class... Args>
-constexpr decltype(auto) for_each_impl_ret_index(Callable&& f,Tuple&& tuple, ::std::index_sequence<Indices...>&&, Args&... args) {
-    return ::boost::hana::make_tuple (f(::std::forward<::std::size_t>(Indices),::boost::hana::at_c<Indices>(::std::forward<Tuple>(tuple)),args...)...);
-}
-
-template<::std::size_t Index, class A, class B, ::std::enable_if_t<::std::is_same_v<A,B>,bool> = 0>
+template<::std::size_t Index, class A, class B>
 constexpr decltype(auto) compare_types_impl(A&&, B&&) {
-    return ::boost::hana::make_tuple(::boost::hana::size_c<Index>);
+    if constexpr (::std::is_same_v<A,B>) return ::boost::hana::make_tuple(::boost::hana::size_c<Index>);
+    else return ::boost::hana::make_tuple();
 }
 
-template<::std::size_t Index, class A, class B, ::std::enable_if_t<!::std::is_same_v<A,B>,bool> = 0>
-constexpr decltype(auto) compare_types_impl(A&&, B&&) {
-    return ::boost::hana::make_tuple();
+template<::std::size_t I, class F, class Tuple, class... Args>
+constexpr decltype(auto) constexpr_foreach_index_impl (F&& func, Tuple&& tup, Args&&... args) {
+    if constexpr (::std::is_void_v<decltype(func(::boost::hana::at_c<I>(tup),::std::forward<Args>(args)...))>) {
+        func(::boost::hana::at_c<I>(tup),::std::forward<Args>(args)...);
+        return ::boost::hana::make_tuple();
+    } else return ::boost::hana::make_tuple(func(::boost::hana::at_c<I>(tup),::std::forward<Args>(args)...));
+
+}
+
+template<::std::size_t... Indices, class F, class Tuple, class... Args>
+constexpr decltype(auto) constexpr_foreach_seq_impl(::std::index_sequence<Indices...>&&, F&& func, Tuple&& tup, Args&&... args) {
+    return utils::multiple_concat(constexpr_foreach_index_impl<Indices>(::std::forward<F>(func),::std::forward<Tuple>(tup),::std::forward<Args>(args)...)...);
+}
+
+template<::std::size_t I>
+constexpr decltype (auto) generate_tuple_indexies_index_impl() {
+    return ::boost::hana::make_tuple(::boost::hana::size_c<I>);
+}
+
+template<::std::size_t... Indices>
+constexpr decltype (auto) generate_tuple_indexies_seq_impl(::std::index_sequence<Indices...>&&) {
+    return reflect::utils::multiple_concat(generate_tuple_indexies_index_impl<Indices>()...);
 }
 
 }
 
 namespace utils {
 
-constexpr decltype(auto) multiple_concat () {
-    return boost::hana::make_tuple();
-}
-
-template <class T>
-constexpr decltype(auto) multiple_concat (T&& value) {
-    return ::std::forward<T>(value);
-}
-
 template<class A, class B>
 constexpr decltype(auto) compare_types(A&&, B&&) {
     if constexpr (::std::is_same_v<std::decay_t<A>,std::decay_t<B>>) return true;
     else return false;
-}
-
-template <class T, class... Args>
-constexpr decltype(auto) multiple_concat (T&& value , Args&&... args) {
-    return ::boost::hana::concat(value,multiple_concat(::std::forward<Args>(args)...));
 }
 
 template <class T, class Tp, ::std::size_t... Indices>
@@ -205,69 +206,14 @@ template<int N = 255> struct counter : public counter<N - 1> {
 };
 template<> struct counter<0> { static constexpr int value = 0; };
 
-//Normal foreach loop with no results
-
-template <class Callable, class Tuple, class... Args>
-constexpr void for_each_tuple_args(Callable&& f, Tuple&& tuple, Args&... args) {
-    constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<Tuple>(tuple)))::value;
-    detail::for_each_impl(::std::forward<Callable>(f), ::std::forward<Tuple>(tuple),
-                  ::std::make_index_sequence<N>{}, args...);
+template<::std::size_t N, class F, class Tuple, class... Args>
+constexpr decltype(auto) constexpr_foreach(F&& func, Tuple&& tup, Args&&... args) {
+    return detail::constexpr_foreach_seq_impl(::std::make_index_sequence<N>(),::std::forward<F>(func),::std::forward<Tuple>(tup),::std::forward<Args>(args)...);
 }
 
-template <class Callable, class Tuple, class... Args>
-constexpr void for_each_tuple_args(Callable&& f, Tuple&& tuple, Args&&... args) {
-    constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<Tuple>(tuple)))::value;
-    detail::for_each_impl(::std::forward<Callable>(f), ::std::forward<Tuple>(tuple),
-                  ::std::make_index_sequence<N>{}, ::std::forward<Args>(args)...);
-}
-
-
-//Foreach with results of lamda function
-
-template <class Callable, class Tuple, class... Args>
-constexpr decltype(auto) for_each_tuple_args_ret(Callable&& f, Tuple&& tuple, Args&... args) {
-    constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<Tuple>(tuple)))::value;
-    return detail::for_each_impl_ret(::std::forward<Callable>(f), ::std::forward<Tuple>(tuple),
-                  ::std::make_index_sequence<N>{}, args...);
-}
-
-template <class Callable, class Tuple, class... Args>
-constexpr decltype(auto) for_each_tuple_args_ret(Callable&& f, Tuple&& tuple, Args&&... args) {
-    constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<Tuple>(tuple)))::value;
-    return detail::for_each_impl_ret(::std::forward<Callable>(f), ::std::forward<Tuple>(tuple),
-                  ::std::make_index_sequence<N>{}, ::std::forward<Args>(args)...);
-}
-
-//Foreach with first argument as Index
-
-template <class Callable, class Tuple, class... Args>
-constexpr void for_each_tuple_args_index(Callable&& f, Tuple&& tuple, Args&... args) {
-    constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<Tuple>(tuple)))::value;
-    detail::for_each_impl_index(::std::forward<Callable>(f), ::std::forward<Tuple>(tuple),
-                  ::std::make_index_sequence<N>{}, args...);
-}
-
-template <class Callable, class Tuple, class... Args>
-constexpr void for_each_tuple_args_index(Callable&& f, Tuple&& tuple, Args&&... args) {
-    constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<Tuple>(tuple)))::value;
-    detail::for_each_impl_index(::std::forward<Callable>(f), ::std::forward<Tuple>(tuple),
-                  ::std::make_index_sequence<N>{}, ::std::forward<Args>(args)...);
-}
-
-//Foreach with index and result
-
-template <class Callable, class Tuple, class... Args>
-constexpr decltype(auto) for_each_tuple_args_ret_index(Callable&& f, Tuple&& tuple, Args&... args) {
-    constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<Tuple>(tuple)))::value;
-    return detail::for_each_impl_ret_index(::std::forward<Callable>(f), std::forward<Tuple>(tuple),
-                  ::std::make_index_sequence<N>{}, args...);
-}
-
-template <class Callable, class Tuple, class... Args>
-constexpr decltype(auto) for_each_tuple_args_ret_index(Callable&& f, Tuple&& tuple, Args&&... args) {
-    constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<Tuple>(tuple)))::value;
-    return detail::for_each_impl_ret_index(std::forward<Callable>(f), ::std::forward<Tuple>(tuple),
-                  ::std::make_index_sequence<N>{}, ::std::forward<Args>(args)...);
+template <::std::size_t N>
+constexpr decltype (auto) generate_tuple_indexies() {
+    return detail::generate_tuple_indexies_seq_impl(::std::make_index_sequence<N>());
 }
 
 }

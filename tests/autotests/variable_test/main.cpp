@@ -60,7 +60,7 @@ void TestVariable::class_name() {
 }
 
 void TestVariable::var_name() {
-    QCOMPARE(reflect::get_variable_name(*this,::boost::hana::size_c<0>),HANA_STR("var"));
+    QCOMPARE(reflect::get_variable_name<decltype (*this)>(::boost::hana::size_c<0>),HANA_STR("var"));
 }
 
 QTEST_MAIN(TestVariable)
