@@ -7,6 +7,7 @@
 
 //FIXME: Remove latter
 namespace std {
+
 template< class T >
 constexpr bool is_function_v = is_function<T>::value;
 
@@ -206,9 +207,9 @@ template<int N = 255> struct counter : public counter<N - 1> {
 };
 template<> struct counter<0> { static constexpr int value = 0; };
 
-template<::std::size_t N, class F, class Tuple, class... Args>
+template<class F, class Tuple, class... Args>
 constexpr decltype(auto) constexpr_foreach(F&& func, Tuple&& tup, Args&&... args) {
-    return detail::constexpr_foreach_seq_impl(::std::make_index_sequence<N>(),::std::forward<F>(func),::std::forward<Tuple>(tup),::std::forward<Args>(args)...);
+    return detail::constexpr_foreach_seq_impl(::std::make_index_sequence<decltype(::boost::hana::size(tup))::value>(),::std::forward<F>(func),::std::forward<Tuple>(tup),::std::forward<Args>(args)...);
 }
 
 template <::std::size_t N>

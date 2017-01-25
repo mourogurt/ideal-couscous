@@ -1,4 +1,4 @@
- import qbs
+import qbs
 
 Project {
     minimumQbsVersion: "1.6.0"
@@ -13,4 +13,4 @@ Project {
             qbs.install: true
         }
     }
-}
+} 

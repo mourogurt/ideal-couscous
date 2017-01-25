@@ -37,7 +37,7 @@ void print_methods_types_ind_impl () {
     //making integral constant
     constexpr auto ind = boost::hana::size_c<I>;
     //foreach (item is current index)
-    reflect::utils::constexpr_foreach<reflect::get_methods_args_count<T,I>()>([&](auto&& item){
+    reflect::utils::constexpr_foreach([&](auto&& item){
         //writing type of each variable
         std::cout << type_id_with_cvr<decltype(reflect::method_arg_type<T>(ind,item))>().pretty_name() << "\t";
         //Generating tuple of indexies from 0 to args_count - 1
@@ -70,7 +70,7 @@ void print_meta_information() {
         std::cout << "Class name:\t" << ::boost::hana::to<const char*>(reflect::get_class_name<T>()) << std::endl;
         std::cout << "Class vars:\n";
         //Foreach (variables in class)
-        reflect::utils::constexpr_foreach<reflect::get_variables_count<T>()>([&](auto&& item){
+        reflect::utils::constexpr_foreach([&](auto&& item){
             //Write variable name, variable type
             std::cout << ::boost::hana::to<const char*>(reflect::get_variable_name<T>(item))
                       << ";\tVariable type:\t" << type_id_with_cvr<decltype(reflect::variable_type<T>(item))>().pretty_name()
@@ -79,7 +79,7 @@ void print_meta_information() {
         std::cout << std::endl;
         std::cout << "Class methods:\n";
         //Foreach methods
-        reflect::utils::constexpr_foreach<reflect::get_methods_count<T>()>([](auto&& item){
+        reflect::utils::constexpr_foreach([](auto&& item){
             //Write method name, Arguments count and return type
             std::cout << "Name:\t" << ::boost::hana::to<const char*>(reflect::get_method_name<T>(item))
                       << ";\tArgs count:\t" << reflect::get_methods_args_count<T>(item)

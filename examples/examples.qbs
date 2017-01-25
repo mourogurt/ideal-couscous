@@ -2,6 +2,7 @@
 
 Project {
      references: [
-         "metadata/metadata.qbs"
+         "metadata/metadata.qbs",
+         "invokes/invokes.qbs"
      ]
 }
