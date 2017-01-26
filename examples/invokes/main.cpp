@@ -4,9 +4,6 @@
 #include <unordered_map>
 #include <functional>
 #include <vector>
-#include <boost/type_index.hpp>
-
-using boost::typeindex::type_id_with_cvr;
 
 struct Example1 {
     void method () { std::cout << "Hello from Example1\n"; }
@@ -63,7 +60,7 @@ void reflection_visitor_function (T&& var) {
     }
     if constexpr (boost::hana::size(reflect::find_method_name<T>(HANA_STR("method"))) != boost::hana::size_c<0>) {
         reflect::try_invoke_method(var,reflect::find_method_name<T>(HANA_STR("method")));
-        reflect::try_invoke_method(var,reflect::find_method_name<T>(HANA_STR("method")),std::string("test"));
+        reflect::try_invoke_method(var,reflect::find_method_name<T>(HANA_STR("method")),"test");
     }
     if constexpr (boost::hana::size(reflect::find_method_name<T>(HANA_STR("another_method"))) != boost::hana::size_c<0>) {
         reflect::try_invoke_method(var,reflect::find_method_name<T>(HANA_STR("another_method")));
@@ -111,6 +108,6 @@ int main() {
     any_vec.push_back(Example5{});
     any_vec.push_back(Example6{});
     for (auto&& item : any_vec) {
-        table.invoke_any(std::move(item));
+        table.invoke_any(std::forward<std::experimental::any>(item));
     }
 }

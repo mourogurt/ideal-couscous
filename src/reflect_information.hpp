@@ -58,10 +58,26 @@ struct FunctionInfo {
      -> Ret(*)(Args...);
 };
 
+template <class... Args>
+struct is_convertible_multi {
+    constexpr static bool value = false;
+};
+
+template <class... Args1, class... Args2>
+struct is_convertible_multi<::boost::hana::tuple<Args1...>, ::boost::hana::tuple<Args2...>> {
+    constexpr static bool value =  ::std::conjunction_v<::std::is_convertible<Args1,Args2>...>;
+};
+
+template <class... Args>
+constexpr bool is_convertible_multi_v = is_convertible_multi<Args...>::value;
+
 template<class Args_tuple, class ... Args>
 constexpr bool is_suitable_types_impl () {
-    if constexpr (::std::is_convertible_v<::boost::hana::tuple<Args...>,Args_tuple>) return true;
-    else return false;
+    if constexpr (sizeof... (Args) != decltype (::boost::hana::size(::std::declval<Args_tuple>()))::value) return false;
+    else {
+        if constexpr (is_convertible_multi_v<::boost::hana::tuple<Args...>,Args_tuple>) return true;
+        else return false;
+    }
 }
 
 }

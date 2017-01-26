@@ -26,6 +26,9 @@ constexpr bool is_convertible_v = is_convertible<T, U>::value;
 template< class T >
 constexpr bool is_void_v = is_void<T>::value;
 
+template < class... Args >
+constexpr bool conjunction_v = conjunction<Args...>::value;
+
 }
 
 namespace reflect {
