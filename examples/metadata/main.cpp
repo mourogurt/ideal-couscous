@@ -12,7 +12,7 @@ struct ExampleClass {
     int const_method() const {return 1;}
     constexpr void constexpr_method() {}
     static void static_method() {}
-    METACLASS_DEFENITION(ExampleClass)
+    METACLASS_DEFINITION(ExampleClass)
     REFLECT_VARIABLE(var)
     REFLECT_VARIABLE(const_var)
     REFLECT_STATIC_VARIABLE(static_var)

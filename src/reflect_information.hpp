@@ -201,7 +201,7 @@ struct MetaClass {
 
 }
 
-#define METACLASS_DEFENITION(TYPE) \
+#define METACLASS_DEFINITION(TYPE) \
         using Type = TYPE; \
         static constexpr bool is_reflected () {return true;} \
         friend constexpr auto ClassName(const Type*) RETURN(#TYPE)\

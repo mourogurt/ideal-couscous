@@ -7,7 +7,7 @@
 
 struct Example1 {
     void method () { std::cout << "Hello from Example1\n"; }
-    METACLASS_DEFENITION(Example1)
+    METACLASS_DEFINITION(Example1)
     REFLECT_METHOD(method)
 };
 
@@ -15,7 +15,7 @@ struct Example2 {
     void method () { std::cout << "Hello from Example2\n"; }
     void another_method() { std::cout << "another method from Example2\n"; }
     void another_method(int) { std::cout << "another method (int) from Example2\n"; }
-    METACLASS_DEFENITION(Example2)
+    METACLASS_DEFINITION(Example2)
     REFLECT_METHOD(method)
     REFLECT_METHOD(another_method)
     REFLECT_METHOD(another_method,int)
@@ -24,7 +24,7 @@ struct Example2 {
 struct Example3 {
     void method () { std::cout << "Hello from Example3\n"; }
     void another_method() { std::cout << "another method from Example3\n"; }
-    METACLASS_DEFENITION(Example3)
+    METACLASS_DEFINITION(Example3)
     REFLECT_METHOD(method)
     REFLECT_METHOD(another_method)
 };
@@ -32,7 +32,7 @@ struct Example3 {
 struct Example4 {
     void another_method() { std::cout << "another method from Example4\n"; }
     const char* string_method() {return "Example4"; }
-    METACLASS_DEFENITION(Example4)
+    METACLASS_DEFINITION(Example4)
     REFLECT_METHOD(another_method)
     REFLECT_METHOD(string_method)
 };
@@ -40,7 +40,7 @@ struct Example4 {
 struct Example5 {
     std::string str_var;
     const char* string_method() {return str_var.c_str(); }
-    METACLASS_DEFENITION(Example5)
+    METACLASS_DEFINITION(Example5)
     REFLECT_VARIABLE(str_var)
     REFLECT_METHOD(string_method)
 };
@@ -48,7 +48,7 @@ struct Example5 {
 struct Example6 {
     std::string str_var {"nothing"};
     void method (std::string&& var) {std::cout << std::boolalpha << (str_var == var) << " Example6\n"; }
-    METACLASS_DEFENITION(Example6)
+    METACLASS_DEFINITION(Example6)
     REFLECT_VARIABLE(str_var)
     REFLECT_METHOD(method,std::string&&)
 };

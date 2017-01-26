@@ -8,7 +8,7 @@ class TestVariable : public QObject {
     const int const_var {2};
     static int static_var;
 public:
-    METACLASS_DEFENITION(TestVariable)
+    METACLASS_DEFINITION(TestVariable)
     REFLECT_VARIABLE(var)
     REFLECT_VARIABLE(const_var)
     REFLECT_STATIC_VARIABLE(static_var)

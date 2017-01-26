@@ -22,11 +22,11 @@ constexpr decltype(auto) invoke_method_impl (T&& value, Obj&& p, Args&& ...args)
 template <class T, class Obj, class... Args>
 constexpr decltype(auto) try_invoke_method_check_void_impl (T&& value, Obj&& p, Args&&... args) {
     if constexpr (::std::is_void_v<typename ::std::decay_t<T>::return_type>) {
-        invoke_method_impl(std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...);
+        invoke_method_impl(::std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...);
         return ::boost::hana::make_tuple();
     }
     else
-        return ::boost::hana::make_tuple(invoke_method_impl(std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...));
+        return ::boost::hana::make_tuple(invoke_method_impl(::std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...));
 }
 
 template <class T, class Obj, class... Args>

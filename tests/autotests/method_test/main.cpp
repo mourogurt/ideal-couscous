@@ -12,7 +12,7 @@ class TestMethod : public QObject {
     void const_method(bool cond) const { QVERIFY(cond); }
 
 public:
-    METACLASS_DEFENITION(TestMethod)
+    METACLASS_DEFINITION(TestMethod)
     REFLECT_METHOD(bool_method,bool)
     REFLECT_METHOD(bool_method)
     REFLECT_METHOD(bool_method,bool&)
@@ -34,7 +34,7 @@ private slots:
 
 class Constexpr_class {
 public:
-    METACLASS_DEFENITION(Constexpr_class)
+    METACLASS_DEFINITION(Constexpr_class)
     constexpr bool bool_method() const { return true;}
     REFLECT_CONST_METHOD(bool_method)
 
