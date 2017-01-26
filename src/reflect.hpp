@@ -26,7 +26,7 @@ constexpr decltype(auto) try_invoke_method_check_void_impl (T&& value, Obj&& p, 
         return ::boost::hana::make_tuple();
     }
     else
-        return ::boost::hana::make_tuple(invoke_method_impl(::std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...));
+        return ::boost::hana::make_tuple(invoke_method_impl(std::forward<T>(value),::std::forward<Obj>(p),::std::forward<Args>(args)...));
 }
 
 template <class T, class Obj, class... Args>
@@ -96,15 +96,18 @@ template <class T, class I, class J> struct get_method_arg_type_struct {
     using type = typename decltype(std::decay_t<decltype(get_method_arg_type_impl(::std::declval<T>(),::std::declval<I>(),::std::declval<J>()))>())::type;
 };
 
-template <class T, std::size_t I, std::size_t J> struct get_method_arg_type_struct_2 {
+template <class T, std::size_t I, std::size_t J>
+struct get_method_arg_type_struct_2 {
     using type = typename decltype(::std::decay_t<decltype(get_method_arg_type_impl<T,I,J>())>())::type;
 };
 
-template <class T, class I> struct get_method_return_type_struct {
+template <class T, class I>
+struct get_method_return_type_struct {
     using type = typename decltype(::std::decay_t<decltype(get_method_return_type_impl(::std::declval<T>(),::std::declval<I>()))>())::type;
 };
 
-template <class T, ::std::size_t I> struct get_method_return_type_struct_2 {
+template <class T, ::std::size_t I>
+struct get_method_return_type_struct_2 {
     using type = typename decltype(::std::decay_t<decltype(get_method_return_type_impl<T,I>())>())::type;
 };
 
@@ -118,11 +121,13 @@ constexpr decltype (auto) get_variable_type_impl () {
     return ::boost::hana::type_c<typename ::std::decay_t<decltype(::boost::hana::at_c<Index>(info::MetaClass<typename ::std::decay_t<T> >::vars_metadata))>::return_type>;
 }
 
-template <class T, class I> struct get_variable_arg_type_struct {
+template <class T, class I>
+struct get_variable_arg_type_struct {
     using type = typename decltype(std::decay_t<decltype(get_variable_type_impl(::std::declval<T>(),::std::declval<I>()))>())::type;
 };
 
-template <class T, std::size_t I> struct get_variable_arg_type_struct_2 {
+template <class T, std::size_t I>
+struct get_variable_arg_type_struct_2 {
     using type = typename decltype(::std::decay_t<decltype(get_variable_type_impl<T,I>())>())::type;
 };
 

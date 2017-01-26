@@ -31,19 +31,19 @@ constexpr decltype (auto) methods_ptr_tuple (::std::index_sequence< Indices... >
     return res;
 }
 
-template<typename T, typename... Args>
+template<class T, class... Args>
 struct MethodInfo {
-    template<typename Ret>
+    template<class Ret>
     static constexpr auto get(Ret(T::*)(Args...))
      -> Ret(T::*)(Args...);
-    template<typename Ret>
+    template<class Ret>
     static constexpr auto get_ret(Ret(T::*)(Args...))
      -> Ret;
 };
 
-template<typename T, typename... Args>
+template<class T, class... Args>
 struct ConstMethodInfo {
-    template<typename Ret>
+    template<class Ret>
     static constexpr auto get(Ret(T::*)(Args...) const)
      -> Ret(T::*)(Args...) const;
 };

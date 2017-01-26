@@ -43,7 +43,7 @@ constexpr decltype(auto) multiple_concat (T&& value) {
 
 template <class T, class... Args>
 constexpr decltype(auto) multiple_concat (T&& value , Args&&... args) {
-    return ::boost::hana::concat(value,multiple_concat(::std::forward<Args>(args)...));
+    return ::boost::hana::concat(std::forward<T>(value),multiple_concat(::std::forward<Args>(args)...));
 }
 
 }
@@ -123,7 +123,7 @@ constexpr auto INVOKE(F&& f, Args&&... args)
       return ::std::forward<F>(f)(::std::forward<Args>(args)...);
 }
 
-template <typename, typename = void>
+template <class, class = void>
 struct result_of {};
 template <typename F, typename...Args>
 struct result_of<F(Args...),
