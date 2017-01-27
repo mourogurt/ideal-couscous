@@ -208,7 +208,6 @@ struct MetaClass {
         constexpr static ::reflect::utils::counter<0> Variable_counter (::reflect::utils::counter<0>);\
         constexpr static ::reflect::utils::counter<0> Method_counter (::reflect::utils::counter<0>);
 
-
 #define RETURN(R) -> decltype(R) { return R; }
 
 #define TUPLE_APPEND(STATE, COUNTER, ...) \

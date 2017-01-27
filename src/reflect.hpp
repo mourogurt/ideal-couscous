@@ -299,12 +299,12 @@ constexpr decltype(auto) get_method_name () {
 
 template <class T>
 constexpr decltype(auto) get_variables_count () {
-    return ::std::move(decltype(::boost::hana::size(info::MetaClass<typename ::std::decay_t<T> >::vars_metadata))::value);
+    return decltype(::boost::hana::size(info::MetaClass<typename ::std::decay_t<T> >::vars_metadata))::value;
 }
 
 template <class T>
 constexpr decltype(auto) get_methods_count () {
-    return ::std::move(decltype(::boost::hana::size(info::MetaClass<typename ::std::decay_t<T> >::methods_metadata))::value);
+    return decltype(::boost::hana::size(info::MetaClass<typename ::std::decay_t<T> >::methods_metadata))::value;
 }
 
 }

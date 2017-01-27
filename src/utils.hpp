@@ -41,7 +41,14 @@ constexpr decltype(auto) multiple_concat () {
 
 template <class T>
 constexpr decltype(auto) multiple_concat (T&& value) {
-    return ::std::forward<T>(value);
+    //TODO: Need deeper investigation
+    auto new_value = std::move(value);
+    return new_value;
+}
+
+template <class T1, class T2>
+constexpr decltype(auto) multiple_concat (T1&& value, T2&& value2) {
+    return ::boost::hana::concat(value,value2);
 }
 
 template <class T, class... Args>

@@ -31,7 +31,7 @@ struct Example3 {
 
 struct Example4 {
     void another_method() { std::cout << "another method from Example4\n"; }
-    const char* string_method() {return "Example4"; }
+    std::string string_method() {return std::string("Example4"); }
     METACLASS_DEFINITION(Example4)
     REFLECT_METHOD(another_method)
     REFLECT_METHOD(string_method)
@@ -39,7 +39,7 @@ struct Example4 {
 
 struct Example5 {
     std::string str_var;
-    const char* string_method() {return str_var.c_str(); }
+    std::string string_method() {return str_var; }
     METACLASS_DEFINITION(Example5)
     REFLECT_VARIABLE(str_var)
     REFLECT_METHOD(string_method)
