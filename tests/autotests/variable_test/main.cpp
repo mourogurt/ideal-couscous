@@ -37,9 +37,9 @@ void TestVariable::set_variable() {
 }
 
 void TestVariable::find_variable() {
-    QCOMPARE(boost::hana::size(reflect::find_variable_name<decltype(*this)>(HANA_STR("var"))),boost::hana::size_c<1>);
-    QCOMPARE(boost::hana::size(reflect::find_variable_name<decltype(*this)>(HANA_STR("const_var"))),boost::hana::size_c<1>);
-    QCOMPARE(boost::hana::size(reflect::find_variable_name<decltype(*this)>(HANA_STR("nothing"))),boost::hana::size_c<0>);
+    QCOMPARE(reflect::find_variable_name<decltype(*this)>(HANA_STR("var")),boost::hana::size_c<0>);
+    QCOMPARE(reflect::find_variable_name<decltype(*this)>(HANA_STR("const_var")),boost::hana::size_c<1>);
+    QCOMPARE(reflect::find_variable_name<decltype(*this)>(HANA_STR("nothing")),boost::hana::nothing);
 }
 
 void TestVariable::variable_type() {

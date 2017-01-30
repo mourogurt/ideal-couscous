@@ -32,9 +32,9 @@ using boost::typeindex::type_id_with_cvr;
 template<class T, ::std::size_t I>
 void print_methods_types_ind_impl () {
     constexpr auto ind = boost::hana::size_c<I>;
-    reflect::utils::constexpr_foreach([&](auto&& item){
+    reflect::utils::for_each([&](auto&& item){
         std::cout << type_id_with_cvr<decltype(reflect::method_arg_type<T>(ind,item))>().pretty_name() << "\t";
-    },reflect::utils::generate_tuple_indexies<reflect::get_methods_args_count<T,I>()>());
+    },reflect::utils::generate_tuple_indices<reflect::get_methods_args_count<T,I>()>());
     if (reflect::get_methods_args_count<T,I>() == 0) std::cout << "No args types in method";
     std::cout << std::endl;
 }
@@ -58,19 +58,19 @@ void print_meta_information() {
         //Class name
         std::cout << "Class name:\t" << ::boost::hana::to<const char*>(reflect::get_class_name<T>()) << std::endl;
         std::cout << "Class vars:\n";
-        reflect::utils::constexpr_foreach([&](auto&& item){
+        reflect::utils::for_each([&](auto&& item){
             std::cout << ::boost::hana::to<const char*>(reflect::get_variable_name<T>(item))
-                      << ";\tVariable type:\t" << type_id_with_cvr<decltype(reflect::variable_type<T>(item))>().pretty_name()
+                      << ";\tVariable type:\t" << type_id_with_cvr<reflect::variable_type_index_t<T,decltype(item)>>().pretty_name()
                       << std::endl;
-        },reflect::utils::generate_tuple_indexies<reflect::get_variables_count<T>()>());
+        },reflect::utils::generate_tuple_indices<reflect::get_variables_count<T>()>());
         std::cout << std::endl;
         std::cout << "Class methods:\n";
-        reflect::utils::constexpr_foreach([](auto&& item){
+        reflect::utils::for_each([](auto&& item){
             std::cout << "Name:\t" << ::boost::hana::to<const char*>(reflect::get_method_name<T>(item))
                       << ";\tArgs count:\t" << reflect::get_methods_args_count<T>(item)
                       << ";\tReturn type:\t" << type_id_with_cvr<decltype(reflect::method_return_type<T>(item))>().pretty_name()
                       << std::endl;
-        },reflect::utils::generate_tuple_indexies<reflect::get_methods_count<T>()>());
+        },reflect::utils::generate_tuple_indices<reflect::get_methods_count<T>()>());
         std::cout << "Methods args types:\n";
         print_methods_types<T>();
         std::cout << std::endl;

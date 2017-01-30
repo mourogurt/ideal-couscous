@@ -35,119 +35,214 @@ namespace reflect {
 
 namespace utils {
 
+/**
+ * @brief concatenating multiple tuples into one
+ *
+ */
 constexpr decltype(auto) multiple_concat () {
     return boost::hana::make_tuple();
 }
 
 template <class T>
+/**
+ * @brief concatenating multiple tuples into one
+ *
+ * @param value boost::hana::tuple
+ * @bug Investigate why forward of value calls destructor of tuple elements
+ */
 constexpr decltype(auto) multiple_concat (T&& value) {
-    //TODO: Need deeper investigation
     auto new_value = std::move(value);
     return new_value;
 }
 
-template <class T1, class T2>
-constexpr decltype(auto) multiple_concat (T1&& value, T2&& value2) {
-    return ::boost::hana::concat(value,value2);
-}
-
 template <class T, class... Args>
+/**
+ * @brief concating multiple tuples into one
+ *
+ * @param value boost::hana::tuple
+ * @param args template pack of boost::hana::tuple
+ * @return concatenated tuple
+ */
 constexpr decltype(auto) multiple_concat (T&& value , Args&&... args) {
     return ::boost::hana::concat(std::forward<T>(value),multiple_concat(::std::forward<Args>(args)...));
 }
+
+template <class T>
+/**
+ * @brief check if type is std::reference_wrapper
+ *
+ */
+struct is_reference_wrapper : ::std::false_type {};
+
+template <class U>
+/**
+ * @brief check if type is std::reference_wrapper
+ *
+ */
+struct is_reference_wrapper<::std::reference_wrapper<U>> : ::std::true_type {};
+
+template <class T>
+constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value; /**< Helper variable template for is_reference_wrapper */
 
 }
 
 namespace detail {
 
-template <class T>
-struct is_reference_wrapper : ::std::false_type {};
-
-template <class U>
-struct is_reference_wrapper<::std::reference_wrapper<U>> : ::std::true_type {};
-
-template <class T>
-constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value;
-
 template <class Base, class T, class Derived, class... Args>
+/**
+ * @brief constexpr invoke implementation for derived class with args
+ *
+ */
 constexpr auto INVOKE(T Base::*pmf, Derived&& ref, Args&&... args)
     noexcept(noexcept((::std::forward<Derived>(ref).*pmf)(::std::forward<Args>(args)...)))
  -> ::std::enable_if_t<::std::is_function_v<T> &&
                      ::std::is_base_of_v<Base, ::std::decay_t<Derived>>,
-    decltype((::std::forward<Derived>(ref).*pmf)(::std::forward<Args>(args)...))> {
+    decltype((::std::forward<Derived>(ref).*pmf)(::std::forward<Args>(args)...))>
+{
       return (::std::forward<Derived>(ref).*pmf)(::std::forward<Args>(args)...);
 }
 
 template <class Base, class T, class RefWrap, class... Args>
+/**
+ * @brief constexpr invoke implementation for reference with args
+ *
+ */
 constexpr auto INVOKE(T Base::*pmf, RefWrap&& ref, Args&&... args)
     noexcept(noexcept((ref.get().*pmf)(::std::forward<Args>(args)...)))
  -> std::enable_if_t<::std::is_function_v<T> &&
-                     is_reference_wrapper_v<::std::decay_t<RefWrap>>,
-    decltype((ref.get().*pmf)(::std::forward<Args>(args)...))> {
+                     utils::is_reference_wrapper_v<::std::decay_t<RefWrap>>,
+    decltype((ref.get().*pmf)(::std::forward<Args>(args)...))>
+{
       return (ref.get().*pmf)(::std::forward<Args>(args)...);
 }
 
 template <class Base, class T, class Pointer, class... Args>
+/**
+ * @brief constexpr invoke implementation for pointer with args
+ *
+ */
 constexpr auto INVOKE(T Base::*pmf, Pointer&& ptr, Args&&... args)
     noexcept(noexcept(((*::std::forward<Pointer>(ptr)).*pmf)(::std::forward<Args>(args)...)))
  -> std::enable_if_t<::std::is_function_v<T> &&
-                     !is_reference_wrapper_v<::std::decay_t<Pointer>> &&
+                     !utils::is_reference_wrapper_v<::std::decay_t<Pointer>> &&
                      !::std::is_base_of_v<Base, ::std::decay_t<Pointer>>,
-    decltype(((*::std::forward<Pointer>(ptr)).*pmf)(::std::forward<Args>(args)...))> {
+    decltype(((*::std::forward<Pointer>(ptr)).*pmf)(::std::forward<Args>(args)...))>
+{
       return ((*::std::forward<Pointer>(ptr)).*pmf)(::std::forward<Args>(args)...);
 }
 
 template <class Base, class T, class Derived>
+/**
+ * @brief constexpr invoke implementation for derived class
+ *
+ */
 constexpr auto INVOKE(T Base::*pmd, Derived&& ref)
     noexcept(noexcept(::std::forward<Derived>(ref).*pmd))
  -> ::std::enable_if_t<!::std::is_function_v<T> &&
                      ::std::is_base_of_v<Base, ::std::decay_t<Derived>>,
-    decltype(::std::forward<Derived>(ref).*pmd)> {
+    decltype(::std::forward<Derived>(ref).*pmd)>
+{
       return ::std::forward<Derived>(ref).*pmd;
 }
 
 template <class Base, class T, class RefWrap>
+/**
+ * @brief constexpr invoke implementation for reference
+ *
+ */
 constexpr auto INVOKE(T Base::*pmd, RefWrap&& ref)
     noexcept(noexcept(ref.get().*pmd))
  -> std::enable_if_t<!::std::is_function_v<T> &&
-                     is_reference_wrapper_v<::std::decay_t<RefWrap>>,
-    decltype(ref.get().*pmd)> {
+                     utils::is_reference_wrapper_v<::std::decay_t<RefWrap>>,
+    decltype(ref.get().*pmd)>
+{
       return ref.get().*pmd;
 }
 
 template <class Base, class T, class Pointer>
+/**
+ * @brief constexpr invoke implementation for pointer
+ *
+ */
 constexpr auto INVOKE(T Base::*pmd, Pointer&& ptr)
     noexcept(noexcept((*::std::forward<Pointer>(ptr)).*pmd))
  -> std::enable_if_t<!::std::is_function_v<T> &&
-                     !is_reference_wrapper_v<::std::decay_t<Pointer>> &&
+                     !utils::is_reference_wrapper_v<::std::decay_t<Pointer>> &&
                      !::std::is_base_of_v<Base, ::std::decay_t<Pointer>>,
-    decltype((*::std::forward<Pointer>(ptr)).*pmd)> {
+    decltype((*::std::forward<Pointer>(ptr)).*pmd)>
+{
       return (*::std::forward<Pointer>(ptr)).*pmd;
 }
 
 template <class F, class... Args>
+/**
+ * @brief constexpr invoke implementation
+ *
+ * @param f function pointer
+ * @param args function pointer args(with object pointer/reference)
+ * @return std::enable_if_t<_Tp1, _Tp2> enabled if F is member pointer
+ */
 constexpr auto INVOKE(F&& f, Args&&... args)
     noexcept(noexcept(::std::forward<F>(f)(::std::forward<Args>(args)...)))
  -> std::enable_if_t<!::std::is_member_pointer_v<::std::decay_t<F>>,
-    decltype(::std::forward<F>(f)(::std::forward<Args>(args)...))> {
+    decltype(::std::forward<F>(f)(::std::forward<Args>(args)...))>
+{
       return ::std::forward<F>(f)(::std::forward<Args>(args)...);
 }
 
 template <class, class = void>
+/**
+ * @brief constexpr result_of implementation for no types
+ *
+ */
 struct result_of {};
 template <typename F, typename...Args>
+/**
+ * @brief constexpr result_of implementation
+ *
+ */
 struct result_of<F(Args...),
                  decltype(void(INVOKE(::std::declval<F>(), ::std::declval<Args>()...)))> {
+    /**
+     * @brief
+     *
+     */
     using type = decltype(INVOKE(::std::declval<F>(), ::std::declval<Args>()...));
 };
 
 template<::std::size_t Index, class A, class B>
-constexpr decltype(auto) compare_types_impl(A&&, B&&) {
-    if constexpr (::std::is_same_v<A,B>) return ::boost::hana::make_tuple(::boost::hana::size_c<Index>);
+/**
+ * @brief compare types index implementation
+ *
+ * @param A type A
+ * @param B type B
+ * @return tuple of index if A and B same type or empty tuple
+ */
+constexpr decltype(auto) compare_types_index_impl(A&&, B&&) {
+    if constexpr (::std::is_same_v<A,B>) return ::boost::hana::tuple_c<std::size_t,Index>;
     else return ::boost::hana::make_tuple();
 }
 
+template <class T, class Tp, ::std::size_t... Indices>
+/**
+ * @brief find same type of object in tuple implementation
+ *
+ * @param std::index_sequence<Indices...> index sequence
+ * @param value object to find
+ * @param tup tuple where to find
+ */
+constexpr decltype(auto) find_values_args_impl (::std::index_sequence< Indices... >&&, T&& value, Tp&& tup) {
+    return utils::multiple_concat(detail::compare_types_index_impl<Indices>(::std::forward<T>(value),::boost::hana::at_c<Indices>(::std::forward<Tp>(tup)))...);
+}
+
 template<::std::size_t I, class F, class Tuple, class... Args>
+/**
+ * @brief foreach implementation
+ *
+ * @param func function reference/lambda
+ * @param tup object to iterate
+ * @param args aditional argument passing to function
+ */
 constexpr decltype(auto) constexpr_foreach_index_impl (F&& func, Tuple&& tup, Args&&... args) {
     if constexpr (::std::is_void_v<decltype(func(::boost::hana::at_c<I>(tup),::std::forward<Args>(args)...))>) {
         func(::boost::hana::at_c<I>(tup),::std::forward<Args>(args)...);
@@ -157,18 +252,26 @@ constexpr decltype(auto) constexpr_foreach_index_impl (F&& func, Tuple&& tup, Ar
 }
 
 template<::std::size_t... Indices, class F, class Tuple, class... Args>
+/**
+ * @brief foreach implementation
+ *
+ * @param std::index_sequence<Indices...> index sequence
+ * @param func function reference/lambda
+ * @param tup object to iterate
+ * @param args aditional argument passing to function
+ */
 constexpr decltype(auto) constexpr_foreach_seq_impl(::std::index_sequence<Indices...>&&, F&& func, Tuple&& tup, Args&&... args) {
     return utils::multiple_concat(constexpr_foreach_index_impl<Indices>(::std::forward<F>(func),::std::forward<Tuple>(tup),::std::forward<Args>(args)...)...);
 }
 
-template<::std::size_t I>
-constexpr decltype (auto) generate_tuple_indexies_index_impl() {
-    return ::boost::hana::make_tuple(::boost::hana::size_c<I>);
-}
-
-template<::std::size_t... Indices>
-constexpr decltype (auto) generate_tuple_indexies_seq_impl(::std::index_sequence<Indices...>&&) {
-    return reflect::utils::multiple_concat(generate_tuple_indexies_index_impl<Indices>()...);
+template<std::size_t Offset, ::std::size_t... Indices>
+/**
+ * @brief tuple range of integral constants implementation
+ *
+ * @param std::index_sequence<Indices...> index sequence
+ */
+constexpr decltype (auto) generate_tuple_indices_seq_impl(::std::index_sequence<Indices...>&&) {
+    return ::boost::hana::tuple_c<std::size_t,Indices + Offset...>;
 }
 
 }
@@ -176,27 +279,47 @@ constexpr decltype (auto) generate_tuple_indexies_seq_impl(::std::index_sequence
 namespace utils {
 
 template<class A, class B>
-constexpr decltype(auto) compare_types(A&&, B&&) {
+/**
+ * @brief compare types
+ * @return true if types same, othervise false
+ */
+constexpr decltype(auto) compare_types(A&&, B&&) noexcept {
     if constexpr (::std::is_same_v<std::decay_t<A>,std::decay_t<B>>) return true;
     else return false;
 }
 
-template <class T, class Tp, ::std::size_t... Indices>
-constexpr decltype(auto) find_values_args (::std::index_sequence< Indices... >&&, T&& value, Tp&& tup) {
-    return utils::multiple_concat(detail::compare_types_impl<Indices>(::std::forward<T>(value),::boost::hana::at_c<Indices>(::std::forward<Tp>(tup)))...);
-}
-
 template<class T, class ... Args>
+/**
+ * @brief Function that finds same type of object in tuple
+ *
+ * @param value object to find
+ * @param tup tuple where to find
+ * @return Tuple of integral constants, which are indexes of tuple elements with same type
+ */
 constexpr decltype(auto) find_values (T&& value, ::boost::hana::tuple<Args...>&&  tup) {
-    return  find_values_args(::std::make_index_sequence<sizeof...(Args)>(),::std::forward<T>(value),::std::forward<::boost::hana::tuple<Args...>>(tup));
+    return  detail::find_values_args_impl(::std::make_index_sequence<sizeof...(Args)>(),::std::forward<T>(value),::std::forward<::boost::hana::tuple<Args...>>(tup));
 }
 
 template<class T, class ... Args>
+/**
+ * @brief Function that finds same type of object in tuple
+ *
+ * @param value Object to find
+ * @param tup Tuple where to find
+ * @return tuple of integral constants, which are indexes of tuple elements with same type
+ */
 constexpr decltype(auto) find_values (T const& value, ::boost::hana::tuple<Args...> const&  tup) {
-    return  find_values_args(::std::make_index_sequence<sizeof...(Args)>(),value,tup);
+    return  detail::find_values_args_impl(::std::make_index_sequence<sizeof...(Args)>(),value,tup);
 }
 
 template< class F, class... ArgTypes >
+/**
+ * @brief Constexpr variant of std::invoke
+ *
+ * @param f Function pointer
+ * @param args Function arguments
+ * @return function result
+ */
 constexpr auto constexpr_invoke(F&& f, ArgTypes&&... args)
     // exception specification for QoI
     noexcept(noexcept(detail::INVOKE(std::forward<F>(f), ::std::forward<ArgTypes>(args)...)))
@@ -205,36 +328,70 @@ constexpr auto constexpr_invoke(F&& f, ArgTypes&&... args)
     return detail::INVOKE(::std::forward<F>(f), ::std::forward<ArgTypes>(args)...);
 }
 
-template <class> struct incomplete_result_of;
+template <class>
+/**
+ * @brief Constexpr variant of std::result_of
+ *
+ */
+struct constexpr_result_of;
 template <class F, class... ArgTypes>
-struct incomplete_result_of<F(ArgTypes...)> : detail::result_of<F(ArgTypes...)> {};
+/**
+ * @brief Constexpr variant of std::result_of
+ *
+ */
+struct constexpr_result_of<F(ArgTypes...)> : detail::result_of<F(ArgTypes...)> {};
 
 template <class T>
-using incomplete_result_of_t = typename incomplete_result_of<T>::type;
+/**
+ * @brief Helper type template for constexpr_result_of
+ *
+ */
+using constexpr_result_of_t = typename constexpr_result_of<T>::type;
 
+/**
+ * @brief Compile-time counter
+ *
+ */
 template<int N = 255> struct counter : public counter<N - 1> {
-    static constexpr int value = N;
+    static constexpr int value = N; /**< value of counter */
 };
+/**
+ * @brief Zero counter
+ *
+ */
 template<> struct counter<0> { static constexpr int value = 0; };
 
 template<class F, class Tuple, class... Args>
-constexpr decltype(auto) constexpr_foreach(F&& func, Tuple&& tup, Args&&... args) {
+/**
+ * @brief Constexpr foreach iterating over tuple
+ *
+ * @param func Function pointer/lambda
+ * @param tup Object to iterate
+ * @param args Aditional argument passing to function
+ * @return Tuple of return values or empty tuple if return value is void
+ */
+constexpr decltype(auto) for_each(F&& func, Tuple&& tup, Args&&... args) {
     return detail::constexpr_foreach_seq_impl(::std::make_index_sequence<decltype(::boost::hana::size(tup))::value>(),::std::forward<F>(func),::std::forward<Tuple>(tup),::std::forward<Args>(args)...);
 }
 
-template <::std::size_t N>
-constexpr decltype (auto) generate_tuple_indexies() {
-    return detail::generate_tuple_indexies_seq_impl(::std::make_index_sequence<N>());
+template <::std::size_t N, ::std::size_t Offset = 0>
+/**
+ * @brief Generate tuple integral constants from [Offset; N+Offset)
+ * @return Ruple of intergral constants
+ *
+ */
+constexpr decltype (auto) generate_tuple_indices() {
+    return detail::generate_tuple_indices_seq_impl<Offset>(::std::make_index_sequence<N>());
 }
 
 }
 
 }
 
-#define STRING_MAXLEN 64
+#define STRING_MAXLEN 64 /**< maximum length of compile-time string */
 #define  CHECK_STR_CHAR(_, i, str) (sizeof(str) > (i) ? str[(i)] : 0),
 #define CT_STR(str) BOOST_PP_REPEAT(STRING_MAXLEN, CHECK_STR_CHAR,str) 0
 
-#define HANA_STR(str) ::boost::hana::string_c<CT_STR(str) >
+#define HANA_STR(str) ::boost::hana::string_c<CT_STR(str) > /**<constexpr compile-time string */
 
 #endif // UTILS_HPP

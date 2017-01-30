@@ -55,8 +55,8 @@ struct Example6 {
 
 template <class T>
 void reflection_visitor_function (T&& var) {
-    if constexpr (boost::hana::size(reflect::find_variable_name<T>(HANA_STR("str_var"))) != boost::hana::size_c<0>) {
-        reflect::get_variable(var,boost::hana::at_c<0>(reflect::find_variable_name<T>(HANA_STR("str_var")))) = "test";
+    if constexpr (reflect::find_variable_name<T>(HANA_STR("str_var")) != boost::hana::nothing) {
+        reflect::get_variable(var,reflect::find_variable_name<T>(HANA_STR("str_var"))) = "test";
     }
     if constexpr (boost::hana::size(reflect::find_method_name<T>(HANA_STR("method"))) != boost::hana::size_c<0>) {
         reflect::try_invoke_method(var,reflect::find_method_name<T>(HANA_STR("method")));
