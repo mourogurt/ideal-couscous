@@ -9,7 +9,8 @@ Project {
     references: [
         "src/src.qbs",
         "tests/tests.qbs",
-        "examples/examples.qbs"
+        "examples/examples.qbs",
+        "docs/docs.qbs"
     ]
     AutotestRunner {
         Depends { name: "Qt.core" }
