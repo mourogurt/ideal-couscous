@@ -198,16 +198,6 @@ public:
     constexpr decltype(auto) operator()(Args2&&... args) const noexcept (noexcept (utils::constexpr_invoke(p, ::std::forward<Args2>(args)...))) {
         return utils::constexpr_invoke(p, ::std::forward<Args2>(args)...);
     }
-    template <class... Args2>
-    /**
-     * @brief Invoke function
-     *
-     * @param args function arguments
-     * @return utils::constexpr_invoke object of static_fn_t::return_type
-     */
-    constexpr decltype(auto) operator()(Args2&... args) const noexcept (noexcept (utils::constexpr_invoke(p, args...))) {
-        return utils::constexpr_invoke(p,args...);
-    }
 };
 
 template <class Obj>
