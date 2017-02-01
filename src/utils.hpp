@@ -36,7 +36,7 @@ namespace reflect {
 namespace utils {
 
 /**
- * @brief concatenating multiple tuples into one
+ * @brief Concatenating multiple tuples into one
  *
  */
 constexpr decltype(auto) multiple_concat () {
@@ -45,19 +45,17 @@ constexpr decltype(auto) multiple_concat () {
 
 template <class T>
 /**
- * @brief concatenating multiple tuples into one
+ * @brief Concatenating multiple tuples into one
  *
  * @param value boost::hana::tuple
- * @bug Investigate why forward of value calls destructor of tuple elements
  */
 constexpr decltype(auto) multiple_concat (T&& value) {
-    auto new_value = std::move(value);
-    return new_value;
+    return ::boost::hana::concat(::std::forward<T>(value),multiple_concat());
 }
 
 template <class T, class... Args>
 /**
- * @brief concating multiple tuples into one
+ * @brief Concating multiple tuples into one
  *
  * @param value boost::hana::tuple
  * @param args template pack of boost::hana::tuple
@@ -69,14 +67,14 @@ constexpr decltype(auto) multiple_concat (T&& value , Args&&... args) {
 
 template <class T>
 /**
- * @brief check if type is std::reference_wrapper
+ * @brief Check if type is std::reference_wrapper
  *
  */
 struct is_reference_wrapper : ::std::false_type {};
 
 template <class U>
 /**
- * @brief check if type is std::reference_wrapper
+ * @brief Check if type is std::reference_wrapper
  *
  */
 struct is_reference_wrapper<::std::reference_wrapper<U>> : ::std::true_type {};
@@ -90,7 +88,7 @@ namespace detail {
 
 template <class Base, class T, class Derived, class... Args>
 /**
- * @brief constexpr invoke implementation for derived class with args
+ * @brief Constexpr invoke implementation for derived class with args
  *
  */
 constexpr auto INVOKE(T Base::*pmf, Derived&& ref, Args&&... args)
@@ -104,7 +102,7 @@ constexpr auto INVOKE(T Base::*pmf, Derived&& ref, Args&&... args)
 
 template <class Base, class T, class RefWrap, class... Args>
 /**
- * @brief constexpr invoke implementation for reference with args
+ * @brief Constexpr invoke implementation for reference with args
  *
  */
 constexpr auto INVOKE(T Base::*pmf, RefWrap&& ref, Args&&... args)
@@ -118,7 +116,7 @@ constexpr auto INVOKE(T Base::*pmf, RefWrap&& ref, Args&&... args)
 
 template <class Base, class T, class Pointer, class... Args>
 /**
- * @brief constexpr invoke implementation for pointer with args
+ * @brief Constexpr invoke implementation for pointer with args
  *
  */
 constexpr auto INVOKE(T Base::*pmf, Pointer&& ptr, Args&&... args)
@@ -133,7 +131,7 @@ constexpr auto INVOKE(T Base::*pmf, Pointer&& ptr, Args&&... args)
 
 template <class Base, class T, class Derived>
 /**
- * @brief constexpr invoke implementation for derived class
+ * @brief Constexpr invoke implementation for derived class
  *
  */
 constexpr auto INVOKE(T Base::*pmd, Derived&& ref)
@@ -147,7 +145,7 @@ constexpr auto INVOKE(T Base::*pmd, Derived&& ref)
 
 template <class Base, class T, class RefWrap>
 /**
- * @brief constexpr invoke implementation for reference
+ * @brief Constexpr invoke implementation for reference
  *
  */
 constexpr auto INVOKE(T Base::*pmd, RefWrap&& ref)
@@ -161,7 +159,7 @@ constexpr auto INVOKE(T Base::*pmd, RefWrap&& ref)
 
 template <class Base, class T, class Pointer>
 /**
- * @brief constexpr invoke implementation for pointer
+ * @brief Constexpr invoke implementation for pointer
  *
  */
 constexpr auto INVOKE(T Base::*pmd, Pointer&& ptr)
@@ -176,7 +174,7 @@ constexpr auto INVOKE(T Base::*pmd, Pointer&& ptr)
 
 template <class F, class... Args>
 /**
- * @brief constexpr invoke implementation
+ * @brief Constexpr invoke implementation
  *
  * @param f function pointer
  * @param args function pointer args(with object pointer/reference)
@@ -192,13 +190,13 @@ constexpr auto INVOKE(F&& f, Args&&... args)
 
 template <class, class = void>
 /**
- * @brief constexpr result_of implementation for no types
+ * @brief Constexpr result_of implementation for no types
  *
  */
 struct result_of {};
 template <typename F, typename...Args>
 /**
- * @brief constexpr result_of implementation
+ * @brief Constexpr result_of implementation
  *
  */
 struct result_of<F(Args...),
@@ -212,7 +210,7 @@ struct result_of<F(Args...),
 
 template<::std::size_t Index, class A, class B>
 /**
- * @brief compare types index implementation
+ * @brief Compare types index implementation
  *
  * @param A type A
  * @param B type B
@@ -225,7 +223,7 @@ constexpr decltype(auto) compare_types_index_impl(A&&, B&&) {
 
 template <class T, class Tp, ::std::size_t... Indices>
 /**
- * @brief find same type of object in tuple implementation
+ * @brief Find same type of object in tuple implementation
  *
  * @param std::index_sequence<Indices...> index sequence
  * @param value object to find
@@ -237,7 +235,7 @@ constexpr decltype(auto) find_values_args_impl (::std::index_sequence< Indices..
 
 template<::std::size_t I, class F, class Tuple, class... Args>
 /**
- * @brief foreach implementation
+ * @brief Foreach implementation
  *
  * @param func function reference/lambda
  * @param tup object to iterate
@@ -253,7 +251,7 @@ constexpr decltype(auto) constexpr_foreach_index_impl (F&& func, Tuple&& tup, Ar
 
 template<::std::size_t... Indices, class F, class Tuple, class... Args>
 /**
- * @brief foreach implementation
+ * @brief Foreach implementation
  *
  * @param std::index_sequence<Indices...> index sequence
  * @param func function reference/lambda
@@ -266,7 +264,7 @@ constexpr decltype(auto) constexpr_foreach_seq_impl(::std::index_sequence<Indice
 
 template<std::size_t Offset, ::std::size_t... Indices>
 /**
- * @brief tuple range of integral constants implementation
+ * @brief Tuple range of integral constants implementation
  *
  * @param std::index_sequence<Indices...> index sequence
  */
