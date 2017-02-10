@@ -372,31 +372,36 @@ struct MetaClass {
             const Type*) \
         RETURN( ::boost::hana::make_tuple(__VA_ARGS__))
 
-#define TUPLE_APPEND2(STATE, COUNTER, ...) \
-    TUPLE_APPEND(STATE, COUNTER, __VA_ARGS__) \
-    constexpr static ::reflect::utils::counter<decltype(COUNTER(::reflect::utils::counter<>{}))::value+1u> COUNTER (::reflect::utils::counter<decltype(COUNTER(::reflect::utils::counter<>{}))::value+1u>);
+#define INCREASE_COUNTER(COUNTER) \
+    constexpr static ::reflect::utils::counter<decltype(COUNTER(::reflect::utils::counter<>{}))::value+1u> \
+                     COUNTER (::reflect::utils::counter<decltype(COUNTER(::reflect::utils::counter<>{}))::value+1u>);
 
 #define REFLECT_VARIABLE(NAME) \
-    TUPLE_APPEND (VariableNames,Variable_counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND2(VariablePtrs,Variable_counter,::reflect::info::make_mem_fn<decltype(NAME), Type>(&Type::NAME))
+    TUPLE_APPEND(VariableNames,Variable_counter,HANA_STR(#NAME)) \
+    TUPLE_APPEND(VariablePtrs,Variable_counter,::reflect::info::make_mem_fn<decltype(NAME), Type>(&Type::NAME)) \
+    INCREASE_COUNTER(Variable_counter)
 
 #define REFLECT_METHOD(NAME,...) \
-    TUPLE_APPEND (MethodNames,Method_counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND2(MethodPtrs,Method_counter,::reflect::info::make_mem_fn<::reflect::utils::constexpr_result_of_t<decltype(::reflect::detail::MethodInfo<Type, ##__VA_ARGS__>::get(&Type::NAME))\
-    (Type, ##__VA_ARGS__)> (__VA_ARGS__),Type, ##__VA_ARGS__>(&Type::NAME))
+    TUPLE_APPEND(MethodNames,Method_counter,HANA_STR(#NAME)) \
+    TUPLE_APPEND(MethodPtrs,Method_counter,::reflect::info::make_mem_fn<::reflect::utils::constexpr_result_of_t<decltype(::reflect::detail::MethodInfo<Type, ##__VA_ARGS__>::get(&Type::NAME))\
+    (Type, ##__VA_ARGS__)> (__VA_ARGS__),Type, ##__VA_ARGS__>(&Type::NAME)) \
+    INCREASE_COUNTER(Method_counter)
 
 #define REFLECT_STATIC_VARIABLE(NAME) \
-    TUPLE_APPEND (VariableNames,Variable_counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND2(VariablePtrs,Variable_counter,::reflect::info::make_static_member(&Type::NAME))
+    TUPLE_APPEND(VariableNames,Variable_counter,HANA_STR(#NAME)) \
+    TUPLE_APPEND(VariablePtrs,Variable_counter,::reflect::info::make_static_member(&Type::NAME)) \
+    INCREASE_COUNTER(Variable_counter)
 
 #define REFLECT_STATIC_METHOD(NAME,...) \
-    TUPLE_APPEND (MethodNames,Method_counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND2(MethodPtrs,Method_counter,::reflect::info::make_static_fn<::reflect::utils::constexpr_result_of_t<decltype(::reflect::detail::FunctionInfo<__VA_ARGS__>::get(&Type::NAME)) \
-    (__VA_ARGS__)>, ##__VA_ARGS__>(Type::NAME))
+    TUPLE_APPEND(MethodNames,Method_counter,HANA_STR(#NAME)) \
+    TUPLE_APPEND(MethodPtrs,Method_counter,::reflect::info::make_static_fn<::reflect::utils::constexpr_result_of_t<decltype(::reflect::detail::FunctionInfo<__VA_ARGS__>::get(&Type::NAME)) \
+    (__VA_ARGS__)>, ##__VA_ARGS__>(Type::NAME)) \
+    INCREASE_COUNTER(Method_counter)
 
 #define REFLECT_CONST_METHOD(NAME,...) \
-    TUPLE_APPEND (MethodNames,Method_counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND2(MethodPtrs,Method_counter,::reflect::info::make_mem_fn<::reflect::utils::constexpr_result_of_t<decltype(::reflect::detail::ConstMethodInfo<Type, ##__VA_ARGS__>::get(&Type::NAME)) \
-    (Type, ##__VA_ARGS__)>(__VA_ARGS__)const, Type, ##__VA_ARGS__>(&Type::NAME))
+    TUPLE_APPEND(MethodNames,Method_counter,HANA_STR(#NAME)) \
+    TUPLE_APPEND(MethodPtrs,Method_counter,::reflect::info::make_mem_fn<::reflect::utils::constexpr_result_of_t<decltype(::reflect::detail::ConstMethodInfo<Type, ##__VA_ARGS__>::get(&Type::NAME)) \
+    (Type, ##__VA_ARGS__)>(__VA_ARGS__)const, Type, ##__VA_ARGS__>(&Type::NAME)) \
+    INCREASE_COUNTER(Method_counter)
 
 #endif // META_INFORMATION_HPP
