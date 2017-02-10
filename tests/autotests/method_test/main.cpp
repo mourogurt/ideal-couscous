@@ -1,6 +1,5 @@
 #include <reflect.hpp>
 #include <QtTest>
-#include <iostream>
 
 class TestMethod : public QObject {
     Q_OBJECT
@@ -26,10 +25,7 @@ private slots:
     void const_method();
     void constexpr_method();
     void static_method();
-    void find_method();
     void try_invoke_method();
-    void method_name();
-    void methods_counter();
 };
 
 class Constexpr_class {
@@ -77,23 +73,9 @@ void TestMethod::static_method() {
     reflect::invoke_method(*this,boost::hana::size_c<3>,true);
 }
 
-void TestMethod::find_method() {
-    QCOMPARE(boost::hana::size(reflect::find_method_name<decltype(*this)>(HANA_STR("bool_method"))),boost::hana::size_c<3>);
-    QCOMPARE(boost::hana::size(reflect::find_method_name<decltype(*this)>(HANA_STR("static_method"))),boost::hana::size_c<1>);
-    QCOMPARE(boost::hana::size(reflect::find_method_name<decltype(*this)>(HANA_STR("nothing"))),boost::hana::size_c<0>);
-}
-
 void TestMethod::try_invoke_method() {
     QVERIFY(boost::hana::at_c<0>(reflect::try_invoke_method(*this,reflect::find_method_name<decltype(*this)>(HANA_STR("bool_method")))));
     QCOMPARE(reflect::check_invoke_method<decltype(*this)>(reflect::find_method_name<decltype(*this)>(HANA_STR("bool_method"))),::boost::hana::make_tuple(false,true,false));
-}
-
-void TestMethod::method_name() {
-    QCOMPARE(reflect::get_method_name<decltype (*this)>(::boost::hana::size_c<0>),HANA_STR("bool_method"));
-}
-
-void TestMethod::methods_counter() {
-    QVERIFY(reflect::get_methods_count<decltype(*this)>() == 5);
 }
 
 
