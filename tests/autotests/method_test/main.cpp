@@ -1,7 +1,7 @@
 #include <reflect.hpp>
 #include <QtTest>
 
-class TestMethod : public QObject {
+class MethodTest : public QObject {
     Q_OBJECT
     bool value {false};
     void bool_method (bool cond) { QVERIFY(cond); }
@@ -11,7 +11,7 @@ class TestMethod : public QObject {
     void const_method(bool cond) const { QVERIFY(cond); }
 
 public:
-    METACLASS_DEFINITION(TestMethod)
+    METACLASS_DEFINITION(MethodTest)
     REFLECT_METHOD(bool_method,bool)
     REFLECT_METHOD(bool_method)
     REFLECT_METHOD(bool_method,bool&)
@@ -20,7 +20,6 @@ public:
 private slots:
     void invoke_method();
     void get_method_value();
-    void get_method_types();
     void reference_method();
     void const_method();
     void constexpr_method();
@@ -36,48 +35,41 @@ public:
 
 };
 
-void TestMethod::invoke_method() {
+void MethodTest::invoke_method() {
     reflect::invoke_method(*this,boost::hana::size_c<0>,true);
 }
 
-void TestMethod::get_method_value() {
+void MethodTest::get_method_value() {
     QCOMPARE (reflect::invoke_method(*this,boost::hana::size_c<1>),true);
 }
 
-void TestMethod::get_method_types() {
-    QCOMPARE(typeid(reflect::method_arg_type_t<decltype (*this),0,0>),typeid(bool));
-    QCOMPARE(typeid(reflect::method_return_type_t<decltype (*this),1>),typeid(bool));
-    QCOMPARE(typeid(reflect::method_arg_type_t<decltype (*this),2,0>),typeid(std::decay_t<decltype(reflect::method_arg_type<decltype(*this)>(::boost::hana::size_c<2>,::boost::hana::size_c<0>))>::type));
-    QCOMPARE(typeid(reflect::method_return_type_t<decltype (*this),1>),typeid(decltype(reflect::method_return_type<decltype(*this)>(::boost::hana::size_c<1>))::type));
-}
-
-void TestMethod::reference_method() {
+void MethodTest::reference_method() {
     bool res = true;
     reflect::invoke_method(*this,boost::hana::size_c<2>,res);
     QCOMPARE (res,value);
 }
 
-void TestMethod::const_method() {
+void MethodTest::const_method() {
     reflect::invoke_method(*this,boost::hana::size_c<4>,true);
     const Constexpr_class obj;
     QVERIFY(reflect::invoke_method(obj,boost::hana::size_c<0>));
 }
 
-void TestMethod::constexpr_method() {
+void MethodTest::constexpr_method() {
     Constexpr_class obj;
     constexpr bool res = reflect::invoke_method(obj,boost::hana::size_c<0>);
     QVERIFY(res);
 }
 
-void TestMethod::static_method() {
-    reflect::invoke_method(*this,boost::hana::size_c<3>,true);
+void MethodTest::static_method() {
+    //reflect::invoke_method(*this,boost::hana::size_c<3>,true);
+    QVERIFY(false);
 }
 
-void TestMethod::try_invoke_method() {
-    QVERIFY(boost::hana::at_c<0>(reflect::try_invoke_method(*this,reflect::find_method_name<decltype(*this)>(HANA_STR("bool_method")))));
-    QCOMPARE(reflect::check_invoke_method<decltype(*this)>(reflect::find_method_name<decltype(*this)>(HANA_STR("bool_method"))),::boost::hana::make_tuple(false,true,false));
+void MethodTest::try_invoke_method() {
+    QVERIFY(boost::hana::at_c<0>(reflect::try_invoke_method(*this,reflect::find_method_index<Type>(HANA_STR("bool_method")))));
 }
 
 
-QTEST_MAIN(TestMethod)
+QTEST_MAIN(MethodTest)
 #include "main.moc"

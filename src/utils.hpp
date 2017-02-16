@@ -272,6 +272,11 @@ constexpr decltype (auto) generate_tuple_indices_seq_impl(::std::index_sequence<
     return ::boost::hana::tuple_c<std::size_t,Indices + Offset...>;
 }
 
+template <std::size_t... Indices, class Tuple, class IndexTuple>
+constexpr decltype (auto) copy_tuple_sequence_impl (::std::index_sequence<Indices...>&&, Tuple&& tup, IndexTuple&& seq_tup) {
+    return ::boost::hana::make_tuple(::boost::hana::at(tup,::boost::hana::at_c<Indices>(seq_tup))...);
+}
+
 }
 
 namespace utils {
@@ -350,14 +355,14 @@ using constexpr_result_of_t = typename constexpr_result_of<T>::type;
  * @brief Compile-time counter
  *
  */
-template<int N = 255> struct counter : public counter<N - 1> {
-    static constexpr int value = N; /**< value of counter */
+template<::std::size_t N = 255> struct counter : public counter<N - 1> {
+    static constexpr ::std::size_t value = N; /**< value of counter */
 };
 /**
  * @brief Zero counter
  *
  */
-template<> struct counter<0> { static constexpr int value = 0; };
+template<> struct counter<0> { static constexpr ::std::size_t value = 0; };
 
 template<class F, class Tuple, class... Args>
 /**
@@ -380,6 +385,11 @@ template <::std::size_t N, ::std::size_t Offset = 0>
  */
 constexpr decltype (auto) generate_tuple_indices() {
     return detail::generate_tuple_indices_seq_impl<Offset>(::std::make_index_sequence<N>());
+}
+
+template <class Tuple, class IndexTuple>
+constexpr decltype (auto) copy_tuple_sequence (Tuple&& tup, IndexTuple&& seq_tup) {
+    return detail::copy_tuple_sequence_impl(::std::make_index_sequence<decltype(::boost::hana::size(seq_tup))::value>(),std::forward<Tuple>(tup),std::forward<IndexTuple>(seq_tup));
 }
 
 }

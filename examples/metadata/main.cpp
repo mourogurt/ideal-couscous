@@ -60,7 +60,7 @@ void print_meta_information() {
         std::cout << "Class vars:\n";
         reflect::utils::for_each([&](auto&& item){
             std::cout << ::boost::hana::to<const char*>(reflect::get_variable_name<T>(item))
-                      << ";\tVariable type:\t" << type_id_with_cvr<reflect::variable_type_index_t<T,decltype(item)>>().pretty_name()
+                      << ";\tVariable type:\t" << type_id_with_cvr<decltype(reflect::get_variable<std::decay_t<decltype(item)>::value>(std::declval<T>()))>().pretty_name()
                       << std::endl;
         },reflect::utils::generate_tuple_indices<reflect::get_variables_count<T>()>());
         std::cout << std::endl;

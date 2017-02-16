@@ -55,19 +55,19 @@ struct Example6 {
 
 template <class T>
 void reflection_visitor_function (T&& var) {
-    if constexpr (reflect::find_variable_name<T>(HANA_STR("str_var")) != boost::hana::nothing) {
-        reflect::get_variable(var,reflect::find_variable_name<T>(HANA_STR("str_var"))) = "test";
+    if constexpr (reflect::find_variable_index<T>(HANA_STR("str_var")) != boost::hana::nothing) {
+        reflect::get_variable(var,reflect::find_variable_index<T>(HANA_STR("str_var"))) = "test";
     }
-    if constexpr (boost::hana::size(reflect::find_method_name<T>(HANA_STR("method"))) != boost::hana::size_c<0>) {
-        reflect::try_invoke_method(var,reflect::find_method_name<T>(HANA_STR("method")));
-        reflect::try_invoke_method(var,reflect::find_method_name<T>(HANA_STR("method")),"test");
+    if constexpr (boost::hana::size(reflect::find_method_index<T>(HANA_STR("method"))) != boost::hana::size_c<0>) {
+        reflect::try_invoke_method(var,reflect::find_method_index<T>(HANA_STR("method")));
+        reflect::try_invoke_method(var,reflect::find_method_index<T>(HANA_STR("method")),"test");
     }
-    if constexpr (boost::hana::size(reflect::find_method_name<T>(HANA_STR("another_method"))) != boost::hana::size_c<0>) {
-        reflect::try_invoke_method(var,reflect::find_method_name<T>(HANA_STR("another_method")));
-        reflect::try_invoke_method(var,reflect::find_method_name<T>(HANA_STR("another_method")),1);
+    if constexpr (boost::hana::size(reflect::find_method_index<T>(HANA_STR("another_method"))) != boost::hana::size_c<0>) {
+        reflect::try_invoke_method(var,reflect::find_method_index<T>(HANA_STR("another_method")));
+        reflect::try_invoke_method(var,reflect::find_method_index<T>(HANA_STR("another_method")),1);
     }
-    if constexpr (boost::hana::size(reflect::find_method_name<T>(HANA_STR("string_method"))) != boost::hana::size_c<0>) {
-        auto tup = reflect::try_invoke_method(var,reflect::find_method_name<T>(HANA_STR("string_method")));
+    if constexpr (boost::hana::size(reflect::find_method_index<T>(HANA_STR("string_method"))) != boost::hana::size_c<0>) {
+        auto tup = reflect::try_invoke_method(var,reflect::find_method_index<T>(HANA_STR("string_method")));
         std::cout << "string method: " << boost::hana::at_c<0>(tup) << std::endl;
     }
 }

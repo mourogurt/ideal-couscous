@@ -5,31 +5,9 @@
 
 namespace reflect {
 
+namespace info {
+
 namespace detail {
-
-template <class T, ::std::size_t... Indices>
-constexpr decltype (auto) vars_names_tuple (::std::index_sequence< Indices... >&&) noexcept {
-    constexpr auto res = utils::multiple_concat(VariableNames(utils::counter<Indices>{},static_cast<const T*>(nullptr))...);
-    return res;
-}
-
-template <class T, ::std::size_t... Indices>
-constexpr decltype (auto) methods_names_tuple (::std::index_sequence< Indices... >&&) noexcept {
-    constexpr auto res = utils::multiple_concat(MethodNames(utils::counter<Indices>{},static_cast<const T*>(nullptr))...);
-    return res;
-}
-
-template <class T, ::std::size_t... Indices>
-constexpr decltype (auto) vars_ptr_tuple (::std::index_sequence< Indices... >&&) noexcept {
-    constexpr auto res = utils::multiple_concat(VariablePtrs(utils::counter<Indices>{},static_cast<const T*>(nullptr))...);
-    return res;
-}
-
-template <class T, ::std::size_t... Indices>
-constexpr decltype (auto) methods_ptr_tuple (::std::index_sequence< Indices... >&&) noexcept {
-    constexpr auto res = utils::multiple_concat(MethodPtrs(utils::counter<Indices>{},static_cast<const T*>(nullptr))...);
-    return res;
-}
 
 template<class T, class... Args>
 struct MethodInfo {
@@ -81,8 +59,6 @@ constexpr bool is_suitable_types_impl () noexcept {
 }
 
 }
-
-namespace info {
 
 template< class Result, class Obj, class... Args >
 /**
@@ -341,18 +317,75 @@ constexpr bool is_suitable_types () noexcept {
     return detail::is_suitable_types_impl<typename Obj::arg_types,Args...>();
 }
 
-template <class T, typename ::std::enable_if_t<is_reflected_v<T>,bool> = 1>
+namespace detail {
+
+template <class T, ::std::size_t... Indices>
+constexpr decltype (auto) vars_names_tuple (::std::index_sequence<Indices... >&&) noexcept {
+    return utils::multiple_concat(variable_names(utils::counter<Indices>{},static_cast<const T*>(nullptr))...);
+}
+
+template <class T, ::std::size_t... Indices>
+constexpr decltype (auto) methods_names_tuple (::std::index_sequence<Indices... >&&) noexcept {
+    return utils::multiple_concat(method_names(utils::counter<Indices>{},static_cast<const T*>(nullptr))...);
+}
+
+template <class T, ::std::size_t... Indices>
+constexpr decltype (auto) vars_ptr_tuple (::std::index_sequence<Indices... >&&) noexcept {
+    return utils::multiple_concat(variable_ptrs(utils::counter<Indices>{},static_cast<const T*>(nullptr))...);
+}
+
+template <class T, ::std::size_t... Indices>
+constexpr decltype (auto) methods_ptr_tuple (::std::index_sequence<Indices... >&&) noexcept {
+    return utils::multiple_concat(method_ptrs(utils::counter<Indices>{},static_cast<const T*>(nullptr))...);
+}
+
+template <std::size_t Index, bool cond, class T>
+constexpr decltype (auto) get_is_static_index_impl (T&&) {
+    if constexpr (is_static_v<::std::decay_t<T>> == cond) {
+        return ::boost::hana::make_tuple(::boost::hana::size_c<Index>);
+    } else {
+        return ::boost::hana::make_tuple();
+    }
+}
+
+template <class T, ::std::size_t... Indices>
+constexpr decltype(auto) obj_vars_indices_tuple (::std::index_sequence<Indices... >&&) noexcept {
+    return utils::multiple_concat(get_is_static_index_impl<Indices,false>(::boost::hana::at_c<0>(variable_ptrs(utils::counter<Indices>{},static_cast<const T*>(nullptr))))...);
+}
+
+template <class T, ::std::size_t... Indices>
+constexpr decltype(auto) static_vars_indices_tuple (::std::index_sequence<Indices... >&&) noexcept {
+    return utils::multiple_concat(get_is_static_index_impl<Indices,true>(::boost::hana::at_c<0>(variable_ptrs(utils::counter<Indices>{},static_cast<const T*>(nullptr))))...);
+}
+
+template <class T, ::std::size_t... Indices>
+constexpr decltype(auto) obj_methods_indices_tuple (::std::index_sequence<Indices... >&&) noexcept {
+    return utils::multiple_concat(get_is_static_index_impl<Indices,false>(::boost::hana::at_c<0>(method_ptrs(utils::counter<Indices>{},static_cast<const T*>(nullptr))))...);
+}
+
+template <class T, ::std::size_t... Indices>
+constexpr decltype(auto) static_methods_indices_tuple (::std::index_sequence<Indices... >&&) noexcept {
+    return utils::multiple_concat(get_is_static_index_impl<Indices,true>(::boost::hana::at_c<0>(method_ptrs(utils::counter<Indices>{},static_cast<const T*>(nullptr))))...);
+}
+}
+
+template <class T>
 /**
  * @brief Class that stores meta-information about T
  *
  */
 struct MetaClass {
     static constexpr auto name              {HANA_STR(ClassName(static_cast<const T*>(nullptr)))}; /**< compile-time string of class name */
-    static constexpr auto vars_names        {detail::vars_names_tuple<T>(::std::make_index_sequence<decltype(T::Variable_counter(utils::counter<>{}))::value>{})}; /**< tuple of class variable names */
-    static constexpr auto methods_names     {detail::methods_names_tuple<T>(::std::make_index_sequence<decltype(T::Method_counter(utils::counter<>{}))::value>{})}; /**< tuple of class method names  */
-    static constexpr auto vars_metadata     {detail::vars_ptr_tuple<T>(::std::make_index_sequence<decltype(T::Variable_counter(utils::counter<>{}))::value>{})}; /**< tuple of class variable pointers */
-    static constexpr auto methods_metadata  {detail::methods_ptr_tuple<T>(::std::make_index_sequence<decltype(T::Method_counter(utils::counter<>{}))::value>{})}; /**< tuple of class method pointers */
+    static constexpr auto vars_names        {detail::vars_names_tuple<T>(::std::make_index_sequence<decltype(T::variable_counter(utils::counter<>{}))::value>{})}; /**< tuple of all variable names */
+    static constexpr auto methods_names     {detail::methods_names_tuple<T>(::std::make_index_sequence<decltype(T::method_counter(utils::counter<>{}))::value>{})}; /**< tuple of all method names  */
+    static constexpr auto vars_metadata     {detail::vars_ptr_tuple<T>(::std::make_index_sequence<decltype(T::variable_counter(utils::counter<>{}))::value>{})}; /**< tuple of all variable pointers */
+    static constexpr auto methods_metadata  {detail::methods_ptr_tuple<T>(::std::make_index_sequence<decltype(T::method_counter(utils::counter<>{}))::value>{})}; /**< tuple of all method pointers */
+    static constexpr auto vars_obj_indices {detail::obj_vars_indices_tuple<T>(::std::make_index_sequence<decltype(T::variable_counter(utils::counter<>{}))::value>{})};
+    static constexpr auto vars_static_indices  {detail::static_vars_indices_tuple<T>(::std::make_index_sequence<decltype(T::variable_counter(utils::counter<>{}))::value>{})};
+    static constexpr auto methods_obj_indices  {detail::obj_methods_indices_tuple<T>(::std::make_index_sequence<decltype(T::method_counter(utils::counter<>{}))::value>{})};
+    static constexpr auto methods_static_indices  {detail::static_methods_indices_tuple<T>(::std::make_index_sequence<decltype(T::method_counter(utils::counter<>{}))::value>{})};
 };
+
 
 }
 
@@ -361,47 +394,45 @@ struct MetaClass {
 #define METACLASS_DEFINITION(TYPE) \
         using Type = TYPE; \
         static constexpr auto is_reflected () {return std::true_type();} \
-        friend constexpr auto ClassName(const Type*) RETURN(#TYPE)\
-        constexpr static ::reflect::utils::counter<0> Variable_counter (::reflect::utils::counter<0>);\
-        constexpr static ::reflect::utils::counter<0> Method_counter (::reflect::utils::counter<0>);
-
-#define RETURN(R) -> decltype(R) { return R; }
+        friend constexpr auto ClassName(const Type*) -> decltype (#TYPE) { return #TYPE; } \
+        constexpr static ::reflect::utils::counter<0> variable_counter (::reflect::utils::counter<0>); \
+        constexpr static ::reflect::utils::counter<0> method_counter (::reflect::utils::counter<0>);
 
 #define TUPLE_APPEND(STATE, COUNTER, ...) \
     friend constexpr auto STATE(::reflect::utils::counter<decltype(COUNTER(::reflect::utils::counter<>{}))::value>, \
             const Type*) \
-        RETURN( ::boost::hana::make_tuple(__VA_ARGS__))
+        { return ::boost::hana::make_tuple(__VA_ARGS__); }
 
 #define INCREASE_COUNTER(COUNTER) \
     constexpr static ::reflect::utils::counter<decltype(COUNTER(::reflect::utils::counter<>{}))::value+1u> \
                      COUNTER (::reflect::utils::counter<decltype(COUNTER(::reflect::utils::counter<>{}))::value+1u>);
 
 #define REFLECT_VARIABLE(NAME) \
-    TUPLE_APPEND(VariableNames,Variable_counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND(VariablePtrs,Variable_counter,::reflect::info::make_mem_fn<decltype(NAME), Type>(&Type::NAME)) \
-    INCREASE_COUNTER(Variable_counter)
+    TUPLE_APPEND(variable_names,variable_counter,HANA_STR(#NAME)) \
+    TUPLE_APPEND(variable_ptrs,variable_counter,::reflect::info::make_mem_fn<decltype(NAME), Type>(&Type::NAME))\
+    INCREASE_COUNTER(variable_counter)
 
 #define REFLECT_METHOD(NAME,...) \
-    TUPLE_APPEND(MethodNames,Method_counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND(MethodPtrs,Method_counter,::reflect::info::make_mem_fn<::reflect::utils::constexpr_result_of_t<decltype(::reflect::detail::MethodInfo<Type, ##__VA_ARGS__>::get(&Type::NAME))\
+    TUPLE_APPEND(method_names,method_counter,HANA_STR(#NAME)) \
+    TUPLE_APPEND(method_ptrs,method_counter,::reflect::info::make_mem_fn<::reflect::utils::constexpr_result_of_t<decltype(::reflect::info::detail::MethodInfo<Type, ##__VA_ARGS__>::get(&Type::NAME))\
     (Type, ##__VA_ARGS__)> (__VA_ARGS__),Type, ##__VA_ARGS__>(&Type::NAME)) \
-    INCREASE_COUNTER(Method_counter)
+    INCREASE_COUNTER(method_counter)
 
 #define REFLECT_STATIC_VARIABLE(NAME) \
-    TUPLE_APPEND(VariableNames,Variable_counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND(VariablePtrs,Variable_counter,::reflect::info::make_static_member(&Type::NAME)) \
-    INCREASE_COUNTER(Variable_counter)
+    TUPLE_APPEND(variable_names,variable_counter,HANA_STR(#NAME)) \
+    TUPLE_APPEND(variable_ptrs,variable_counter,::reflect::info::make_static_member(&Type::NAME)) \
+    INCREASE_COUNTER(variable_counter)
 
 #define REFLECT_STATIC_METHOD(NAME,...) \
-    TUPLE_APPEND(MethodNames,Method_counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND(MethodPtrs,Method_counter,::reflect::info::make_static_fn<::reflect::utils::constexpr_result_of_t<decltype(::reflect::detail::FunctionInfo<__VA_ARGS__>::get(&Type::NAME)) \
+    TUPLE_APPEND(method_names,method_counter,HANA_STR(#NAME)) \
+    TUPLE_APPEND(method_ptrs,method_counter,::reflect::info::make_static_fn<::reflect::utils::constexpr_result_of_t<decltype(::reflect::info::detail::FunctionInfo<__VA_ARGS__>::get(&Type::NAME)) \
     (__VA_ARGS__)>, ##__VA_ARGS__>(Type::NAME)) \
-    INCREASE_COUNTER(Method_counter)
+    INCREASE_COUNTER(method_counter)
 
 #define REFLECT_CONST_METHOD(NAME,...) \
-    TUPLE_APPEND(MethodNames,Method_counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND(MethodPtrs,Method_counter,::reflect::info::make_mem_fn<::reflect::utils::constexpr_result_of_t<decltype(::reflect::detail::ConstMethodInfo<Type, ##__VA_ARGS__>::get(&Type::NAME)) \
+    TUPLE_APPEND(method_names,method_counter,HANA_STR(#NAME)) \
+    TUPLE_APPEND(method_ptrs,method_counter,::reflect::info::make_mem_fn<::reflect::utils::constexpr_result_of_t<decltype(::reflect::info::detail::ConstMethodInfo<Type, ##__VA_ARGS__>::get(&Type::NAME)) \
     (Type, ##__VA_ARGS__)>(__VA_ARGS__)const, Type, ##__VA_ARGS__>(&Type::NAME)) \
-    INCREASE_COUNTER(Method_counter)
+    INCREASE_COUNTER(method_counter)
 
 #endif // META_INFORMATION_HPP
