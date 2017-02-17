@@ -16,10 +16,9 @@ constexpr decltype (auto) check_invoke_method_index_impl () {
         return ::boost::hana::make_tuple(false);
 }
 
-template<class T, class... Args, class Tuple, ::std::size_t ...Indices>
+template<class T, class Metadata, class... Args, class Tuple, ::std::size_t ...Indices>
 constexpr decltype (auto) check_invoke_method_impl (Tuple&& tuple, ::std::index_sequence<Indices...>&&) {
-    using tmp = decltype(reflect::info::MetaClass<::std::decay_t<T>>::methods_metadata);
-    return utils::multiple_concat(check_invoke_method_index_impl<T,decltype(::boost::hana::at_c<Indices>(tuple)),tmp,Args...>()...);
+    return utils::multiple_concat(check_invoke_method_index_impl<T,decltype(::boost::hana::at_c<Indices>(tuple)),Metadata,Args...>()...);
 }
 
 template <class... Args> struct get_types {constexpr static auto value {::boost::hana::tuple_t<Args...>};};
@@ -144,6 +143,44 @@ constexpr decltype(auto) find_method_index (T&& name) {
 
 template<class T, class... Args, class IndTuple>
 /**
+ * @brief Checks whether the object methods can be invoked with given arguments
+ *
+ * @param indices tuple(boost::hana::size_t)
+ * @param args method arguments
+ * @return boost::hana::tuple of bools or boost::hana::nothing if ::boost::hana::nothing as indices or if size of indices == 0
+ */
+constexpr decltype (auto) check_invoke_obj_method (IndTuple&& indices) {
+    if constexpr (::std::is_same_v<::std::decay_t<IndTuple>,decltype(::boost::hana::nothing)>) return ::boost::hana::nothing;
+    constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<IndTuple>(indices)))::value;
+    if constexpr (N != 0) {
+        using tmp = decltype(utils::copy_tuple_sequence(info::MetaClass<typename ::std::decay_t<T>>::methods_metadata,
+                             info::MetaClass<typename ::std::decay_t<T>>::methods_obj_indices));
+        return detail::check_invoke_method_impl<T,tmp,Args...>(::std::forward<IndTuple>(indices),::std::make_index_sequence<N>());
+    }
+    else return ::boost::hana::nothing;
+}
+
+template<class T, class... Args, class IndTuple>
+/**
+ * @brief Checks whether the static methods can be invoked with given arguments
+ *
+ * @param indices tuple(boost::hana::size_t)
+ * @param args method arguments
+ * @return boost::hana::tuple of bools or boost::hana::nothing if ::boost::hana::nothing as indices or if size of indices == 0
+ */
+constexpr decltype (auto) check_invoke_static_method (IndTuple&& indices) {
+    if constexpr (::std::is_same_v<::std::decay_t<IndTuple>,decltype(::boost::hana::nothing)>) return ::boost::hana::nothing;
+    constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<IndTuple>(indices)))::value;
+    if constexpr (N != 0) {
+        using tmp = decltype(utils::copy_tuple_sequence(info::MetaClass<typename ::std::decay_t<T>>::methods_metadata,
+                             info::MetaClass<typename ::std::decay_t<T>>::methods_static_indices));
+        return detail::check_invoke_method_impl<T,tmp,Args...>(::std::forward<IndTuple>(indices),::std::make_index_sequence<N>());
+    }
+    else return ::boost::hana::nothing;
+}
+
+template<class T, class... Args, class IndTuple>
+/**
  * @brief Checks whether the methods can be invoked with given arguments
  *
  * @param indices tuple(boost::hana::size_t)
@@ -153,8 +190,10 @@ template<class T, class... Args, class IndTuple>
 constexpr decltype (auto) check_invoke_method (IndTuple&& indices) {
     if constexpr (::std::is_same_v<::std::decay_t<IndTuple>,decltype(::boost::hana::nothing)>) return ::boost::hana::nothing;
     constexpr ::std::size_t N = decltype(::boost::hana::size(::std::forward<IndTuple>(indices)))::value;
-    if constexpr (N != 0)
-        return detail::check_invoke_method_impl<T,Args...>(::std::forward<IndTuple>(indices),::std::make_index_sequence<N>());
+    if constexpr (N != 0) {
+        using tmp = decltype(reflect::info::MetaClass<::std::decay_t<T>>::methods_metadata);
+        return detail::check_invoke_method_impl<T,tmp,Args...>(::std::forward<IndTuple>(indices),::std::make_index_sequence<N>());
+    }
     else return ::boost::hana::nothing;
 }
 
