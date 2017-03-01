@@ -24,7 +24,6 @@ int main() {
     std::cout << boost::hana::to<const char*>(reflect::utils::get_class_name<Obj2>()) << std::endl;
     std::cout << reflect::utils::get_count<Obj>() << std::endl;
     std::cout << reflect::utils::get_count<Obj2>() << std::endl;
-    //std::cout << boost::hana::to<const char*>(reflect::utils::get_name<Obj)
     /*
     std::cout << boost::hana::at_c<0>(reflect::info::MetaClass<Obj::MetaInfo_type>::metadata)(o1) << std::endl;
     std::cout << boost::hana::at_c<0>(reflect::info::MetaClass<Obj2::MetaInfo_type>::metadata)(o2) << std::endl;

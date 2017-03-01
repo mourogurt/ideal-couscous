@@ -277,6 +277,22 @@ constexpr decltype (auto) copy_tuple_sequence_impl (::std::index_sequence<Indice
     return ::boost::hana::make_tuple(::boost::hana::at(tup,::boost::hana::at_c<Indices>(seq_tup))...);
 }
 
+template <class T, ::std::size_t... Indices>
+constexpr decltype (auto) count_nonzero_chars_impl(std::index_sequence<Indices...>&&,const T& str) {
+    return (... + ((str[boost::hana::size_c<Indices>] != boost::hana::char_c<0>)? 1 : 0));
+}
+
+template <class T>
+constexpr decltype (auto) real_string_size_impl(const T& str) {
+    constexpr ::std::size_t N = decltype(::boost::hana::size(str))::value;
+    return count_nonzero_chars_impl(::std::make_index_sequence<N>(),str);
+}
+
+template <char... s>
+constexpr decltype (auto) copy_string_from_tupl_impl(const boost::hana::tuple<boost::hana::char_<s>...>&) {
+    return boost::hana::string_c<s...>;
+}
+
 }
 
 namespace metautils {
@@ -392,6 +408,12 @@ constexpr decltype (auto) copy_tuple_sequence (Tuple&& tup, IndexTuple&& seq_tup
     return detail::copy_tuple_sequence_impl(::std::make_index_sequence<decltype(::boost::hana::size(seq_tup))::value>(),std::forward<Tuple>(tup),std::forward<IndexTuple>(seq_tup));
 }
 
+template <class T>
+constexpr decltype (auto) cut_string (const T str) {
+    return detail::copy_string_from_tupl_impl(boost::hana::drop_back(boost::hana::unpack(str,boost::hana::make<boost::hana::tuple_tag>),
+                                                (boost::hana::size(str) - boost::hana::size_c<detail::real_string_size_impl(str)>)));
+}
+
 }
 
 }
@@ -400,6 +422,6 @@ constexpr decltype (auto) copy_tuple_sequence (Tuple&& tup, IndexTuple&& seq_tup
 #define  CHECK_STR_CHAR(_, i, str) (sizeof(str) > (i) ? str[(i)] : 0),
 #define CT_STR(str) BOOST_PP_REPEAT(STRING_MAXLEN, CHECK_STR_CHAR,str) 0
 
-#define HANA_STR(str) ::boost::hana::string_c<CT_STR(str) > /**<constexpr compile-time string */
+#define HANA_STR(str) reflect::metautils::cut_string(::boost::hana::string_c<CT_STR(str) >) /**<constexpr compile-time string */
 
 #endif // UTILS_HPP
