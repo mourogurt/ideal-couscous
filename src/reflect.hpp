@@ -1,7 +1,10 @@
 #ifndef META_UTILS_HPP
 #define META_UTILS_HPP
-#include "reflect_metadata.hpp"
-#include "reflect_invokes.hpp"
+
+#include "reflect_utils/reflect_metadata.hpp"
+#include "reflect_information/reflect_information.hpp"
+#include "meta_utils/utils.hpp"
+#include "reflect_utils/reflect_invokes.hpp"
 
 /**
  * @brief todo list for reflection
@@ -22,11 +25,8 @@
  * @todo Polymorphism
  */
 namespace reflect {
-//Some helpers that depends on invokes and metadata go there
-template< class T, ::std::size_t I>
-using variable_type_t = decltype (get_variable<I>(::std::declval<T>()));
-template< class T, class I>
-using variable_type_index_t = decltype (get_variable(::std::declval<T>(),::std::declval<I>()));
+using All = info::DefaultIndexGenerator;
+using ObjVar = info::ObjVariableIndexGenerator;
 }
 
 #endif // UTILS_HPP

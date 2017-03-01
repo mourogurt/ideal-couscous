@@ -5,7 +5,10 @@ Product {
     cpp.cxxLanguageVersion: "c++1z"
     files: [
         "*.hpp",
-        "*.cpp"
+        "meta_utils/*",
+        "reflect_information/*",
+        "reflect_information/variables/*",
+        "reflect_utils/*"
     ]
     Depends { name: "cpp" }
     Export {

@@ -33,7 +33,7 @@ constexpr bool conjunction_v = conjunction<Args...>::value;
 
 namespace reflect {
 
-namespace utils {
+namespace metautils {
 
 /**
  * @brief Concatenating multiple tuples into one
@@ -108,7 +108,7 @@ template <class Base, class T, class RefWrap, class... Args>
 constexpr auto INVOKE(T Base::*pmf, RefWrap&& ref, Args&&... args)
     noexcept(noexcept((ref.get().*pmf)(::std::forward<Args>(args)...)))
  -> std::enable_if_t<::std::is_function_v<T> &&
-                     utils::is_reference_wrapper_v<::std::decay_t<RefWrap>>,
+                     metautils::is_reference_wrapper_v<::std::decay_t<RefWrap>>,
     decltype((ref.get().*pmf)(::std::forward<Args>(args)...))>
 {
       return (ref.get().*pmf)(::std::forward<Args>(args)...);
@@ -122,7 +122,7 @@ template <class Base, class T, class Pointer, class... Args>
 constexpr auto INVOKE(T Base::*pmf, Pointer&& ptr, Args&&... args)
     noexcept(noexcept(((*::std::forward<Pointer>(ptr)).*pmf)(::std::forward<Args>(args)...)))
  -> std::enable_if_t<::std::is_function_v<T> &&
-                     !utils::is_reference_wrapper_v<::std::decay_t<Pointer>> &&
+                     !metautils::is_reference_wrapper_v<::std::decay_t<Pointer>> &&
                      !::std::is_base_of_v<Base, ::std::decay_t<Pointer>>,
     decltype(((*::std::forward<Pointer>(ptr)).*pmf)(::std::forward<Args>(args)...))>
 {
@@ -151,7 +151,7 @@ template <class Base, class T, class RefWrap>
 constexpr auto INVOKE(T Base::*pmd, RefWrap&& ref)
     noexcept(noexcept(ref.get().*pmd))
  -> std::enable_if_t<!::std::is_function_v<T> &&
-                     utils::is_reference_wrapper_v<::std::decay_t<RefWrap>>,
+                     metautils::is_reference_wrapper_v<::std::decay_t<RefWrap>>,
     decltype(ref.get().*pmd)>
 {
       return ref.get().*pmd;
@@ -165,7 +165,7 @@ template <class Base, class T, class Pointer>
 constexpr auto INVOKE(T Base::*pmd, Pointer&& ptr)
     noexcept(noexcept((*::std::forward<Pointer>(ptr)).*pmd))
  -> std::enable_if_t<!::std::is_function_v<T> &&
-                     !utils::is_reference_wrapper_v<::std::decay_t<Pointer>> &&
+                     !metautils::is_reference_wrapper_v<::std::decay_t<Pointer>> &&
                      !::std::is_base_of_v<Base, ::std::decay_t<Pointer>>,
     decltype((*::std::forward<Pointer>(ptr)).*pmd)>
 {
@@ -230,7 +230,7 @@ template <class T, class Tp, ::std::size_t... Indices>
  * @param tup tuple where to find
  */
 constexpr decltype(auto) find_values_args_impl (::std::index_sequence< Indices... >&&, T&& value, Tp&& tup) {
-    return utils::multiple_concat(detail::compare_types_index_impl<Indices>(::std::forward<T>(value),::boost::hana::at_c<Indices>(::std::forward<Tp>(tup)))...);
+    return metautils::multiple_concat(detail::compare_types_index_impl<Indices>(::std::forward<T>(value),::boost::hana::at_c<Indices>(::std::forward<Tp>(tup)))...);
 }
 
 template<::std::size_t I, class F, class Tuple, class... Args>
@@ -259,7 +259,7 @@ template<::std::size_t... Indices, class F, class Tuple, class... Args>
  * @param args aditional argument passing to function
  */
 constexpr decltype(auto) constexpr_foreach_seq_impl(::std::index_sequence<Indices...>&&, F&& func, Tuple&& tup, Args&&... args) {
-    return utils::multiple_concat(constexpr_foreach_index_impl<Indices>(::std::forward<F>(func),::std::forward<Tuple>(tup),::std::forward<Args>(args)...)...);
+    return metautils::multiple_concat(constexpr_foreach_index_impl<Indices>(::std::forward<F>(func),::std::forward<Tuple>(tup),::std::forward<Args>(args)...)...);
 }
 
 template<std::size_t Offset, ::std::size_t... Indices>
@@ -279,7 +279,7 @@ constexpr decltype (auto) copy_tuple_sequence_impl (::std::index_sequence<Indice
 
 }
 
-namespace utils {
+namespace metautils {
 
 template<class A, class B>
 /**

@@ -3,14 +3,14 @@
 
 class VariableTest : public QObject {
     Q_OBJECT
-    int var {1};
-    const int const_var {2};
-    static int static_var;
+    //int var {1};
+    //const int const_var {2};
+    //static int static_var;
 public:
-    METACLASS_DEFINITION(VariableTest)
-    REFLECT_VARIABLE(var)
-    REFLECT_VARIABLE(const_var)
-    REFLECT_STATIC_VARIABLE(static_var)
+//    METACLASS_DEFINITION(VariableTest)
+//    REFLECT_VARIABLE(var)
+//    REFLECT_VARIABLE(const_var)
+//    REFLECT_STATIC_VARIABLE(static_var)
 
 private slots:
     void get_variable();
@@ -19,26 +19,30 @@ private slots:
     void static_variable();
 };
 
-int VariableTest::static_var = 3;
+//int VariableTest::static_var = 3;
 
 void VariableTest::get_variable() {
-    QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<0>),1);
-    QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<1>),2);
+    QVERIFY(false);
+//    QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<0>),1);
+//    QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<1>),2);
 }
 
 void VariableTest::set_variable() {
-    reflect::get_variable(*this,boost::hana::size_c<0>) = 0;
-    QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<0>),0);
+    QVERIFY(false);
+//    reflect::get_variable(*this,boost::hana::size_c<0>) = 0;
+//    QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<0>),0);
 }
 
 void VariableTest::variable_type() {
-    QCOMPARE(typeid(reflect::get_variable(*this,boost::hana::size_c<0>)),typeid(int));
-    QCOMPARE(typeid(reflect::get_variable(*this,boost::hana::size_c<1>)),typeid(const int));
+    QVERIFY(false);
+//    QCOMPARE(typeid(reflect::get_variable(*this,boost::hana::size_c<0>)),typeid(int));
+//    QCOMPARE(typeid(reflect::get_variable(*this,boost::hana::size_c<1>)),typeid(const int));
 }
 
 void VariableTest::static_variable() {
-    //QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<2>),3);
     QVERIFY(false);
+    //QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<2>),3);
+//    QVERIFY(false);
 }
 
 QTEST_MAIN(VariableTest)

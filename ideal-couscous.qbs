@@ -9,7 +9,6 @@ Project {
     references: [
         "src/src.qbs",
         "tests/tests.qbs",
-        "examples/examples.qbs",
         "docs/docs.qbs"
     ]
     AutotestRunner {
