@@ -101,7 +101,7 @@ void MetadataTest::counter_vars() {
 }
 
 void MetadataTest::counter_obj_method() {
-    auto bool_tup = reflect::metautils::for_each([this](auto&& name) {
+    auto tuple = reflect::metautils::for_each([this](auto&& name) {
         return reflect::utils::find_name<Type,reflect::ObjVars>(name);
     },boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2")));
 }

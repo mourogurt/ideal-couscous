@@ -217,7 +217,7 @@ template<::std::size_t Index, class A, class B>
  * @return tuple of index if A and B same type or empty tuple
  */
 constexpr decltype(auto) compare_types_index_impl(A&&, B&&) {
-    if constexpr (::std::is_same_v<A,B>) return ::boost::hana::tuple_c<std::size_t,Index>;
+    if constexpr (::std::is_same_v<::std::decay_t<A>,::std::decay_t<B>>) return ::boost::hana::tuple_c<std::size_t,Index>;
     else return ::boost::hana::make_tuple();
 }
 
