@@ -315,7 +315,7 @@ template<class T, class ... Args>
  * @param tup tuple where to find
  * @return Tuple of integral constants, which are indexes of tuple elements with same type
  */
-constexpr decltype(auto) find_values (T&& value, ::boost::hana::tuple<Args...>&&  tup) {
+constexpr decltype(auto) find_value_types (T&& value, ::boost::hana::tuple<Args...>&&  tup) {
     return  detail::find_values_args_impl(::std::make_index_sequence<sizeof...(Args)>(),::std::forward<T>(value),::std::forward<::boost::hana::tuple<Args...>>(tup));
 }
 
@@ -327,7 +327,7 @@ template<class T, class ... Args>
  * @param tup Tuple where to find
  * @return tuple of integral constants, which are indexes of tuple elements with same type
  */
-constexpr decltype(auto) find_values (T const& value, ::boost::hana::tuple<Args...> const&  tup) {
+constexpr decltype(auto) find_value_types (T const& value, ::boost::hana::tuple<Args...> const&  tup) {
     return  detail::find_values_args_impl(::std::make_index_sequence<sizeof...(Args)>(),value,tup);
 }
 
@@ -393,14 +393,14 @@ constexpr decltype(auto) for_each(F&& func, Tuple&& tup, Args&&... args) {
     return detail::constexpr_foreach_seq_impl(::std::make_index_sequence<decltype(::boost::hana::size(tup))::value>(),::std::forward<F>(func),::std::forward<Tuple>(tup),::std::forward<Args>(args)...);
 }
 
-template <::std::size_t N, ::std::size_t Offset = 0>
+template <class N, class Offset = ::boost::hana::size_t<0>>
 /**
  * @brief Generate tuple integral constants from [Offset; N+Offset)
  * @return Ruple of intergral constants
  *
  */
 constexpr decltype (auto) generate_tuple_indices() {
-    return detail::generate_tuple_indices_seq_impl<Offset>(::std::make_index_sequence<N>());
+    return detail::generate_tuple_indices_seq_impl<::std::decay_t<Offset>::value>(::std::make_index_sequence<::std::decay_t<N>::value>());
 }
 
 template <class Tuple, class IndexTuple>
@@ -409,7 +409,7 @@ constexpr decltype (auto) copy_tuple_sequence (Tuple&& tup, IndexTuple&& seq_tup
 }
 
 template <class T>
-constexpr decltype (auto) cut_string (const T str) {
+constexpr decltype (auto) remove_zeros_from_ct_string (const T str) {
     return detail::copy_string_from_tupl_impl(boost::hana::drop_back(boost::hana::unpack(str,boost::hana::make<boost::hana::tuple_tag>),
                                                 (boost::hana::size(str) - boost::hana::size_c<detail::real_string_size_impl(str)>)));
 }
@@ -422,6 +422,6 @@ constexpr decltype (auto) cut_string (const T str) {
 #define  CHECK_STR_CHAR(_, i, str) (sizeof(str) > (i) ? str[(i)] : 0),
 #define CT_STR(str) BOOST_PP_REPEAT(STRING_MAXLEN, CHECK_STR_CHAR,str) 0
 
-#define HANA_STR(str) reflect::metautils::cut_string(::boost::hana::string_c<CT_STR(str) >) /**<constexpr compile-time string */
+#define HANA_STR(str) reflect::metautils::remove_zeros_from_ct_string(::boost::hana::string_c<CT_STR(str) >) /**<constexpr compile-time string */
 
 #endif // UTILS_HPP

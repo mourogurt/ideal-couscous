@@ -2,6 +2,7 @@
 #define REFLECT_INFORMATION_VARIABLE_HPP
 
 #include "../../meta_utils/utils.hpp"
+#include "../reflect_information_static_common.hpp"
 
 namespace reflect {
 
@@ -25,27 +26,24 @@ namespace detail {
 
 }
 
-class ObjVariableIndexGenerator final {
+template <class ParentGenerator, bool condition = true>
 
+class VariableIndexGenerator final {
     template <class Item, std::size_t Index>
     constexpr static decltype (auto) check_metadata_variable () {
-        if constexpr (is_variable_v<::std::decay_t<Item>>) return ::boost::hana::make_tuple(::boost::hana::size_c<Index>);
+        if constexpr (is_variable_v<::std::decay_t<Item>> == condition) return ::boost::hana::make_tuple(::boost::hana::size_c<Index>);
         else return ::boost::hana::make_tuple();
     }
 
     template <class Tuple, ::std::size_t... Indices>
-    constexpr static decltype (auto) generate_impl (::std::index_sequence<Indices...>&&) {
+    constexpr static decltype (auto) generate_impl (const ::boost::hana::tuple<::boost::hana::size_t<Indices>...>&) {
         return metautils::multiple_concat(check_metadata_variable<decltype (::boost::hana::at_c<Indices>(::std::declval<Tuple>())),Indices>()...);
     }
-
 public:
-
     template <class Tuple>
     constexpr static decltype (auto) generate () {
-        constexpr std::size_t N = ::std::decay_t<decltype(::boost::hana::size(::std::declval<Tuple>()))>::value;
-        return generate_impl<Tuple>(::std::make_index_sequence<N>());
+        return generate_impl<Tuple>(ParentGenerator::template generate<Tuple>());
     }
-
 };
 
 template< class Result, class Obj>
@@ -112,6 +110,57 @@ public:
     }
 };
 
+template <class Obj>
+/**
+ * @brief Pointer to static variable container
+ *
+ */
+class static_var_t final {
+    Obj* p; /**< Pointer */
+public:
+    /**
+     * @brief Pointer type
+     *
+     */
+    using type = Obj*;
+    /**
+     * @brief Tuple pointer type (Needed to unify all pointer structs)
+     *
+     */
+    using arg_types = ::boost::hana::tuple<Obj>;
+    /**
+     * @brief Object of pointer type
+     *
+     */
+    using return_type = Obj;
+    /**
+     * @brief method that indicates that the pointer - variable
+     *
+     * @return std::true_type
+     */
+    static constexpr auto is_variable () {return std::true_type();}
+    /**
+     * @brief method that indicates that the pointer - static
+     *
+     * @return std::true_type
+     */
+    static constexpr auto is_static () {return std::true_type();}
+    /**
+     * @brief Constexpr constructor
+     *
+     * @param p pointer
+     */
+    constexpr static_var_t(type p) noexcept : p(p) {}
+    /**
+     * @brief Dereference of pointer
+     *
+     * @return object of static_var_t::return_type
+     */
+    constexpr decltype(auto) operator()() const noexcept {
+        return *p;
+    }
+};
+
 template< class R, class T  >
 /**
  * @brief Create obj_var_t
@@ -124,6 +173,18 @@ constexpr auto make_obj_var(R T::* pm)
     return {pm};
 }
 
+template <class T>
+/**
+ * @brief Create static_var_t
+ *
+ * @param pm pointer
+ * @return static_var_t<T>
+ */
+constexpr auto make_static_var (T* pm)
+ -> static_var_t<T> {
+    return {pm};
+}
+
 }
 
 }
@@ -131,6 +192,11 @@ constexpr auto make_obj_var(R T::* pm)
 #define REFLECT_OBJ_VARIABLE(NAME) \
     TUPLE_APPEND(names_state,counter,HANA_STR(#NAME)) \
     TUPLE_APPEND(metadata_state,counter,::reflect::info::make_obj_var(&Type::NAME))\
+    INCREASE_COUNTER(counter)
+
+#define REFLECT_STATIC_VARIABLE(NAME) \
+    TUPLE_APPEND(names_state,counter,HANA_STR(#NAME)) \
+    TUPLE_APPEND(metadata_state,counter,::reflect::info::make_static_var(&Type::NAME)) \
     INCREASE_COUNTER(counter)
 
 #endif // REFLECT_INFORMATION_VARIABLE_HPP

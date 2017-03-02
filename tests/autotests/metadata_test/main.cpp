@@ -1,4 +1,5 @@
 #include <reflect.hpp>
+#include <iostream>
 #include <QtTest>
 
 class MetadataTest : public QObject {
@@ -42,24 +43,34 @@ private slots:
 META_INFO(MetadataTest)
 REFLECT_OBJ_VARIABLE(var1)
 REFLECT_OBJ_VARIABLE(var2)
+REFLECT_STATIC_VARIABLE(static_var)
 END_META_INFO
 
 void MetadataTest::class_name_method() {
     QVERIFY(reflect::utils::get_class_name<Type>() == HANA_STR("MetadataTest"));
 }
 void MetadataTest::vars_obj_names() {
-    QVERIFY(false);
+    auto bool_tup = reflect::metautils::for_each([this](auto&& index, auto&& tuple) {
+        return (reflect::utils::get_name<Type,reflect::ObjVars>(index) == boost::hana::at(tuple,index));
+    },reflect::metautils::generate_tuple_indices<decltype(reflect::utils::get_count<Type,reflect::ObjVars>())>(),
+    boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2")));
+    QVERIFY (bool_tup == boost::hana::make_tuple(true,true));
 }
 
 void MetadataTest::vars_static_names() {
-    QVERIFY(false);
+    auto bool_tup = reflect::metautils::for_each([this](auto&& index, auto&& tuple) {
+        return (reflect::utils::get_name<Type,reflect::StaticVars>(index) == boost::hana::at(tuple,index));
+    },reflect::metautils::generate_tuple_indices<decltype(reflect::utils::get_count<Type,reflect::StaticVars>())>(),
+    boost::hana::make_tuple(HANA_STR("static_var")));
+    QVERIFY (bool_tup == boost::hana::make_tuple(true));
 }
 
 void MetadataTest::vars_names() {
-    QVERIFY(false);
-//    QCOMPARE(reflect::get_variable_name<Type>(::boost::hana::size_c<0>),HANA_STR("var1"));
-//    QCOMPARE(reflect::get_variable_name<Type>(::boost::hana::size_c<1>),HANA_STR("var2"));
-//    QCOMPARE(reflect::get_variable_name<Type>(::boost::hana::size_c<2>),HANA_STR("static_var"));
+    auto bool_tup = reflect::metautils::for_each([this](auto&& index, auto&& tuple) {
+        return (reflect::utils::get_name<Type,reflect::AllVars>(index) == boost::hana::at(tuple,index));
+    },reflect::metautils::generate_tuple_indices<decltype(reflect::utils::get_count<Type,reflect::AllVars>())>(),
+    boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2"),HANA_STR("static_var")));
+    QVERIFY (bool_tup == boost::hana::make_tuple(true,true,true));
 }
 
 void MetadataTest::method_obj_names() {
@@ -78,23 +89,21 @@ void MetadataTest::method_names() {
 }
 
 void MetadataTest::counter_obj_vars() {
-    QVERIFY(false);
-//    QVERIFY(reflect::get_variables_obj_count<Type>() == 2);
+    QVERIFY((reflect::utils::get_count<Type,reflect::ObjVars>()) == boost::hana::size_c<2>);
 }
 
 void MetadataTest::counter_static_vars() {
-    QVERIFY(false);
-//    QVERIFY(reflect::get_variables_static_count<Type>() == 1);
+    QVERIFY((reflect::utils::get_count<Type,reflect::StaticVars>()) == boost::hana::size_c<1>);
 }
 
 void MetadataTest::counter_vars() {
-    QVERIFY(false);
-//    QVERIFY(reflect::get_variables_count<Type>() == 3);
+    QVERIFY((reflect::utils::get_count<Type,reflect::AllVars>()) == boost::hana::size_c<3>);
 }
 
 void MetadataTest::counter_obj_method() {
-    QVERIFY(false);
-//    QVERIFY(reflect::get_methods_obj_count<Type>() == 2);
+    auto bool_tup = reflect::metautils::for_each([this](auto&& name) {
+        return reflect::utils::find_name<Type,reflect::ObjVars>(name);
+    },boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2")));
 }
 
 void MetadataTest::counter_static_method() {

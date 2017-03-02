@@ -26,7 +26,9 @@
  */
 namespace reflect {
 using All = info::DefaultIndexGenerator;
-using ObjVar = info::ObjVariableIndexGenerator;
+using AllVars = info::VariableIndexGenerator<All>;
+using ObjVars = info::StaticIndexGenerator<AllVars,false>;
+using StaticVars = info::StaticIndexGenerator<AllVars>;
 }
 
 #endif // UTILS_HPP

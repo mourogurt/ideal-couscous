@@ -8,13 +8,28 @@ namespace reflect {
 
 namespace info {
 
+//constexpr auto is_generator_v = boost::hana::is_valid([](auto&& x) -> decltype (x.template generate<boost::hana::tuple<>>()){});
+
+/*template <class T>
+struct is_gen_template {
+
+};*/
+
+template <class T>
+struct is_generator {
+    template <class C, ::std::size_t... Indices> static constexpr ::std::true_type check(decltype (&C::template generate<::boost::hana::tuple<::boost::hana::size_t<Indices>...>>));
+    template <class> static constexpr ::std::false_type check(...);
+    static constexpr bool value = ::std::is_same<::std::true_type, decltype(check<T>(nullptr))>::value;
+};
+
+template <class T> constexpr bool is_generator_v = is_generator<T>::value;
+
 template <class T>
 /**
  * @brief SFINAE check if class is reflected
  *
  */
-struct is_reflected
-{
+struct is_reflected {
 
     /**
      * @brief If is_reflected method exist
@@ -59,20 +74,11 @@ struct MetaClass {
 };
 
 class DefaultIndexGenerator final {
-
-    template<::std::size_t... Indices>
-    constexpr static decltype (auto) generate_impl (::std::index_sequence<Indices... >&&) noexcept {
-        return ::boost::hana::tuple_c<::std::size_t,Indices...>;
-    }
-
 public:
-
     template<class Tuple>
     constexpr static decltype (auto) generate () {
-        constexpr std::size_t N = std::decay_t<decltype(::boost::hana::size(::std::declval<Tuple>()))>::value;
-        return generate_impl(::std::make_index_sequence<N>());
+        return metautils::generate_tuple_indices<decltype(::boost::hana::size(::std::declval<Tuple>()))>();
     }
-
 };
 
 template <class... Args>
