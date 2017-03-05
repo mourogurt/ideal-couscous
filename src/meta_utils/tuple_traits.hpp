@@ -15,7 +15,7 @@ namespace metautils {
  *
  */
 constexpr decltype(auto) multiple_concat () {
-    return boost::hana::make_tuple();
+    return ::boost::hana::make_tuple();
 }
 
 template <class T>
@@ -37,7 +37,7 @@ template <class T, class... Args>
  * @return concatenated tuple
  */
 constexpr decltype(auto) multiple_concat (T&& value , Args&&... args) {
-    return ::boost::hana::concat(std::forward<T>(value),multiple_concat(::std::forward<Args>(args)...));
+    return ::boost::hana::concat(::std::forward<T>(value),multiple_concat(::std::forward<Args>(args)...));
 }
 
 namespace detail {
@@ -67,7 +67,7 @@ constexpr decltype(auto) find_values_args_impl (::std::index_sequence< Indices..
     return metautils::multiple_concat(compare_types_index_impl<Indices>(::std::forward<T>(value),::boost::hana::at_c<Indices>(::std::forward<Tp>(tup)))...);
 }
 
-template<std::size_t Offset, ::std::size_t... Indices>
+template<::std::size_t Offset, ::std::size_t... Indices>
 /**
  * @brief Tuple range of integral constants implementation
  *
@@ -77,9 +77,14 @@ constexpr decltype (auto) generate_tuple_indices_seq_impl(::std::index_sequence<
     return ::boost::hana::tuple_c<std::size_t,Indices + Offset...>;
 }
 
-template <std::size_t... Indices, class Tuple, class IndexTuple>
+template <::std::size_t... Indices, class Tuple, class IndexTuple>
 constexpr decltype (auto) copy_tuple_sequence_impl (::std::index_sequence<Indices...>&&, Tuple&& tup, IndexTuple&& seq_tup) {
     return ::boost::hana::make_tuple(::boost::hana::at(tup,::boost::hana::at_c<Indices>(seq_tup))...);
+}
+
+template <::std::size_t... Indices, class Tuple>
+constexpr decltype (auto) merge_tuple_of_tuples_impl (::std::index_sequence<Indices...>&&, Tuple&& tup) {
+    return multiple_concat(::boost::hana::at_c<Indices>(tup)...);
 }
 
 }
@@ -131,6 +136,11 @@ constexpr decltype (auto) generate_tuple_indices() {
 template <class Tuple, class IndexTuple>
 constexpr decltype (auto) copy_tuple_sequence (Tuple&& tup, IndexTuple&& seq_tup) {
     return detail::copy_tuple_sequence_impl(::std::make_index_sequence<decltype(::boost::hana::size(seq_tup))::value>(),std::forward<Tuple>(tup),std::forward<IndexTuple>(seq_tup));
+}
+
+template <class Tuple>
+constexpr decltype (auto) merge_tuple_of_tuples (Tuple&& tup) {
+    return detail::merge_tuple_of_tuples_impl(::std::make_index_sequence<decltype(::boost::hana::size(tup))::value>(),std::forward<Tuple>(tup));
 }
 
 }

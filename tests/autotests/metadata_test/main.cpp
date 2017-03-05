@@ -101,9 +101,10 @@ void MetadataTest::counter_vars() {
 }
 
 void MetadataTest::counter_obj_method() {
-    auto tuple = reflect::metautils::for_each([this](auto&& name) {
+    auto tuple = reflect::metautils::merge_tuple_of_tuples(reflect::metautils::for_each([this](auto&& name) {
         return reflect::utils::find_name<Type,reflect::ObjVars>(name);
-    },boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2")));
+    },boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2"))));
+    QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0,1>));
 }
 
 void MetadataTest::counter_static_method() {

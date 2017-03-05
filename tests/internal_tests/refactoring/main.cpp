@@ -1,10 +1,6 @@
 #include <reflect.hpp>
 #include <iostream>
 
-void test(const char s[][10]) {
-
-}
-
 struct Obj {
     int a{3};
     OUT_OF_CLASS_META_INFO(Obj)
