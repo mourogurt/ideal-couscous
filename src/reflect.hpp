@@ -1,10 +1,9 @@
 #ifndef META_UTILS_HPP
 #define META_UTILS_HPP
 
-#include "reflect_utils/reflect_metadata.hpp"
-#include "reflect_information/reflect_information.hpp"
 #include "meta_utils/utils.hpp"
-#include "reflect_utils/reflect_invokes.hpp"
+#include "reflect_information/reflect_information.hpp"
+#include "reflect_utils/reflect_utils.hpp"
 
 /**
  * @brief todo list for reflection
@@ -27,7 +26,7 @@
 namespace reflect {
 using All = info::DefaultIndexGenerator;
 using AllVars = info::VariableIndexGenerator<All>;
-using ObjVars = info::StaticIndexGenerator<AllVars,false>;
+using ObjVars = info::ObjectIndexGenerator<AllVars>;
 using StaticVars = info::StaticIndexGenerator<AllVars>;
 }
 

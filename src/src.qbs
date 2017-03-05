@@ -7,6 +7,7 @@ Product {
         "*.hpp",
         "meta_utils/*",
         "reflect_information/*",
+        "reflect_information/types/*",
         "reflect_information/variables/*",
         "reflect_utils/*"
     ]

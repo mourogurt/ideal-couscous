@@ -2,7 +2,8 @@
 #define REFLECT_INFORMATION_VARIABLE_HPP
 
 #include "../../meta_utils/utils.hpp"
-#include "../reflect_information_static_common.hpp"
+#include "../types/reflect_information_object.hpp"
+#include "../types/reflect_information_static.hpp"
 
 namespace reflect {
 
@@ -40,6 +41,8 @@ class VariableIndexGenerator final {
         return metautils::multiple_concat(check_metadata_variable<decltype (::boost::hana::at_c<Indices>(::std::declval<Tuple>())),Indices>()...);
     }
 public:
+    using reverse = VariableIndexGenerator<ParentGenerator,!condition>;
+
     template <class Tuple>
     constexpr static decltype (auto) generate () {
         return generate_impl<Tuple>(ParentGenerator::template generate<Tuple>());
@@ -75,6 +78,12 @@ public:
      * @return std::true_type
      */
     static constexpr auto is_variable () {return std::true_type();}
+    /**
+     * @brief method that indicates that the pointer - pointer to object variable
+     *
+     * @return std::true_type
+     */
+    static constexpr auto is_object () {return std::true_type();}
     /**
      * @brief Constexpr constructor
      *

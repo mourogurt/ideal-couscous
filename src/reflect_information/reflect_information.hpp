@@ -73,11 +73,25 @@ struct MetaClass {
     static constexpr auto metadata     {detail::metadata_tuple<typename T::Type, T>(::std::make_index_sequence<decltype(T::counter(metautils::counter<>{}))::value>{})}; /**< tuple of all method names  */
 };
 
+class EmptyGenerator;
+
 class DefaultIndexGenerator final {
 public:
+    using reverse = EmptyGenerator;
+
     template<class Tuple>
     constexpr static decltype (auto) generate () {
         return metautils::generate_tuple_indices<decltype(::boost::hana::size(::std::declval<Tuple>()))>();
+    }
+};
+
+class EmptyGenerator final {
+public:
+    using reverse = DefaultIndexGenerator;
+
+    template<class Tuple>
+    constexpr static ::boost::hana::tuple<> generate () {
+        return {};
     }
 };
 
