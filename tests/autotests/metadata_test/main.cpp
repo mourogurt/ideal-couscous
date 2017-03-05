@@ -108,13 +108,17 @@ void MetadataTest::counter_obj_method() {
 }
 
 void MetadataTest::counter_static_method() {
-    QVERIFY(false);
-//    QVERIFY(reflect::get_methods_static_count<Type>() == 1);
+    auto tuple = reflect::metautils::merge_tuple_of_tuples(reflect::metautils::for_each([this](auto&& name) {
+        return reflect::utils::find_name<Type,reflect::StaticVars>(name);
+    },boost::hana::make_tuple(HANA_STR("static_var"))));
+    QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0>));
 }
 
 void MetadataTest::counter_method() {
-    QVERIFY(false);
-//    QVERIFY(reflect::get_methods_count<Type>() == 3);
+    auto tuple = reflect::metautils::merge_tuple_of_tuples(reflect::metautils::for_each([this](auto&& name) {
+        return reflect::utils::find_name<Type,reflect::AllVars>(name);
+    },boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2"),HANA_STR("static_var"))));
+    QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0,1,2>));
 }
 
 void MetadataTest::find_obj_vars() {
