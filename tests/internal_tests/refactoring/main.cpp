@@ -1,6 +1,9 @@
 #include <reflect.hpp>
 #include <iostream>
 
+void test(const char s[][10]) {
+
+}
 
 struct Obj {
     int a{3};
@@ -26,12 +29,12 @@ auto test_func (decltype (&std::declval<C>().generate())) {
 int main() {
     Obj o1;
     Obj2 o2;
+    std::cout << (3 < 3);
     std::cout << boost::hana::to<const char*>(reflect::utils::get_class_name<Obj>()) << std::endl;
     std::cout << boost::hana::to<const char*>(reflect::utils::get_class_name<Obj2>()) << std::endl;
     std::cout << reflect::utils::get_count<Obj,reflect::ObjVars>() << std::endl;
     std::cout << reflect::utils::get_count<Obj2>() << std::endl;
     std::cout << boost::hana::to<const char*>(reflect::utils::get_name<Obj,reflect::ObjVars>(::boost::hana::size_c<0>)) << std::endl;
-    std::cout << std::boolalpha << reflect::info::is_generator_v<reflect::StaticVars> << std::endl;
     /*
     std::cout << boost::hana::at_c<0>(reflect::info::MetaClass<Obj::MetaInfo_type>::metadata)(o1) << std::endl;
     std::cout << boost::hana::at_c<0>(reflect::info::MetaClass<Obj2::MetaInfo_type>::metadata)(o2) << std::endl;
