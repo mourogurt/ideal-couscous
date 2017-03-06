@@ -3,46 +3,56 @@
 
 class VariableTest : public QObject {
     Q_OBJECT
-    //int var {1};
-    //const int const_var {2};
-    //static int static_var;
+    int var {1};
+    const int const_var {2};
+    static int static_var;
 public:
-//    METACLASS_DEFINITION(VariableTest)
-//    REFLECT_VARIABLE(var)
-//    REFLECT_VARIABLE(const_var)
-//    REFLECT_STATIC_VARIABLE(static_var)
+    IN_CLASS_META_INFO(VariableTest)
+    REFLECT_OBJ_VARIABLE(var)
+    REFLECT_OBJ_VARIABLE(const_var)
+    REFLECT_STATIC_VARIABLE(static_var)
 
 private slots:
+    void get_obj_variable();
+    void get_static_variable();
     void get_variable();
+    void set_obj_variable();
+    void set_static_variable();
     void set_variable();
-    void variable_type();
-    void static_variable();
 };
 
-//int VariableTest::static_var = 3;
+int VariableTest::static_var = 3;
+
+void VariableTest::get_obj_variable() {
+    QCOMPARE((reflect::utils::invoke<Type,reflect::ObjVars>(boost::hana::size_c<0>,*this)),1);
+    QCOMPARE((reflect::utils::invoke<Type,reflect::ObjVars>(boost::hana::size_c<1>,*this)),2);
+}
+
+void VariableTest::get_static_variable() {
+    QCOMPARE((reflect::utils::invoke<Type,reflect::StaticVars>(boost::hana::size_c<0>,*this)),3);
+}
 
 void VariableTest::get_variable() {
-    QVERIFY(false);
-//    QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<0>),1);
-//    QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<1>),2);
+    QCOMPARE((reflect::utils::invoke<Type,reflect::AllVars>(boost::hana::size_c<0>,*this)),1);
+    QCOMPARE((reflect::utils::invoke<Type,reflect::AllVars>(boost::hana::size_c<1>,*this)),2);
+    QCOMPARE((reflect::utils::invoke<Type,reflect::AllVars>(boost::hana::size_c<2>,*this)),3);
+}
+
+void VariableTest::set_obj_variable() {
+    reflect::utils::invoke<Type,reflect::ObjVars>(boost::hana::size_c<0>,*this) = 11;
+    QCOMPARE((reflect::utils::invoke<Type,reflect::ObjVars>(boost::hana::size_c<0>,*this)),11);
+}
+
+void VariableTest::set_static_variable() {
+    reflect::utils::invoke<Type,reflect::StaticVars>(boost::hana::size_c<0>) = 12;
+    QCOMPARE((reflect::utils::invoke<Type,reflect::StaticVars>(boost::hana::size_c<0>)),12);
 }
 
 void VariableTest::set_variable() {
-    QVERIFY(false);
-//    reflect::get_variable(*this,boost::hana::size_c<0>) = 0;
-//    QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<0>),0);
-}
-
-void VariableTest::variable_type() {
-    QVERIFY(false);
-//    QCOMPARE(typeid(reflect::get_variable(*this,boost::hana::size_c<0>)),typeid(int));
-//    QCOMPARE(typeid(reflect::get_variable(*this,boost::hana::size_c<1>)),typeid(const int));
-}
-
-void VariableTest::static_variable() {
-    QVERIFY(false);
-    //QCOMPARE(reflect::get_variable(*this,boost::hana::size_c<2>),3);
-//    QVERIFY(false);
+    reflect::utils::invoke<Type,reflect::AllVars>(boost::hana::size_c<0>,*this) = 13;
+    reflect::utils::invoke<Type,reflect::AllVars>(boost::hana::size_c<2>,*this) = 14;
+    QCOMPARE((reflect::utils::invoke<Type,reflect::AllVars>(boost::hana::size_c<0>,*this)),13);
+    QCOMPARE((reflect::utils::invoke<Type,reflect::AllVars>(boost::hana::size_c<2>,*this)),14);
 }
 
 QTEST_MAIN(VariableTest)

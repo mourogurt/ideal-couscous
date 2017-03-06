@@ -9,8 +9,8 @@ class MetadataTest : public QObject {
     void foo (int);
     int foo (int,double);
     static double static_foo(int,double, const std::string&);
-public:
     using Type = MetadataTest;
+public:
     OUT_OF_CLASS_META_INFO(MetadataTest)
 private slots:
     void class_name_method();
@@ -101,45 +101,36 @@ void MetadataTest::counter_vars() {
 }
 
 void MetadataTest::counter_obj_method() {
+    QVERIFY(false);
+}
+
+void MetadataTest::counter_static_method() {
+    QVERIFY(false);
+}
+
+void MetadataTest::counter_method() {
+    QVERIFY(false);
+}
+
+void MetadataTest::find_obj_vars() {
     auto tuple = reflect::metautils::merge_tuple_of_tuples(reflect::metautils::for_each([this](auto&& name) {
         return reflect::utils::find_name<Type,reflect::ObjVars>(name);
     },boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2"))));
     QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0,1>));
 }
 
-void MetadataTest::counter_static_method() {
+void MetadataTest::find_static_vars() {
     auto tuple = reflect::metautils::merge_tuple_of_tuples(reflect::metautils::for_each([this](auto&& name) {
         return reflect::utils::find_name<Type,reflect::StaticVars>(name);
     },boost::hana::make_tuple(HANA_STR("static_var"))));
     QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0>));
 }
 
-void MetadataTest::counter_method() {
+void MetadataTest::find_vars() {
     auto tuple = reflect::metautils::merge_tuple_of_tuples(reflect::metautils::for_each([this](auto&& name) {
         return reflect::utils::find_name<Type,reflect::AllVars>(name);
     },boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2"),HANA_STR("static_var"))));
     QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0,1,2>));
-}
-
-void MetadataTest::find_obj_vars() {
-    QVERIFY(false);
-//    QCOMPARE(reflect::find_obj_variable_index<Type>(HANA_STR("var1")),boost::hana::size_c<0>);
-//    QCOMPARE(reflect::find_obj_variable_index<Type>(HANA_STR("var2")),boost::hana::size_c<1>);
-//    QCOMPARE(reflect::find_obj_variable_index<Type>(HANA_STR("static_var")),boost::hana::nothing);
-}
-
-void MetadataTest::find_static_vars() {
-    QVERIFY(false);
-//    QCOMPARE(reflect::find_static_variable_index<Type>(HANA_STR("var1")),boost::hana::nothing);
-//    QCOMPARE(reflect::find_static_variable_index<Type>(HANA_STR("var2")),boost::hana::nothing);
-//    QCOMPARE(reflect::find_static_variable_index<Type>(HANA_STR("static_var")),boost::hana::size_c<0>);
-}
-
-void MetadataTest::find_vars() {
-    QVERIFY(false);
-//    QCOMPARE(reflect::find_variable_index<Type>(HANA_STR("var1")),boost::hana::size_c<0>);
-//    QCOMPARE(reflect::find_variable_index<Type>(HANA_STR("var2")),boost::hana::size_c<1>);
-//    QCOMPARE(reflect::find_variable_index<Type>(HANA_STR("nothing")),boost::hana::nothing);
 }
 
 void MetadataTest::find_obj_methods() {

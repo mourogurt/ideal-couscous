@@ -68,6 +68,11 @@ public:
      */
     using type = Result Obj::*;
     /**
+     * @brief Tuple pointer type (Needed to unify all pointer structs)
+     *
+     */
+    using arg_types = ::boost::hana::tuple<Obj>;
+    /**
      * @brief Return type
      *
      */
@@ -136,7 +141,7 @@ public:
      * @brief Tuple pointer type (Needed to unify all pointer structs)
      *
      */
-    using arg_types = ::boost::hana::tuple<Obj>;
+    using arg_types = ::boost::hana::tuple<>;
     /**
      * @brief Object of pointer type
      *
@@ -160,12 +165,13 @@ public:
      * @param p pointer
      */
     constexpr static_var_t(type p) noexcept : p(p) {}
+    template <class... Args>
     /**
      * @brief Dereference of pointer
      *
      * @return object of static_var_t::return_type
      */
-    constexpr decltype(auto) operator()() const noexcept {
+    constexpr decltype(auto) operator()(Args&&...) const noexcept {
         return *p;
     }
 };
