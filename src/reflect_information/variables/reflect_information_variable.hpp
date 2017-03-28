@@ -28,7 +28,9 @@ namespace detail {
 }
 
 template <class ParentGenerator, bool condition = true>
-
+/**
+ * @brief The VariableIndexGenerator class - generate indices where vars are located
+ */
 class VariableIndexGenerator final {
     template <class Item, std::size_t Index>
     constexpr static decltype (auto) check_metadata_variable () {
@@ -41,9 +43,13 @@ class VariableIndexGenerator final {
         return metautils::multiple_concat(check_metadata_variable<decltype (::boost::hana::at_c<Indices>(::std::declval<Tuple>())),Indices>()...);
     }
 public:
-    using reverse = VariableIndexGenerator<ParentGenerator,!condition>;
+    using reverse = VariableIndexGenerator<ParentGenerator,!condition>;  /**< Reverse generator */
 
     template <class Tuple>
+    /**
+     * @brief generate function
+     * @return ::boost::hana::tuple of indices
+     */
     constexpr static decltype (auto) generate () {
         return generate_impl<Tuple>(ParentGenerator::template generate<Tuple>());
     }
@@ -183,7 +189,7 @@ template< class R, class T  >
  * @param pm pointer to object variable
  * @return mem_fn_t<R, T>
  */
-constexpr auto make_obj_var(R T::* pm)
+constexpr auto make_var(R T::* pm)
  -> obj_var_t<R, T> {
     return {pm};
 }
@@ -195,7 +201,7 @@ template <class T>
  * @param pm pointer
  * @return static_var_t<T>
  */
-constexpr auto make_static_var (T* pm)
+constexpr auto make_var (T* pm)
  -> static_var_t<T> {
     return {pm};
 }
@@ -206,12 +212,12 @@ constexpr auto make_static_var (T* pm)
 
 #define REFLECT_OBJ_VARIABLE(NAME) \
     TUPLE_APPEND(names_state,counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND(metadata_state,counter,::reflect::info::make_obj_var(&Type::NAME))\
+    TUPLE_APPEND(metadata_state,counter,::reflect::info::make_var(&Type::NAME))\
     INCREASE_COUNTER(counter)
 
 #define REFLECT_STATIC_VARIABLE(NAME) \
     TUPLE_APPEND(names_state,counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND(metadata_state,counter,::reflect::info::make_static_var(&Type::NAME)) \
+    TUPLE_APPEND(metadata_state,counter,::reflect::info::make_var(&Type::NAME)) \
     INCREASE_COUNTER(counter)
 
 #endif // REFLECT_INFORMATION_VARIABLE_HPP

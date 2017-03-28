@@ -9,7 +9,7 @@ namespace info {
 
 template <class T>
 /**
- * @brief SFINAE check if type is pointer to static
+ * @brief SFINAE check if type is pointer to static field
  *
  */
 struct is_static
@@ -22,7 +22,9 @@ struct is_static
 template <class T> constexpr bool is_static_v = is_static<T>::value; /**< Helper variable template for is_static */
 
 template <class ParentGenerator, bool condition = true>
-
+/**
+ * @brief The StaticIndexGenerator class - generate indices where static fields are located
+ */
 class StaticIndexGenerator final {
     template <class Item, std::size_t Index>
     constexpr static decltype (auto) check_metadata_variable () {
@@ -35,9 +37,13 @@ class StaticIndexGenerator final {
         return metautils::multiple_concat(check_metadata_variable<decltype (::boost::hana::at_c<Indices>(::std::declval<Tuple>())),Indices>()...);
     }
 public:
-    using reverse = StaticIndexGenerator<ParentGenerator,!condition>;
+    using reverse = StaticIndexGenerator<ParentGenerator,!condition>; /**< Reverse generator */
 
     template <class Tuple>
+    /**
+     * @brief generate function
+     * @return ::boost::hana::tuple of indices
+     */
     constexpr static decltype (auto) generate () {
         return generate_impl<Tuple>(ParentGenerator::template generate<Tuple>());
     }

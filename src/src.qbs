@@ -9,6 +9,7 @@ Product {
         "reflect_information/*",
         "reflect_information/types/*",
         "reflect_information/variables/*",
+        "reflect_information/functions/*",
         "reflect_utils/*"
     ]
     Depends { name: "cpp" }

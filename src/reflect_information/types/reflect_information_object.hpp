@@ -9,7 +9,7 @@ namespace info {
 
 template <class T>
 /**
- * @brief SFINAE check if type is pointer to static
+ * @brief SFINAE check if type is pointer to object field
  *
  */
 struct is_object
@@ -19,10 +19,12 @@ struct is_object
     static constexpr bool value = ::std::is_same<::std::true_type, decltype(check<T>(nullptr))>::value;
 };
 
-template <class T> constexpr bool is_object_v = is_object<T>::value; /**< Helper variable template for is_static */
+template <class T> constexpr bool is_object_v = is_object<T>::value; /**< Helper variable template for is_object */
 
 template <class ParentGenerator, bool condition = true>
-
+/**
+ * @brief The ObjectIndexGenerator class - generate indices where object fields are located
+ */
 class ObjectIndexGenerator final {
     template <class Item, std::size_t Index>
     constexpr static decltype (auto) check_metadata_variable () {
@@ -35,9 +37,13 @@ class ObjectIndexGenerator final {
         return metautils::multiple_concat(check_metadata_variable<decltype (::boost::hana::at_c<Indices>(::std::declval<Tuple>())),Indices>()...);
     }
 public:
-    using reverse = ObjectIndexGenerator<ParentGenerator,!condition>;
+    using reverse = ObjectIndexGenerator<ParentGenerator,!condition>; /**< Reverse generator */
 
     template <class Tuple>
+    /**
+     * @brief generate function
+     * @return ::boost::hana::tuple of indices
+     */
     constexpr static decltype (auto) generate () {
         return generate_impl<Tuple>(ParentGenerator::template generate<Tuple>());
     }

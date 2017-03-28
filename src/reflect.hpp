@@ -28,6 +28,9 @@ using All = info::DefaultIndexGenerator;
 using AllVars = info::VariableIndexGenerator<All>;
 using ObjVars = info::ObjectIndexGenerator<AllVars>;
 using StaticVars = info::StaticIndexGenerator<AllVars>;
+using AllMethods = info::MethodIndexGenerator<All>;
+using ObjMethods = info::ObjectIndexGenerator<AllMethods>;
+using StaticMethods = info::StaticIndexGenerator<AllMethods>;
 }
 
 #endif // UTILS_HPP

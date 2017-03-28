@@ -3,19 +3,16 @@
 
 #include "../meta_utils/utils.hpp"
 #include "variables/reflect_information_variable.hpp"
+#include "functions/reflect_information_method.hpp"
 
 namespace reflect {
 
 namespace info {
 
-//constexpr auto is_generator_v = boost::hana::is_valid([](auto&& x) -> decltype (x.template generate<boost::hana::tuple<>>()){});
-
-/*template <class T>
-struct is_gen_template {
-
-};*/
-
 template <class T>
+/**
+ * @brief SFINAE check if class is generator
+ */
 struct is_generator {
     template <class C, ::std::size_t... Indices> static constexpr ::std::true_type check(decltype (&C::template generate<::boost::hana::tuple<::boost::hana::size_t<Indices>...>>));
     template <class> static constexpr ::std::false_type check(...);
@@ -51,11 +48,17 @@ template <class T> constexpr bool is_reflected_v = is_reflected<T>::value; /**< 
 namespace detail {
 
 template <class Type, class MetaInfo_type, ::std::size_t... Indices>
+/**
+  * @brief Concating all names in one tuple
+  */
 constexpr decltype (auto) names_tuple (::std::index_sequence<Indices... >&&) {
     return metautils::multiple_concat(names_state(metautils::counter<Indices>{},static_cast<const Type*>(nullptr),static_cast<const MetaInfo_type*>(nullptr))...);
 }
 
 template <class Type, class MetaInfo_type, ::std::size_t... Indices>
+/**
+  * @brief Concating all metadata in one tuple
+  */
 constexpr decltype (auto) metadata_tuple (::std::index_sequence<Indices... >&&) {
     return metautils::multiple_concat(metadata_state(metautils::counter<Indices>{},static_cast<const Type*>(nullptr),static_cast<const MetaInfo_type*>(nullptr))...);
 }
@@ -80,22 +83,36 @@ public:
     using reverse = EmptyGenerator;
 
     template<class Tuple>
+    /**
+      * @brief generate tuple of indices
+      * @return  ::boost::hana::tuple<1...N> where N - size of Tuple
+      */
     constexpr static decltype (auto) generate () {
         return metautils::generate_tuple_indices<decltype(::boost::hana::size(::std::declval<Tuple>()))>();
     }
 };
 
+/**
+ * @brief Empty generator
+ */
 class EmptyGenerator final {
 public:
     using reverse = DefaultIndexGenerator;
 
     template<class Tuple>
+    /**
+     * @brief generate empty tuple
+     * @return ::boost::hana::tuple<>
+     */
     constexpr static ::boost::hana::tuple<> generate () {
         return {};
     }
 };
 
 template <class... Args>
+/**
+ * @brief Class that stores meta-functions
+ */
 struct MetaInfo;
 
 }
