@@ -7,10 +7,10 @@ class VariableTest : public QObject {
     const int const_var {2};
     static int static_var;
 public:
-    IN_CLASS_META_INFO(VariableTest)
-    REFLECT_OBJ_VARIABLE(var)
-    REFLECT_OBJ_VARIABLE(const_var)
-    REFLECT_STATIC_VARIABLE(static_var)
+    IN_METAINFO(VariableTest)
+    REFLECT_OBJ_VAR(var)
+    REFLECT_OBJ_VAR(const_var)
+    REFLECT_STATIC_VAR(static_var)
 
 private slots:
     void get_obj_variable();

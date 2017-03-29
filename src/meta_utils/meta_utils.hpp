@@ -8,6 +8,9 @@
 
 namespace reflect {
 
+/**
+ * @brief Namespace related to all metaprogramming utils
+ */
 namespace metautils {
 
 }

@@ -5,12 +5,12 @@
 
 struct Obj {
     int a{3};
-    OUT_OF_CLASS_META_INFO(Obj)
+    OUT_METAINFO(Obj)
 };
 
-META_INFO(Obj)
-REFLECT_OBJ_VARIABLE(a)
-END_META_INFO
+METAINFO(Obj)
+REFLECT_OBJ_VAR(a)
+END_METAINFO
 
 
 struct Obj2 {
@@ -19,12 +19,12 @@ struct Obj2 {
     void foo (char){}
     void foo () const {}
     static void foo (double) {}
-    IN_CLASS_META_INFO(Obj2)
-    REFLECT_OBJ_VARIABLE(b)
-    REFLECT_OBJ_METHOD(foo,int)
-    REFLECT_OBJ_METHOD(foo,char)
-    REFLECT_CONST_OBJ_METHOD(foo)
-    REFLECT_STATIC_METHOD(foo,double)
+    IN_METAINFO(Obj2)
+    REFLECT_OBJ_VAR(b)
+    REFLECT_OBJ_MET(foo,int)
+    REFLECT_OBJ_MET(foo,char)
+    REFLECT_CONST_OBJ_MET(foo)
+    REFLECT_STATIC_MET(foo,double)
 };
 
 int main() {

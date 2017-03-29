@@ -1,7 +1,7 @@
 #ifndef REFLECT_METADDATA_HPP
 #define REFLECT_METADDATA_HPP
 
-#include "../meta_utils/utils.hpp"
+#include "../meta_utils/meta_utils.hpp"
 #include "../reflect_information/reflect_information.hpp"
 
 namespace reflect {
@@ -9,7 +9,7 @@ namespace reflect {
 namespace utils {
 
 template <class T>
-using MetaClass = info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type>>;
+using MetaClass = info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type>>; /**< Helper type template to specify Metadata class */
 
 template <class T>
 constexpr decltype (auto) get_class_name() {

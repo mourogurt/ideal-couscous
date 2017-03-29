@@ -11,18 +11,18 @@ namespace reflect {
 
 namespace metautils {
 
-template <class T>
 /**
  * @brief Check if type is std::reference_wrapper
  *
  */
+template <class T>
 struct is_reference_wrapper : ::std::false_type {};
 
-template <class U>
 /**
  * @brief Check if type is std::reference_wrapper
  *
  */
+template <class U>
 struct is_reference_wrapper<::std::reference_wrapper<U>> : ::std::true_type {};
 
 template <class T>
@@ -30,11 +30,11 @@ constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value; /**< Hel
 
 namespace detail {
 
-template <class Base, class T, class Derived, class... Args>
 /**
  * @brief Constexpr invoke implementation for derived class with args
  *
  */
+template <class Base, class T, class Derived, class... Args>
 constexpr auto INVOKE(T Base::*pmf, Derived&& ref, Args&&... args)
     noexcept(noexcept((::std::forward<Derived>(ref).*pmf)(::std::forward<Args>(args)...)))
  -> ::std::enable_if_t<::std::experimental::is_function_v<T> &&
@@ -44,11 +44,11 @@ constexpr auto INVOKE(T Base::*pmf, Derived&& ref, Args&&... args)
       return (::std::forward<Derived>(ref).*pmf)(::std::forward<Args>(args)...);
 }
 
-template <class Base, class T, class RefWrap, class... Args>
 /**
  * @brief Constexpr invoke implementation for reference with args
  *
  */
+template <class Base, class T, class RefWrap, class... Args>
 constexpr auto INVOKE(T Base::*pmf, RefWrap&& ref, Args&&... args)
     noexcept(noexcept((ref.get().*pmf)(::std::forward<Args>(args)...)))
  -> std::enable_if_t<::std::experimental::is_function_v<T> &&
@@ -58,11 +58,11 @@ constexpr auto INVOKE(T Base::*pmf, RefWrap&& ref, Args&&... args)
       return (ref.get().*pmf)(::std::forward<Args>(args)...);
 }
 
-template <class Base, class T, class Pointer, class... Args>
 /**
  * @brief Constexpr invoke implementation for pointer with args
  *
  */
+template <class Base, class T, class Pointer, class... Args>
 constexpr auto INVOKE(T Base::*pmf, Pointer&& ptr, Args&&... args)
     noexcept(noexcept(((*::std::forward<Pointer>(ptr)).*pmf)(::std::forward<Args>(args)...)))
  -> std::enable_if_t<::std::experimental::is_function_v<T> &&
@@ -73,11 +73,11 @@ constexpr auto INVOKE(T Base::*pmf, Pointer&& ptr, Args&&... args)
       return ((*::std::forward<Pointer>(ptr)).*pmf)(::std::forward<Args>(args)...);
 }
 
-template <class Base, class T, class Derived>
 /**
  * @brief Constexpr invoke implementation for derived class
  *
  */
+template <class Base, class T, class Derived>
 constexpr auto INVOKE(T Base::*pmd, Derived&& ref)
     noexcept(noexcept(::std::forward<Derived>(ref).*pmd))
  -> ::std::enable_if_t<!::std::experimental::is_function_v<T> &&
@@ -87,11 +87,11 @@ constexpr auto INVOKE(T Base::*pmd, Derived&& ref)
       return ::std::forward<Derived>(ref).*pmd;
 }
 
-template <class Base, class T, class RefWrap>
 /**
  * @brief Constexpr invoke implementation for reference
  *
  */
+template <class Base, class T, class RefWrap>
 constexpr auto INVOKE(T Base::*pmd, RefWrap&& ref)
     noexcept(noexcept(ref.get().*pmd))
  -> std::enable_if_t<!::std::experimental::is_function_v<T> &&
@@ -101,11 +101,11 @@ constexpr auto INVOKE(T Base::*pmd, RefWrap&& ref)
       return ref.get().*pmd;
 }
 
-template <class Base, class T, class Pointer>
 /**
  * @brief Constexpr invoke implementation for pointer
  *
  */
+template <class Base, class T, class Pointer>
 constexpr auto INVOKE(T Base::*pmd, Pointer&& ptr)
     noexcept(noexcept((*::std::forward<Pointer>(ptr)).*pmd))
  -> std::enable_if_t<!::std::experimental::is_function_v<T> &&
@@ -116,7 +116,6 @@ constexpr auto INVOKE(T Base::*pmd, Pointer&& ptr)
       return (*::std::forward<Pointer>(ptr)).*pmd;
 }
 
-template <class F, class... Args>
 /**
  * @brief Constexpr invoke implementation
  *
@@ -124,6 +123,7 @@ template <class F, class... Args>
  * @param args function pointer args(with object pointer/reference)
  * @return std::enable_if_t<_Tp1, _Tp2> enabled if F is member pointer
  */
+template <class F, class... Args>
 constexpr auto INVOKE(F&& f, Args&&... args)
     noexcept(noexcept(::std::forward<F>(f)(::std::forward<Args>(args)...)))
  -> std::enable_if_t<!::std::experimental::is_member_pointer_v<::std::decay_t<F>>,
@@ -132,27 +132,22 @@ constexpr auto INVOKE(F&& f, Args&&... args)
       return ::std::forward<F>(f)(::std::forward<Args>(args)...);
 }
 
-template <class, class = void>
 /**
  * @brief Constexpr result_of implementation for no types
  *
  */
+template <class, class = void>
 struct result_of {};
-template <typename F, typename...Args>
+
 /**
  * @brief Constexpr result_of implementation
  *
  */
-struct result_of<F(Args...),
-                 decltype(void(INVOKE(::std::declval<F>(), ::std::declval<Args>()...)))> {
-    /**
-     * @brief
-     *
-     */
+template <typename F, typename...Args>
+struct result_of<F(Args...),decltype(void(INVOKE(::std::declval<F>(), ::std::declval<Args>()...)))> {
     using type = decltype(INVOKE(::std::declval<F>(), ::std::declval<Args>()...));
 };
 
-template<::std::size_t I, class F, class Tuple, class... Args>
 /**
  * @brief Foreach implementation
  *
@@ -160,6 +155,7 @@ template<::std::size_t I, class F, class Tuple, class... Args>
  * @param tup object to iterate
  * @param args aditional argument passing to function
  */
+template<::std::size_t I, class F, class Tuple, class... Args>
 constexpr decltype(auto) constexpr_foreach_index_impl (F&& func, Tuple&& tup, Args&&... args) {
     if constexpr (::std::experimental::is_void_v<decltype(func(::boost::hana::at_c<I>(tup),::std::forward<Args>(args)...))>) {
         func(::boost::hana::at_c<I>(tup),::std::forward<Args>(args)...);
@@ -168,7 +164,6 @@ constexpr decltype(auto) constexpr_foreach_index_impl (F&& func, Tuple&& tup, Ar
 
 }
 
-template<::std::size_t... Indices, class F, class Tuple, class... Args>
 /**
  * @brief Foreach implementation
  *
@@ -177,20 +172,21 @@ template<::std::size_t... Indices, class F, class Tuple, class... Args>
  * @param tup object to iterate
  * @param args aditional argument passing to function
  */
+template<::std::size_t... Indices, class F, class Tuple, class... Args>
 constexpr decltype(auto) constexpr_foreach_seq_impl(::std::index_sequence<Indices...>&&, F&& func, Tuple&& tup, Args&&... args) {
     return metautils::multiple_concat(constexpr_foreach_index_impl<Indices>(::std::forward<F>(func),::std::forward<Tuple>(tup),::std::forward<Args>(args)...)...);
 }
 
 }
 
-template< class F, class... ArgTypes >
 /**
- * @brief Constexpr variant of std::invoke
+ * @brief Constexpr implementation of std::invoke
  *
  * @param f Function pointer
  * @param args Function arguments
  * @return function result
  */
+template< class F, class... ArgTypes >
 constexpr auto constexpr_invoke(F&& f, ArgTypes&&... args)
     // exception specification for QoI
     noexcept(noexcept(detail::INVOKE(std::forward<F>(f), ::std::forward<ArgTypes>(args)...)))
@@ -199,27 +195,27 @@ constexpr auto constexpr_invoke(F&& f, ArgTypes&&... args)
     return detail::INVOKE(::std::forward<F>(f), ::std::forward<ArgTypes>(args)...);
 }
 
+/**
+ * @brief Constexpr implementation of std::result_of
+ *
+ */
 template <class>
-/**
- * @brief Constexpr variant of std::result_of
- *
- */
 struct constexpr_result_of;
-template <class F, class... ArgTypes>
+
 /**
- * @brief Constexpr variant of std::result_of
+ * @brief Constexpr implementation of std::result_of
  *
  */
+template <class F, class... ArgTypes>
 struct constexpr_result_of<F(ArgTypes...)> : detail::result_of<F(ArgTypes...)> {};
 
-template <class T>
 /**
  * @brief Helper type template for constexpr_result_of
  *
  */
+template <class T>
 using constexpr_result_of_t = typename constexpr_result_of<T>::type;
 
-template<class F, class Tuple, class... Args>
 /**
  * @brief Constexpr foreach iterating over tuple
  *
@@ -228,6 +224,7 @@ template<class F, class Tuple, class... Args>
  * @param args Aditional argument passing to function
  * @return Tuple of return values or empty tuple if return value is void
  */
+template<class F, class Tuple, class... Args>
 constexpr decltype(auto) for_each(F&& func, Tuple&& tup, Args&&... args) {
     return detail::constexpr_foreach_seq_impl(::std::make_index_sequence<decltype(::boost::hana::size(tup))::value>(),::std::forward<F>(func),::std::forward<Tuple>(tup),::std::forward<Args>(args)...);
 }

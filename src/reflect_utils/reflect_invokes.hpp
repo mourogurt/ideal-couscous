@@ -1,7 +1,7 @@
 #ifndef REFLECT_INVOKES_HPP
 #define REFLECT_INVOKES_HPP
 
-#include "../meta_utils/utils.hpp"
+#include "../meta_utils/meta_utils.hpp"
 #include "../reflect_information/reflect_information.hpp"
 
 namespace reflect {
@@ -9,13 +9,14 @@ namespace reflect {
 namespace utils {
 
 template <class T>
-using MetaClass = info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type>>;
+using MetaClass = info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type>>; /**< Helper type template to specify Metadata class */
 
 namespace detail {
 
 template<class T, class... Args>
 constexpr decltype (auto) invoke_pointer_impl (T&& p, Args&& ...args) {
-    return p(::std::forward<Args>(args)...);
+    if constexpr (::std::decay_t<decltype(::boost::hana::size(std::declval<typename T::arg_types>()))>::value != 0) return p(::std::forward<Args>(args)...);
+    else return p();
 }
 
 }

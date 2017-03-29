@@ -1,7 +1,7 @@
 #ifndef REFLECT_INFORMATION_VARIABLE_HPP
 #define REFLECT_INFORMATION_VARIABLE_HPP
 
-#include "../../meta_utils/utils.hpp"
+#include "../../meta_utils/meta_utils.hpp"
 #include "../types/reflect_information_object.hpp"
 #include "../types/reflect_information_static.hpp"
 
@@ -9,11 +9,11 @@ namespace reflect {
 
 namespace info {
 
-template <class T>
 /**
  * @brief SFINAE check if type is pointer to variable
  *
  */
+template <class T>
 struct is_variable
 {
     template <class C> static constexpr ::std::true_type check(decltype(&C::is_variable));
@@ -27,10 +27,10 @@ namespace detail {
 
 }
 
-template <class ParentGenerator, bool condition = true>
 /**
  * @brief The VariableIndexGenerator class - generate indices where vars are located
  */
+template <class ParentGenerator, bool condition = true>
 class VariableIndexGenerator final {
     template <class Item, std::size_t Index>
     constexpr static decltype (auto) check_metadata_variable () {
@@ -45,62 +45,54 @@ class VariableIndexGenerator final {
 public:
     using reverse = VariableIndexGenerator<ParentGenerator,!condition>;  /**< Reverse generator */
 
-    template <class Tuple>
     /**
      * @brief generate function
      * @return ::boost::hana::tuple of indices
      */
+    template <class Tuple>
     constexpr static decltype (auto) generate () {
         return generate_impl<Tuple>(ParentGenerator::template generate<Tuple>());
     }
 };
 
-template< class Result, class Obj>
 /**
  * @brief Pointer to object variable container
  *
  */
+template< class Result, class Obj>
 class obj_var_t final {
     Result Obj::* p; /**< Pointer to object variable */
 public:
-    /**
-     * @brief Object type of pointer
-     *
-     */
-    using obj_type = Obj;
-    /**
-     * @brief Pointer type
-     *
-     */
-    using type = Result Obj::*;
-    /**
-     * @brief Tuple pointer type (Needed to unify all pointer structs)
-     *
-     */
-    using arg_types = ::boost::hana::tuple<Obj>;
-    /**
-     * @brief Return type
-     *
-     */
-    using return_type = Result;
+
+    using obj_type = Obj; /**< Object type of pointer */
+
+    using type = Result Obj::*; /**< Pointer type */
+
+    using arg_types = ::boost::hana::tuple<Obj>; /**< Tuple pointer type (Needed to unify all pointer structs) */
+
+    using return_type = Result; /**< Return type */
+
     /**
      * @brief method that indicates that the pointer - variable
      *
      * @return std::true_type
      */
     static constexpr auto is_variable () {return std::true_type();}
+
     /**
      * @brief method that indicates that the pointer - pointer to object variable
      *
      * @return std::true_type
      */
     static constexpr auto is_object () {return std::true_type();}
+
     /**
      * @brief Constexpr constructor
      *
      * @param p object pointer
      */
     constexpr obj_var_t(type p) noexcept: p(p) {}
+
     /**
      * @brief Invoke operator
      *
@@ -110,6 +102,7 @@ public:
     constexpr decltype(auto) operator()(Obj&& obj) const noexcept (noexcept (metautils::constexpr_invoke(p, obj))) {
         return metautils::constexpr_invoke(p, obj);
     }
+
     /**
      * @brief Invoke operator
      *
@@ -119,6 +112,7 @@ public:
     constexpr decltype(auto) operator()(const Obj& obj) const noexcept (noexcept (metautils::constexpr_invoke(p, obj))) {
         return metautils::constexpr_invoke(p, obj);
     }
+
     /**
      * @brief Invoke operator
      *
@@ -130,77 +124,71 @@ public:
     }
 };
 
-template <class Obj>
 /**
- * @brief Pointer to static variable container
+ * @brief Pointer to a static variable container
  *
  */
+template <class Obj>
 class static_var_t final {
-    Obj* p; /**< Pointer */
+    Obj* p; /**< Pointer to a static variable */
 public:
-    /**
-     * @brief Pointer type
-     *
-     */
-    using type = Obj*;
-    /**
-     * @brief Tuple pointer type (Needed to unify all pointer structs)
-     *
-     */
-    using arg_types = ::boost::hana::tuple<>;
-    /**
-     * @brief Object of pointer type
-     *
-     */
-    using return_type = Obj;
+
+    using type = Obj*; /**< Pointer type */
+
+    using arg_types = ::boost::hana::tuple<>; /**< Tuple pointer type (Needed to unify all pointer structs) */
+
+    using return_type = Obj; /**< Object of pointer type */
+
     /**
      * @brief method that indicates that the pointer - variable
      *
      * @return std::true_type
      */
     static constexpr auto is_variable () {return std::true_type();}
+
     /**
      * @brief method that indicates that the pointer - static
      *
      * @return std::true_type
      */
     static constexpr auto is_static () {return std::true_type();}
+
     /**
      * @brief Constexpr constructor
      *
      * @param p pointer
      */
     constexpr static_var_t(type p) noexcept : p(p) {}
-    template <class... Args>
+
     /**
      * @brief Dereference of pointer
      *
      * @return object of static_var_t::return_type
      */
-    constexpr decltype(auto) operator()(Args&&...) const noexcept {
+    constexpr decltype(auto) operator()() const noexcept {
         return *p;
     }
 };
 
-template< class R, class T  >
 /**
  * @brief Create obj_var_t
  *
  * @param pm pointer to object variable
  * @return mem_fn_t<R, T>
  */
+template< class R, class T  >
 constexpr auto make_var(R T::* pm)
  -> obj_var_t<R, T> {
     return {pm};
 }
 
-template <class T>
 /**
  * @brief Create static_var_t
  *
  * @param pm pointer
  * @return static_var_t<T>
  */
+template <class T>
 constexpr auto make_var (T* pm)
  -> static_var_t<T> {
     return {pm};
@@ -210,12 +198,12 @@ constexpr auto make_var (T* pm)
 
 }
 
-#define REFLECT_OBJ_VARIABLE(NAME) \
+#define REFLECT_OBJ_VAR(NAME) \
     TUPLE_APPEND(names_state,counter,HANA_STR(#NAME)) \
     TUPLE_APPEND(metadata_state,counter,::reflect::info::make_var(&Type::NAME))\
     INCREASE_COUNTER(counter)
 
-#define REFLECT_STATIC_VARIABLE(NAME) \
+#define REFLECT_STATIC_VAR(NAME) \
     TUPLE_APPEND(names_state,counter,HANA_STR(#NAME)) \
     TUPLE_APPEND(metadata_state,counter,::reflect::info::make_var(&Type::NAME)) \
     INCREASE_COUNTER(counter)

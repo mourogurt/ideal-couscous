@@ -1,17 +1,17 @@
 #ifndef REFLECT_INFORMATION_STATIC_COMMON_HPP
 #define REFLECT_INFORMATION_STATIC_COMMON_HPP
 
-#include "../../meta_utils/utils.hpp"
+#include "../../meta_utils/meta_utils.hpp"
 
 namespace reflect {
 
 namespace info {
 
-template <class T>
 /**
  * @brief SFINAE check if type is pointer to static field
  *
  */
+template <class T>
 struct is_static
 {
     template <class C> static constexpr ::std::true_type check(decltype(&C::is_static));
@@ -21,10 +21,10 @@ struct is_static
 
 template <class T> constexpr bool is_static_v = is_static<T>::value; /**< Helper variable template for is_static */
 
-template <class ParentGenerator, bool condition = true>
 /**
  * @brief The StaticIndexGenerator class - generate indices where static fields are located
  */
+template <class ParentGenerator, bool condition = true>
 class StaticIndexGenerator final {
     template <class Item, std::size_t Index>
     constexpr static decltype (auto) check_metadata_variable () {
@@ -39,11 +39,11 @@ class StaticIndexGenerator final {
 public:
     using reverse = StaticIndexGenerator<ParentGenerator,!condition>; /**< Reverse generator */
 
-    template <class Tuple>
     /**
      * @brief generate function
      * @return ::boost::hana::tuple of indices
      */
+    template <class Tuple>
     constexpr static decltype (auto) generate () {
         return generate_impl<Tuple>(ParentGenerator::template generate<Tuple>());
     }

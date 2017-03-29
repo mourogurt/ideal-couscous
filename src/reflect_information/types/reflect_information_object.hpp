@@ -1,17 +1,17 @@
 #ifndef REFLECT_INFORMATION_OBJECT_HPP
 #define REFLECT_INFORMATION_OBJECT_HPP
 
-#include "../../meta_utils/utils.hpp"
+#include "../../meta_utils/meta_utils.hpp"
 
 namespace reflect {
 
 namespace info {
 
-template <class T>
 /**
  * @brief SFINAE check if type is pointer to object field
  *
  */
+template <class T>
 struct is_object
 {
     template <class C> static constexpr ::std::true_type check(decltype(&C::is_object));
@@ -21,10 +21,10 @@ struct is_object
 
 template <class T> constexpr bool is_object_v = is_object<T>::value; /**< Helper variable template for is_object */
 
-template <class ParentGenerator, bool condition = true>
 /**
  * @brief The ObjectIndexGenerator class - generate indices where object fields are located
  */
+template <class ParentGenerator, bool condition = true>
 class ObjectIndexGenerator final {
     template <class Item, std::size_t Index>
     constexpr static decltype (auto) check_metadata_variable () {
@@ -39,11 +39,11 @@ class ObjectIndexGenerator final {
 public:
     using reverse = ObjectIndexGenerator<ParentGenerator,!condition>; /**< Reverse generator */
 
-    template <class Tuple>
     /**
      * @brief generate function
      * @return ::boost::hana::tuple of indices
      */
+    template <class Tuple>
     constexpr static decltype (auto) generate () {
         return generate_impl<Tuple>(ParentGenerator::template generate<Tuple>());
     }
