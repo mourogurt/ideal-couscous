@@ -3,7 +3,7 @@
 
 class MethodTest : public QObject {
     Q_OBJECT
-    bool value {false};
+    bool value {true};
     void bool_method (bool cond) { QVERIFY(cond); }
     bool bool_method () { return true;}
     void bool_method (bool& cond) { cond = value;}
@@ -11,12 +11,13 @@ class MethodTest : public QObject {
     void const_method(bool cond) const { QVERIFY(cond); }
 
 public:
-//    METACLASS_DEFINITION(MethodTest)
-//    REFLECT_METHOD(bool_method,bool)
-//    REFLECT_METHOD(bool_method)
-//    REFLECT_METHOD(bool_method,bool&)
-//    REFLECT_STATIC_METHOD(static_method,bool)
-//    REFLECT_CONST_METHOD(const_method,bool)
+    IN_METAINFO(MethodTest)
+    REFLECT_OBJ_MET(bool_method,bool)
+    REFLECT_OBJ_MET(bool_method)
+    REFLECT_OBJ_MET(bool_method,bool&)
+    REFLECT_STATIC_MET(static_method,bool)
+    REFLECT_CONST_OBJ_MET(const_method,bool)
+
 private slots:
     void invoke_method();
     void get_method_value();
@@ -29,47 +30,42 @@ private slots:
 
 class Constexpr_class {
 public:
-//    METACLASS_DEFINITION(Constexpr_class)
-//    constexpr bool bool_method() const { return true;}
-//    REFLECT_CONST_METHOD(bool_method)
-
+    constexpr auto bool_method() const { return true;}
+    OUT_METAINFO(Constexpr_class)
 };
 
+METAINFO(Constexpr_class)
+REFLECT_CONST_OBJ_MET(bool_method)
+END_METAINFO
+
 void MethodTest::invoke_method() {
-    QVERIFY(false);
-//    reflect::invoke_method(*this,boost::hana::size_c<0>,true);
+    reflect::utils::invoke<Type,reflect::ObjMethods>(boost::hana::size_c<0>,*this,true);
 }
 
 void MethodTest::get_method_value() {
-    QVERIFY(false);
-//    QCOMPARE (reflect::invoke_method(*this,boost::hana::size_c<1>),true);
+    QCOMPARE ((reflect::utils::invoke<Type,reflect::ObjMethods>(boost::hana::size_c<1>,*this)),true);
 }
 
 void MethodTest::reference_method() {
-    QVERIFY(false);
-//    bool res = true;
-//    reflect::invoke_method(*this,boost::hana::size_c<2>,res);
-//    QCOMPARE (res,value);
+    bool res = false;
+    reflect::utils::invoke<Type,reflect::ObjMethods>(boost::hana::size_c<2>,*this,res);
+    QCOMPARE (res,value);
 }
 
 void MethodTest::const_method() {
-    QVERIFY(false);
-//    reflect::invoke_method(*this,boost::hana::size_c<4>,true);
-//    const Constexpr_class obj;
-//    QVERIFY(reflect::invoke_method(obj,boost::hana::size_c<0>));
+    reflect::utils::invoke<Type,reflect::ConstMethods>(boost::hana::size_c<0>,*this,true);
+    const Constexpr_class obj;
+    QVERIFY((reflect::utils::invoke<Constexpr_class,reflect::ConstMethods>(boost::hana::size_c<0>,obj)));
 }
 
 void MethodTest::constexpr_method() {
-    QVERIFY(false);
-//    Constexpr_class obj;
-//    constexpr bool res = reflect::invoke_method(obj,boost::hana::size_c<0>);
-//    QVERIFY(res);
+    Constexpr_class obj;
+    constexpr bool res = reflect::utils::invoke<Constexpr_class,reflect::ObjMethods>(boost::hana::size_c<0>,obj);
+    QVERIFY(res);
 }
 
 void MethodTest::static_method() {
-    QVERIFY(false);
-    //reflect::invoke_method(*this,boost::hana::size_c<3>,true);
-//    QVERIFY(false);
+    reflect::utils::invoke<Type,reflect::StaticMethods>(boost::hana::size_c<0>,true);
 }
 
 void MethodTest::try_invoke_method() {
