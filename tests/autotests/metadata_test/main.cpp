@@ -56,6 +56,7 @@ END_METAINFO
 
 void MetadataTest::class_name_method() {
     QVERIFY(reflect::utils::get_class_name<Type>() == HANA_STR("MetadataTest"));
+    QVERIFY(reflect::utils::get_class_name<int>() == boost::hana::nothing);
 }
 void MetadataTest::vars_obj_names() {
     auto bool_tup = reflect::metautils::for_each([this](auto&& index, auto&& tuple) {
@@ -63,6 +64,8 @@ void MetadataTest::vars_obj_names() {
     },reflect::metautils::generate_tuple_indices<decltype(reflect::utils::get_count<Type,reflect::ObjVars>())>(),
     boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true,true));
+    QVERIFY((reflect::utils::get_name<Type,reflect::ObjVars>(reflect::utils::get_count<Type,reflect::ObjVars>())) == boost::hana::nothing);
+    QVERIFY((reflect::utils::get_name<Type,int>(boost::hana::size_c<0>)) == boost::hana::nothing);
 }
 
 void MetadataTest::vars_static_names() {
@@ -71,6 +74,7 @@ void MetadataTest::vars_static_names() {
     },reflect::metautils::generate_tuple_indices<decltype(reflect::utils::get_count<Type,reflect::StaticVars>())>(),
     boost::hana::make_tuple(HANA_STR("static_var")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true));
+    QVERIFY((reflect::utils::get_name<Type,reflect::StaticVars>(reflect::utils::get_count<Type,reflect::StaticVars>())) == boost::hana::nothing);
 }
 
 void MetadataTest::vars_names() {
@@ -79,6 +83,7 @@ void MetadataTest::vars_names() {
     },reflect::metautils::generate_tuple_indices<decltype(reflect::utils::get_count<Type,reflect::AllVars>())>(),
     boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2"),HANA_STR("static_var")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true,true,true));
+    QVERIFY((reflect::utils::get_name<Type,reflect::AllVars>(reflect::utils::get_count<Type,reflect::AllVars>())) == boost::hana::nothing);
 }
 
 void MetadataTest::method_obj_names() {
@@ -87,6 +92,7 @@ void MetadataTest::method_obj_names() {
     },reflect::metautils::generate_tuple_indices<decltype(reflect::utils::get_count<Type,reflect::ObjMethods>())>(),
     boost::hana::make_tuple(HANA_STR("foo"),HANA_STR("foo")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true,true));
+    QVERIFY((reflect::utils::get_name<Type,reflect::ObjMethods>(reflect::utils::get_count<Type,reflect::ObjMethods>())) == boost::hana::nothing);
 }
 
 void MetadataTest::method_const_names() {
@@ -95,6 +101,7 @@ void MetadataTest::method_const_names() {
     },reflect::metautils::generate_tuple_indices<decltype(reflect::utils::get_count<Type,reflect::ConstMethods>())>(),
     boost::hana::make_tuple(HANA_STR("foo")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true));
+    QVERIFY((reflect::utils::get_name<Type,reflect::ConstMethods>(reflect::utils::get_count<Type,reflect::ConstMethods>())) == boost::hana::nothing);
 }
 
 void MetadataTest::method_static_names() {
@@ -103,6 +110,7 @@ void MetadataTest::method_static_names() {
     },reflect::metautils::generate_tuple_indices<decltype(reflect::utils::get_count<Type,reflect::StaticMethods>())>(),
     boost::hana::make_tuple(HANA_STR("static_foo")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true));
+    QVERIFY((reflect::utils::get_name<Type,reflect::StaticMethods>(reflect::utils::get_count<Type,reflect::StaticMethods>())) == boost::hana::nothing);
 }
 
 void MetadataTest::method_names() {
@@ -111,10 +119,13 @@ void MetadataTest::method_names() {
     },reflect::metautils::generate_tuple_indices<decltype(reflect::utils::get_count<Type,reflect::AllMethods>())>(),
     boost::hana::make_tuple(HANA_STR("foo"),HANA_STR("foo"),HANA_STR("static_foo")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true,true,true));
+    QVERIFY((reflect::utils::get_name<Type,reflect::AllMethods>(reflect::utils::get_count<Type,reflect::AllMethods>())) == boost::hana::nothing);
 }
 
 void MetadataTest::counter_obj_vars() {
     QVERIFY((reflect::utils::get_count<Type,reflect::ObjVars>()) == boost::hana::size_c<2>);
+    QVERIFY((reflect::utils::get_count<int,reflect::ObjVars>()) == boost::hana::nothing);
+    QVERIFY((reflect::utils::get_count<Type,int>()) == boost::hana::nothing);
 }
 
 void MetadataTest::counter_static_vars() {
@@ -160,6 +171,9 @@ void MetadataTest::find_vars() {
         return reflect::utils::find_name<Type,reflect::AllVars>(name);
     },boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2"),HANA_STR("static_var"))));
     QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0,1,2>));
+    QVERIFY((reflect::utils::find_name<Type,reflect::AllVars>(HANA_STR("nothing"))) == boost::hana::tuple<>());
+    QVERIFY((reflect::utils::find_name<Type,int>(HANA_STR("var1"))) == boost::hana::nothing);
+    QVERIFY((reflect::utils::find_name<int,reflect::AllVars>(HANA_STR("var1"))) == boost::hana::nothing);
 }
 
 void MetadataTest::find_obj_methods() {
@@ -237,8 +251,12 @@ void MetadataTest::get_method_types() {
     QVERIFY (res_tuple == (::boost::hana::tuple_t<void,int,double>));
     QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::types),typeid(::boost::hana::tuple<Type,int>));
     QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::result_type),typeid(void));
-    QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::arg1_type),typeid(Type));
-    QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::arg2_type),typeid(int));
+    QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::arg0_type),typeid(Type));
+    QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::arg1_type),typeid(int));
+    QCOMPARE(typeid(reflect::MethodInfo<Type,reflect::utils::get_count<Type,reflect::AllMethods>(),reflect::AllMethods>::types),typeid(boost::hana::nothing));
+    QCOMPARE(typeid(reflect::MethodInfo<Type,reflect::utils::get_count<Type,reflect::AllMethods>(),reflect::AllMethods>::result_type),typeid(boost::hana::nothing));
+    QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::arg_type<reflect::MethodInfo<Type,0,reflect::AllMethods>::args_count>),typeid(boost::hana::nothing));
+
 }
 
 void MetadataTest::check_obj_invoke_method() {

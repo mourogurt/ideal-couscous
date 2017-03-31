@@ -39,16 +39,18 @@ struct MethodInfo {
 private:
     using MetaClass = info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type>>; /**< Helper type template to specify Metadata class */
 public:
-    using types = typename ::std::decay_t<decltype(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass::metadata,
-                  Generator::template generate<decltype(MetaClass::metadata)>()),::boost::hana::size_c<I>))>::arg_types;
+    using types = typename std::decay_t<decltype(utils::detail::get_method_args_helper_method_impl<T,Generator>(::boost::hana::size_c<I>))>::type ;
     using result_type = typename std::decay_t<decltype(utils::get_method_result_type<T,Generator>(::boost::hana::size_c<I>))>::type;
     template<::std::size_t N> using arg_type = typename std::decay_t<decltype(utils::get_method_arg<T,Generator>(::boost::hana::size_c<I>,::boost::hana::size_c<N>))>::type;
-    using arg1_type = arg_type<0>;
-    using arg2_type = arg_type<1>;
-    using arg3_type = arg_type<2>;
-    using arg4_type = arg_type<3>;
-    using arg5_type = arg_type<4>;
-    using arg6_type = arg_type<5>;
+    using arg0_type = arg_type<0>;
+    using arg1_type = arg_type<1>;
+    using arg2_type = arg_type<2>;
+    using arg3_type = arg_type<3>;
+    using arg4_type = arg_type<4>;
+    using arg5_type = arg_type<5>;
+    using arg6_type = arg_type<6>;
+
+    constexpr static ::std::size_t args_count {std::decay_t<decltype (utils::get_methods_args_count<T,Generator>(::boost::hana::size_c<I>))>::value};
 };
 
 }

@@ -8,16 +8,35 @@ namespace reflect {
 
 namespace utils {
 
+
+template <class T>
+using MetaClass = info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type>>; /**< Helper type template to specify Metadata class */
+
 namespace detail {
 
 template <class... Args> struct get_method_args_helper_impl {constexpr static auto value {::boost::hana::tuple_t<Args...>};};
 
 template <class... Args> struct get_method_args_helper_impl<::boost::hana::tuple<Args...>> {constexpr static auto value {::boost::hana::tuple_t<Args...>};};
 
+/**
+ * @brief Return tuple of args type of method
+ * @param index - method index
+ * @return boost::hana::type_t<Tuple...> or boost::hana::type_t<boost::hana::optional<>> if out-of range, class is not reflected or Generator is not a generator class
+ */
+template<class T, class Generator = info::DefaultIndexGenerator, class I>
+constexpr decltype (auto) get_method_args_helper_method_impl(I&& index) {
+    if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>)) {
+        if constexpr (::std::decay_t<decltype(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())))>::value >
+                      ::std::decay_t<I>::value)
+            return ::boost::hana::type_c<typename ::std::decay_t<decltype(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
+                                         Generator::template generate<decltype(MetaClass<T>::metadata)>()),index))>::arg_types>;
+        else return ::boost::hana::type_c<::std::decay_t<decltype(::boost::hana::nothing)>>;
+    }
+    else return ::boost::hana::type_c<::std::decay_t<decltype(::boost::hana::nothing)>>;
 }
 
-template <class T>
-using MetaClass = info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type>>; /**< Helper type template to specify Metadata class */
+
+}
 
 /**
  * @brief Returns class name
@@ -25,8 +44,8 @@ using MetaClass = info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_t
  */
 template <class T>
 constexpr decltype (auto) get_class_name() {
-    if constexpr (!info::is_reflected_v<::std::decay_t<T>>) return ::boost::hana::nothing;
-    return info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type> >::class_name;
+    if constexpr (info::is_reflected_v<::std::decay_t<T>>) return info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type> >::class_name;
+    else return ::boost::hana::nothing;
 }
 
 /**
@@ -35,10 +54,10 @@ constexpr decltype (auto) get_class_name() {
  */
 template <class T, class Generator = info::DefaultIndexGenerator>
 constexpr decltype (auto) get_count() {
-    if constexpr (!info::is_reflected_v<::std::decay_t<T>>) return ::boost::hana::nothing;
-    if constexpr (!info::is_generator_v<::std::decay_t<Generator>>) return ::boost::hana::nothing;
+    if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>))
     //Forcing unevaluated context to not interact with data(only with types)
-    return boost::hana::size_c<decltype(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())))::value>;
+        return boost::hana::size_c<decltype(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())))::value>;
+    else return ::boost::hana::nothing;
 }
 
 /**
@@ -48,11 +67,12 @@ constexpr decltype (auto) get_count() {
  */
 template <class T, class Generator = info::DefaultIndexGenerator, class I>
 constexpr decltype (auto) get_name (I&& index) {
-    if constexpr (!info::is_reflected_v<::std::decay_t<T>>) return ::boost::hana::nothing;
-    if constexpr (!info::is_generator_v<::std::decay_t<Generator>>) return ::boost::hana::nothing;
-    if constexpr (decltype(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::names,Generator::template generate<decltype(MetaClass<T>::metadata)>())))::value
-                  <= ::std::decay_t<I>::value) return ::boost::hana::nothing;
-    return ::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::names,Generator::template generate<decltype(MetaClass<T>::metadata)>()),index);
+    if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>)) {
+        if constexpr (decltype(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::names,Generator::template generate<decltype(MetaClass<T>::metadata)>())))::value >
+         ::std::decay_t<I>::value) return ::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::names,Generator::template generate<decltype(MetaClass<T>::metadata)>()),index);
+        else return ::boost::hana::nothing;
+    }
+    else return ::boost::hana::nothing;
 }
 
 /**
@@ -62,9 +82,9 @@ constexpr decltype (auto) get_name (I&& index) {
  */
 template <class T, class Generator = info::DefaultIndexGenerator, class String>
 constexpr decltype (auto) find_name(String&& str) {
-    if constexpr (!info::is_reflected_v<::std::decay_t<T>>) return ::boost::hana::nothing;
-    if constexpr (!info::is_generator_v<::std::decay_t<Generator>>) return ::boost::hana::nothing;
-    return metautils::find_value_types(str,metautils::copy_tuple_sequence(MetaClass<T>::names,Generator::template generate<decltype(MetaClass<T>::metadata)>()));
+    if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>))
+        return metautils::find_value_types(str,metautils::copy_tuple_sequence(MetaClass<T>::names,Generator::template generate<decltype(MetaClass<T>::metadata)>()));
+    else return ::boost::hana::nothing;
 }
 
 /**
@@ -74,12 +94,26 @@ constexpr decltype (auto) find_name(String&& str) {
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class I>
 constexpr decltype (auto) get_method_args(I&& index) {
-    if constexpr (!info::is_reflected_v<::std::decay_t<T>>) return ::boost::hana::type_c<std::decay_t<decltype(::boost::hana::nothing)>>;
-    if constexpr (!info::is_generator_v<::std::decay_t<Generator>>) return ::boost::hana::type_c<std::decay_t<decltype(::boost::hana::nothing)>>;
-    if constexpr (::std::decay_t<decltype(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())))>::value > std::decay_t<I>::value)
-    return detail::get_method_args_helper_impl<typename ::std::decay_t<decltype(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())
-                                                                                                ,index))>::arg_types>::value;
-    else return ::boost::hana::type_c<std::decay_t<decltype(::boost::hana::nothing)>>;
+    if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>)) {
+        if constexpr (::std::decay_t<decltype(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())))>::value >
+                      ::std::decay_t<I>::value)
+            return detail::get_method_args_helper_impl<typename ::std::decay_t<decltype(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
+                                                       Generator::template generate<decltype(MetaClass<T>::metadata)>()),index))>::arg_types>::value;
+        else return ::boost::hana::type_c<::std::decay_t<decltype(::boost::hana::nothing)>>;
+    }
+    else return ::boost::hana::type_c<::std::decay_t<decltype(::boost::hana::nothing)>>;
+}
+
+/**
+ * @brief Returns amount of method args
+ * @param index - method index
+ * @return boost::hana::size_t<...> or boost::hana::optional<> if out-of range, class is not reflected or Generator is not a generator class
+ */
+template<class T, class Generator = info::DefaultIndexGenerator, class I>
+constexpr decltype (auto) get_methods_args_count (I&& index) {
+    if constexpr (!::std::is_same<decltype (get_method_args<T,Generator>(::std::forward<I>(index))),decltype (::boost::hana::type_c<::std::decay_t<decltype(::boost::hana::nothing)>>)>::value) {
+        return ::boost::hana::size(get_method_args<T,Generator>(index));
+    } else return ::boost::hana::nothing;
 }
 
 /**
@@ -89,11 +123,14 @@ constexpr decltype (auto) get_method_args(I&& index) {
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class I>
 constexpr decltype (auto) get_method_result_type(I&& index) {
-    if constexpr (!info::is_reflected_v<::std::decay_t<T>>) return ::boost::hana::type_c<std::decay_t<decltype(::boost::hana::nothing)>>;
-    if constexpr (!info::is_generator_v<::std::decay_t<Generator>>) return ::boost::hana::type_c<std::decay_t<decltype(::boost::hana::nothing)>>;
-     if constexpr (::std::decay_t<decltype(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())))>::value > std::decay_t<I>::value)
-    return ::boost::hana::type_c<typename ::std::decay_t<decltype(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())
-                                                            ,index))>::return_type>;
+    if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>)) {
+        if constexpr(::std::decay_t<decltype(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())))>::value >
+                     ::std::decay_t<I>::value)
+            return ::boost::hana::type_c<typename ::std::decay_t<decltype(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
+                                         Generator::template generate<decltype(MetaClass<T>::metadata)>()),index))>::return_type>;
+        else return ::boost::hana::type_c<::std::decay_t<decltype(::boost::hana::nothing)>>;
+    }
+    else return ::boost::hana::type_c<::std::decay_t<decltype(::boost::hana::nothing)>>;
 }
 
 /**
@@ -105,14 +142,15 @@ constexpr decltype (auto) get_method_result_type(I&& index) {
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class I, class J>
 constexpr decltype (auto) get_method_arg(I&& index1, J&& index2) {
-    if constexpr (!info::is_reflected_v<::std::decay_t<T>>) return ::boost::hana::type_c<std::decay_t<decltype(::boost::hana::nothing)>>;
-    if constexpr (!info::is_generator_v<::std::decay_t<Generator>>) return ::boost::hana::type_c<std::decay_t<decltype(::boost::hana::nothing)>>;
-    if constexpr ((decltype (::boost::hana::size(get_method_args<T,Generator>(::std::forward<I>(index1))))::value > std::decay_t<J>::value) &&
-                  (!::std::is_same<decltype (get_method_args<T,Generator>(::std::forward<I>(index1))),::boost::hana::type<::std::decay_t<decltype(::boost::hana::nothing)>>>::value))
+    if constexpr (!::std::is_same<decltype (get_method_args<T,Generator>(::std::forward<I>(index1))),decltype (::boost::hana::type_c<::std::decay_t<decltype(::boost::hana::nothing)>>)>::value) {
+        if constexpr (decltype (::boost::hana::size(get_method_args<T,Generator>(::std::forward<I>(index1))))::value > ::std::decay_t<J>::value)
             return ::boost::hana::at(get_method_args<T,Generator>(::std::forward<I>(index1)),index2);
-    else return ::boost::hana::type_c<std::decay_t<decltype(::boost::hana::nothing)>>;
+        else return ::boost::hana::type_c<::std::decay_t<decltype(::boost::hana::nothing)>>;
+    }
+    else return ::boost::hana::type_c<::std::decay_t<decltype(::boost::hana::nothing)>>;
 }
 
+template<class T, class Generator = info::DefaultIndexGenerator, class IndexTuple>
 constexpr decltype (auto) check_invoke() {
 
 }
