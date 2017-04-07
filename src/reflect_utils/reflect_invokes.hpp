@@ -3,6 +3,7 @@
 
 #include "../meta_utils/meta_utils.hpp"
 #include "../reflect_information/reflect_information.hpp"
+#include "../reflect_utils/reflect_metadata.hpp"
 
 namespace reflect {
 

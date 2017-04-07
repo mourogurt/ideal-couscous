@@ -66,6 +66,7 @@ void MethodTest::constexpr_method() {
 
 void MethodTest::static_method() {
     reflect::utils::invoke<Type,reflect::StaticMethods>(boost::hana::size_c<0>,true);
+    reflect::utils::invoke<Type,reflect::StaticMethods>(boost::hana::size_c<0>,*this,true);
 }
 
 void MethodTest::try_invoke_method() {

@@ -6,27 +6,11 @@
 #include <experimental/type_traits>
 
 #include "tuple_traits.hpp"
+#include "type_traits.hpp"
 
 namespace reflect {
 
 namespace metautils {
-
-/**
- * @brief Check if type is std::reference_wrapper
- *
- */
-template <class T>
-struct is_reference_wrapper : ::std::false_type {};
-
-/**
- * @brief Check if type is std::reference_wrapper
- *
- */
-template <class U>
-struct is_reference_wrapper<::std::reference_wrapper<U>> : ::std::true_type {};
-
-template <class T>
-constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value; /**< Helper variable template for is_reference_wrapper */
 
 namespace detail {
 
@@ -133,22 +117,6 @@ constexpr auto INVOKE(F&& f, Args&&... args)
 }
 
 /**
- * @brief Constexpr result_of implementation for no types
- *
- */
-template <class, class = void>
-struct result_of {};
-
-/**
- * @brief Constexpr result_of implementation
- *
- */
-template <typename F, typename...Args>
-struct result_of<F(Args...),decltype(void(INVOKE(::std::declval<F>(), ::std::declval<Args>()...)))> {
-    using type = decltype(INVOKE(::std::declval<F>(), ::std::declval<Args>()...));
-};
-
-/**
  * @brief Foreach implementation
  *
  * @param func function reference/lambda
@@ -194,27 +162,6 @@ constexpr auto constexpr_invoke(F&& f, ArgTypes&&... args)
 {
     return detail::INVOKE(::std::forward<F>(f), ::std::forward<ArgTypes>(args)...);
 }
-
-/**
- * @brief Constexpr implementation of std::result_of
- *
- */
-template <class>
-struct constexpr_result_of;
-
-/**
- * @brief Constexpr implementation of std::result_of
- *
- */
-template <class F, class... ArgTypes>
-struct constexpr_result_of<F(ArgTypes...)> : detail::result_of<F(ArgTypes...)> {};
-
-/**
- * @brief Helper type template for constexpr_result_of
- *
- */
-template <class T>
-using constexpr_result_of_t = typename constexpr_result_of<T>::type;
 
 /**
  * @brief Constexpr foreach iterating over tuple

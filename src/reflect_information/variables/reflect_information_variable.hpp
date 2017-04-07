@@ -68,7 +68,7 @@ public:
 
     using type = Result Obj::*; /**< Pointer type */
 
-    using arg_types = ::boost::hana::tuple<Obj>; /**< Tuple pointer type (Needed to unify all pointer structs) */
+    using arg_types = ::boost::hana::tuple<Obj&&>; /**< Tuple pointer type (Needed to unify all pointer structs) */
 
     using return_type = Result; /**< Return type */
 
@@ -99,7 +99,7 @@ public:
      * @param obj member object
      * @return utils::constexpr_invoke object of obj_var_t::return_type
      */
-    constexpr decltype(auto) operator()(Obj&& obj) const noexcept (noexcept (metautils::constexpr_invoke(p, obj))) {
+    constexpr auto operator()(Obj&& obj) -> decltype (metautils::constexpr_invoke(p, obj)) const {
         return metautils::constexpr_invoke(p, obj);
     }
 
@@ -109,7 +109,7 @@ public:
      * @param obj member object
      * @return utils::constexpr_invoke object of obj_var_t::return_type
      */
-    constexpr decltype(auto) operator()(const Obj& obj) const noexcept (noexcept (metautils::constexpr_invoke(p, obj))) {
+    constexpr auto operator()(const Obj& obj) -> decltype (metautils::constexpr_invoke(p, obj)) const {
         return metautils::constexpr_invoke(p, obj);
     }
 
@@ -119,7 +119,7 @@ public:
      * @param obj member object
      * @return utils::constexpr_invoke object of obj_var_t::return_type
      */
-    constexpr decltype(auto) operator()(Obj& obj) const noexcept (noexcept (metautils::constexpr_invoke(p, obj))) {
+    constexpr auto operator()(Obj& obj) -> decltype (metautils::constexpr_invoke(p, obj)) const  {
         return metautils::constexpr_invoke(p, obj);
     }
 };
@@ -128,10 +128,12 @@ public:
  * @brief Pointer to a static variable container
  *
  */
-template <class Obj>
+template <class Obj_class, class Obj>
 class static_var_t final {
     Obj* p; /**< Pointer to a static variable */
 public:
+
+    using obj_type = Obj_class; /**< Object type of pointer to object variable */
 
     using type = Obj*; /**< Pointer type */
 
@@ -161,11 +163,21 @@ public:
     constexpr static_var_t(type p) noexcept : p(p) {}
 
     /**
-     * @brief Dereference of pointer
+     * @brief Dereference of pointer (if class object is not provided)
      *
      * @return object of static_var_t::return_type
      */
-    constexpr decltype(auto) operator()() const noexcept {
+    constexpr auto operator()() -> decltype (*p) const {
+        return *p;
+    }
+
+    /**
+     * @brief Dereference of pointer (if class object is provided)
+     *
+     * @return object of static_var_t::return_type
+     */
+    template<class T>
+    constexpr auto operator()(T&&) -> ::std::enable_if_t<::std::is_same<::std::decay_t<T>,Obj_class>::value,decltype (*p)> const {
         return *p;
     }
 };
@@ -188,9 +200,9 @@ constexpr auto make_var(R T::* pm)
  * @param pm pointer
  * @return static_var_t<T>
  */
-template <class T>
+template <class R, class T>
 constexpr auto make_var (T* pm)
- -> static_var_t<T> {
+ -> static_var_t<R,T> {
     return {pm};
 }
 
@@ -205,7 +217,7 @@ constexpr auto make_var (T* pm)
 
 #define REFLECT_STATIC_VAR(NAME) \
     TUPLE_APPEND(names_state,counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND(metadata_state,counter,::reflect::info::make_var(&Type::NAME)) \
+    TUPLE_APPEND(metadata_state,counter,::reflect::info::make_var<Type>(&Type::NAME)) \
     INCREASE_COUNTER(counter)
 
 #endif // REFLECT_INFORMATION_VARIABLE_HPP
