@@ -79,7 +79,7 @@ template<class T, class Generator,class... Args, class IndexTuple, ::std::size_t
 constexpr decltype (auto) check_invokes_impl(IndexTuple&& inds_tup, ::std::index_sequence<Indices...>&&) {
     if constexpr (decltype (::boost::hana::greater_equal(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
                                                          Generator::template generate<decltype(MetaClass<T>::metadata)>())),::boost::hana::size(inds_tup)))::value)
-    return ::boost::hana::just(metautils::multiple_concat(::boost::hana::make_tuple(metautils::get_optional_value(check_invoke<T,Generator,Args...>(::boost::hana::at_c<Indices>(inds_tup))))...));
+    return ::boost::hana::just(metautils::multiple_concat(::boost::hana::make_tuple(metautils::get_opt_val(check_invoke<T,Generator,Args...>(::boost::hana::at_c<Indices>(inds_tup))))...));
     else return ::boost::hana::nothing;
 }
 

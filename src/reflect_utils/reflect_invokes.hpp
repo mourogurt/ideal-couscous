@@ -67,7 +67,7 @@ template<class T, class Generator, class IndexTuple, ::std::size_t... Indices, c
 constexpr decltype (auto) gets_impl (IndexTuple&& inds_tup, ::std::index_sequence<Indices...>&&, Args&&... args) {
     if constexpr (decltype (::boost::hana::greater_equal(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
                                                          Generator::template generate<decltype(MetaClass<T>::metadata)>())),::boost::hana::size(inds_tup)))::value)
-            return ::boost::hana::just(metautils::multiple_concat(::boost::hana::make_tuple(metautils::get_optional_value(get<T,Generator>(::boost::hana::at_c<Indices>(inds_tup),
+            return ::boost::hana::just(metautils::multiple_concat(::boost::hana::make_tuple(metautils::get_opt_val(get<T,Generator>(::boost::hana::at_c<Indices>(inds_tup),
                                                                                                                                            ::std::forward<Args>(args)...)))...));
             else return ::boost::hana::nothing;
 }
@@ -84,7 +84,7 @@ template<class T, class Generator, class IndexTuple, class SetArg, ::std::size_t
 constexpr decltype (auto) sets_impl (IndexTuple&& inds_tup, SetArg&& s_arg, ::std::index_sequence<Indices...>&&, Args&&... args) {
     if constexpr (decltype (::boost::hana::greater_equal(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
                                                          Generator::template generate<decltype(MetaClass<T>::metadata)>())),::boost::hana::size(inds_tup)))::value) {
-        return ::boost::hana::just(metautils::multiple_concat(::boost::hana::make_tuple(metautils::get_optional_value(set<T,Generator>(::boost::hana::at_c<Indices>(inds_tup),
+        return ::boost::hana::just(metautils::multiple_concat(::boost::hana::make_tuple(metautils::get_opt_val(set<T,Generator>(::boost::hana::at_c<Indices>(inds_tup),
                                                                                                                       ::std::forward<SetArg>(s_arg),::std::forward<Args>(args)...)))...));
     } else return ::boost::hana::nothing;
 }
@@ -98,7 +98,7 @@ constexpr decltype (auto) sets_impl (IndexTuple&& inds_tup, SetArg&& s_arg, ::st
  */
 template<class T, class Generator, class I, class Tuple, ::std::size_t... Indices>
 constexpr decltype (auto) gets_unpack_tuple_element_impl (I&& index, Tuple&& tup, ::std::index_sequence<Indices...>&&) {
-    return ::boost::hana::make_tuple(metautils::get_optional_value(get<T,Generator>(::std::forward<I>(index), ::boost::hana::at_c<Indices>(tup)...)));
+    return ::boost::hana::make_tuple(metautils::get_opt_val(get<T,Generator>(::std::forward<I>(index), ::boost::hana::at_c<Indices>(tup)...)));
 }
 
 /**
@@ -136,7 +136,7 @@ constexpr decltype (auto) gets_tuple_args_impl(IndexTuple&& inds_tup, ArgsTuple&
  */
 template<class T, class Generator, class I, class SetArg, class Tuple, ::std::size_t... Indices>
 constexpr decltype (auto) sets_unpack_tuple_element_impl (I&& index, SetArg&& s_arg, Tuple&& tup, ::std::index_sequence<Indices...>&&) {
-    return ::boost::hana::make_tuple(metautils::get_optional_value(set<T,Generator>(::std::forward<I>(index),::std::forward<SetArg>(s_arg),::boost::hana::at_c<Indices>(tup)...)));
+    return ::boost::hana::make_tuple(metautils::get_opt_val(set<T,Generator>(::std::forward<I>(index),::std::forward<SetArg>(s_arg),::boost::hana::at_c<Indices>(tup)...)));
 }
 
 /**

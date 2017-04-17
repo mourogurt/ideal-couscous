@@ -40,8 +40,8 @@ private:
     using MetaClass = info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type>>; /**< Helper type template to specify Metadata class */
 public:
     using types = typename ::std::decay_t<decltype(utils::detail::get_method_args_helper_method_impl<T,Generator>(::boost::hana::size_c<I>))>::type;
-    using result_type = metautils::optional_type_helper_t<std::decay_t<decltype(metautils::get_optional_value(utils::get_method_result_type<T,Generator>(::boost::hana::size_c<I>)))>>;
-    template<::std::size_t N> using arg_type = metautils::optional_type_helper_t<::std::decay_t<decltype(metautils::get_optional_value(utils::get_method_arg<T,Generator>(::boost::hana::size_c<I>,::boost::hana::size_c<N>)))>>;
+    using result_type = metautils::optional_type_helper_t<std::decay_t<decltype(metautils::get_opt_val(utils::get_method_result_type<T,Generator>(::boost::hana::size_c<I>)))>>;
+    template<::std::size_t N> using arg_type = metautils::optional_type_helper_t<::std::decay_t<decltype(metautils::get_opt_val(utils::get_method_arg<T,Generator>(::boost::hana::size_c<I>,::boost::hana::size_c<N>)))>>;
     using arg0_type = arg_type<0>;
     using arg1_type = arg_type<1>;
     using arg2_type = arg_type<2>;
@@ -50,7 +50,7 @@ public:
     using arg5_type = arg_type<5>;
     using arg6_type = arg_type<6>;
 
-    constexpr static auto args_count {metautils::get_optional_value(utils::get_methods_args_count<T,Generator>(::boost::hana::size_c<I>))};
+    constexpr static auto args_count {metautils::get_opt_val(utils::get_methods_args_count<T,Generator>(::boost::hana::size_c<I>))};
 };
 
 }

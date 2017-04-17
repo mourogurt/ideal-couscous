@@ -31,7 +31,7 @@ constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value; /**< Hel
  * @return value of optional or nothing
  */
 template<class T>
-constexpr decltype (auto) get_optional_value (T&& optional_value) {
+constexpr decltype (auto) get_opt_val (T&& optional_value) {
     if constexpr (!decltype(::boost::hana::is_nothing(optional_value))::value) return optional_value.value();
     else return ::boost::hana::nothing;
 }
