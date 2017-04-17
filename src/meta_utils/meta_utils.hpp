@@ -1,5 +1,5 @@
-#ifndef META_DETAILS_HPP
-#define META_DETAILS_HPP
+#ifndef REFL_META_UTILS_HPP
+#define REFL_META_UTILS_HPP
 
 #include "function_traits.hpp"
 #include "ct_counter.hpp"

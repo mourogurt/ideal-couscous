@@ -34,7 +34,7 @@ template <class... Args> struct get_method_args_helper_impl<::boost::hana::tuple
  * @param index - method index
  * @return boost::hana::type_t<Tuple...> or boost::hana::type_t<boost::hana::optional<>> if out-of range, class is not reflected or Generator is not a generator class
  */
-template<class T, class Generator = info::DefaultIndexGenerator, class I>
+template<class T, class Generator, class I>
 constexpr decltype (auto) get_method_args_helper_method_impl(I&& index) {
     if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>)) {
         if constexpr (::std::decay_t<decltype(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())))>::value >
@@ -47,17 +47,17 @@ constexpr decltype (auto) get_method_args_helper_method_impl(I&& index) {
 }
 
 /**
- * @brief SFINAE check whetether we can call operator () with given types
+ * @brief SFINAE check whether we can call operator () with given types
  */
 template <class T,class... Args>
 struct is_invokable
 {
-    template <class C> static constexpr ::std::true_type check(decltype(::std::declval<C>()(::std::declval<Args>()...))*);
+    template <class C> static constexpr ::std::true_type check(::std::decay_t<decltype(::std::declval<C>()(::std::declval<Args>()...))>*);
     template <class> static constexpr ::std::false_type check(...);
     static constexpr bool value = ::std::is_same<::std::true_type, decltype(check<T>(nullptr))>::value;
 };
 
-template <class... Args> constexpr bool is_invokable_v = is_invokable<Args...>::value; /**< Helper variable template for is_convertible_multi */
+template <class... Args> constexpr bool is_invokable_v = is_invokable<Args...>::value; /**< Helper variable template for is_invokable */
 
 /**
  * @brief Check whether we can call Item with given Args types
@@ -71,15 +71,15 @@ constexpr decltype (auto) check_invoke_impl () {
 
 /**
  * @brief Checks invokes implementation
- * @param tup_inds - tuple of indices
+ * @param inds_tup - tuple of indices
  * @param ::std::index_sequence<Indices...> - index sequence
  * @return tuple of boost::hana::bool_c<...> (true or false for each method) or boost::hana::nothing if error happens
  */
 template<class T, class Generator,class... Args, class IndexTuple, ::std::size_t... Indices>
-constexpr decltype (auto) check_invokes_impl(IndexTuple&& tup_inds, ::std::index_sequence<Indices...>&&) {
-    if constexpr (decltype (::boost::hana::greater_equal(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::names,Generator::template generate<decltype(MetaClass<T>::metadata)>())),
-                                                   ::boost::hana::size(tup_inds)))::value)
-    return ::boost::hana::just(metautils::multiple_concat(::boost::hana::make_tuple(metautils::get_optional_value(check_invoke<T,Generator,Args...>(::boost::hana::at_c<Indices>(tup_inds))))...));
+constexpr decltype (auto) check_invokes_impl(IndexTuple&& inds_tup, ::std::index_sequence<Indices...>&&) {
+    if constexpr (decltype (::boost::hana::greater_equal(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
+                                                         Generator::template generate<decltype(MetaClass<T>::metadata)>())),::boost::hana::size(inds_tup)))::value)
+    return ::boost::hana::just(metautils::multiple_concat(::boost::hana::make_tuple(metautils::get_optional_value(check_invoke<T,Generator,Args...>(::boost::hana::at_c<Indices>(inds_tup))))...));
     else return ::boost::hana::nothing;
 }
 
@@ -101,7 +101,7 @@ constexpr decltype (auto) get_class_name() {
  * @return boost::hana::optional<...> of boost::hana::size_t or boost::hana::nothing if error happens
  */
 template <class T, class Generator = info::DefaultIndexGenerator>
-constexpr decltype (auto) get_count() {
+constexpr decltype (auto) count() {
     if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>))
     //Forcing unevaluated context to not interact with data(only with types)
         return ::boost::hana::just(::boost::hana::size_c<decltype(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
@@ -218,14 +218,14 @@ constexpr decltype (auto) check_invoke(I&& index) {
 }
 /**
  * @brief Checks whether methods can be invoked by given tuple of indices
- * @param tup_inds - tuple of indices
- * @return boost::hana::optional<...> of boost::hana::tuple_c<bool,...> (true or false for each method) or boost::hana::nothing if error happens
+ * @param inds_tup - tuple of indices
+ * @return boost::hana::optional<boost::hana::tuple<...>> of bool_c<true/false>/boost::hana::nothing or boost::hana::nothing if error happens
  */
 template<class T, class Generator,class... Args, class IndexTuple>
-constexpr decltype (auto) check_invokes(IndexTuple&& tup_inds) {
+constexpr decltype (auto) check_invokes(IndexTuple&& inds_tup) {
     if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>)&&
                   (::std::is_same<::boost::hana::tuple_tag,::boost::hana::tag_of_t<::std::decay_t<IndexTuple>>>::value)) {
-        return detail::check_invokes_impl<T,Generator,Args...>(::std::forward<IndexTuple>(tup_inds),::std::make_index_sequence<decltype (::boost::hana::size(tup_inds))::value>());
+        return detail::check_invokes_impl<T,Generator,Args...>(::std::forward<IndexTuple>(inds_tup),::std::make_index_sequence<decltype (::boost::hana::size(inds_tup))::value>());
     }
     else return ::boost::hana::nothing;
 }

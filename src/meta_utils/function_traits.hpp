@@ -1,5 +1,5 @@
-#ifndef FUNCTION_TRAITS_HPP
-#define FUNCTION_TRAITS_HPP
+#ifndef REFL_FUNCTION_TRAITS_HPP
+#define REFL_FUNCTION_TRAITS_HPP
 
 #include <utility>
 #include <type_traits>

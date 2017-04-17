@@ -1,5 +1,5 @@
-#ifndef REFLECT_INFORMATION_METHOD_HPP
-#define REFLECT_INFORMATION_METHOD_HPP
+#ifndef REFL_INFORMATION_METHOD_HPP
+#define REFL_INFORMATION_METHOD_HPP
 
 #include "../../meta_utils/meta_utils.hpp"
 #include "../types/reflect_information_object.hpp"
@@ -151,7 +151,7 @@ public:
 
     using type = Result Obj::*; /**< Method type */
 
-    using arg_types = ::boost::hana::tuple<Obj&&,Args...>; /**< Method arguments type */
+    using arg_types = ::boost::hana::tuple<Obj,Args...>; /**< Method arguments type */
 
     using return_type = decltype(metautils::constexpr_invoke(std::declval<type>(),std::declval<obj_type>(),std::declval<Args>()...)); /**< Method return type */
 
@@ -219,14 +219,14 @@ public:
  */
 template< class Result, class Obj, class... Args >
 class obj_const_method_t final {
-    Result const Obj::* p; /**< Pointer to const object method */
+    const Result Obj::* p; /**< Pointer to const object method */
 public:
 
     using obj_type = Obj; /**< Object type of pointer to const object method */
 
     using type = Result const Obj::*; /**< Method type */
 
-    using arg_types = ::boost::hana::tuple<Obj&&,Args...>; /**< Method arguments type */
+    using arg_types = ::boost::hana::tuple<Obj,Args...>; /**< Method arguments type */
 
     using return_type = decltype(metautils::constexpr_invoke(std::declval<type>(),std::declval<obj_type>(),std::declval<Args>()...)); /**< Method return type */
 
@@ -266,31 +266,7 @@ public:
      * @return utils::constexpr_invoke object of mem_fn_t::return_type
      */
     template <class... Args2>
-    constexpr auto operator()(Obj&& obj,Args2&&... args) -> decltype (metautils::constexpr_invoke(p, obj, ::std::forward<Args2>(args)...)) const {
-        return metautils::constexpr_invoke(p, obj, ::std::forward<Args2>(args)...);
-    }
-
-    /**
-     * @brief Invoke method
-     *
-     * @param obj member object
-     * @param args function arguments
-     * @return utils::constexpr_invoke object of mem_fn_t::return_type
-     */
-    template <class... Args2>
     constexpr auto operator()(const Obj& obj, Args2&&... args) -> decltype (metautils::constexpr_invoke(p, obj, ::std::forward<Args2>(args)...)) const {
-        return metautils::constexpr_invoke(p, obj, ::std::forward<Args2>(args)...);
-    }
-
-    /**
-     * @brief Invoke method
-     *
-     * @param obj member object
-     * @param args function arguments
-     * @return utils::constexpr_invoke object of mem_fn_t::return_type
-     */
-    template <class... Args2>
-    constexpr auto operator()(Obj& obj, Args2&&... args) -> decltype (metautils::constexpr_invoke(p, obj, ::std::forward<Args2>(args)...)) const {
         return metautils::constexpr_invoke(p, obj, ::std::forward<Args2>(args)...);
     }
 };
@@ -339,10 +315,9 @@ public:
      * @param args function arguments
      * @return utils::constexpr_invoke object of static_fn_t::return_type
      */
-    template <class T, class... Args2>
-    constexpr auto operator()(T&& value, Args2&&... args)
-    -> ::std::enable_if_t<!::std::is_same<::std::decay_t<T>,Obj_class>::value,decltype (metautils::constexpr_invoke(p, ::std::forward<T>(value), ::std::forward<Args2>(args)...))> const {
-        return metautils::constexpr_invoke(p, ::std::forward<T>(value), ::std::forward<Args2>(args)...);
+    template <class... Args2>
+    constexpr auto operator()(Args2&&... args) -> decltype (metautils::constexpr_invoke(p, ::std::forward<Args2>(args)...)) const {
+        return metautils::constexpr_invoke(p, ::std::forward<Args2>(args)...);
     }
 
     /**
@@ -352,8 +327,7 @@ public:
      * @return utils::constexpr_invoke object of static_fn_t::return_type
      */
     template <class T, class... Args2 >
-    constexpr auto operator()(T&&, Args2&&... args)
-    -> ::std::enable_if_t<::std::is_same<::std::decay_t<T>,Obj_class>::value,decltype (metautils::constexpr_invoke(p, ::std::forward<Args2>(args)...))> const {
+    constexpr auto operator()(T&&, Args2&&... args) -> decltype (metautils::constexpr_invoke(p, ::std::forward<Args2>(args)...)) const {
         return metautils::constexpr_invoke(p, ::std::forward<Args2>(args)...);
     }
 };
@@ -395,19 +369,19 @@ constexpr auto make_method(R* pm) -> static_method_t<T, R, Args...> {
 
 }
 
-#define REFLECT_OBJ_MET(NAME,...) \
+#define REFLECT_OBJ_MTD(NAME,...) \
     TUPLE_APPEND(names_state,counter,HANA_STR(#NAME)) \
     TUPLE_APPEND(metadata_state,counter,::reflect::info::make_method<decltype(::reflect::info::detail::MethodInfo<Type,##__VA_ARGS__>::return_type(&Type::NAME)) \
                  (__VA_ARGS__),Type,##__VA_ARGS__>(&Type::NAME)) \
     INCREASE_COUNTER(counter)
 
-#define REFLECT_CONST_OBJ_MET(NAME,...) \
+#define REFLECT_CONST_OBJ_MTD(NAME,...) \
     TUPLE_APPEND(names_state,counter,HANA_STR(#NAME)) \
     TUPLE_APPEND(metadata_state,counter,::reflect::info::make_const_method<decltype(::reflect::info::detail::MethodInfo<Type,##__VA_ARGS__>::return_type(&Type::NAME)) \
                  (__VA_ARGS__) const,Type,##__VA_ARGS__>(&Type::NAME)) \
     INCREASE_COUNTER(counter)
 
-#define REFLECT_STATIC_MET(NAME,...) \
+#define REFLECT_STATIC_MTD(NAME,...) \
     TUPLE_APPEND(names_state,counter,HANA_STR(#NAME)) \
     TUPLE_APPEND(metadata_state,counter,::reflect::info::make_method<Type,decltype(::reflect::info::detail::MethodInfo<void,##__VA_ARGS__>::return_type(&Type::NAME)) \
                  (__VA_ARGS__),##__VA_ARGS__>(&Type::NAME)) \

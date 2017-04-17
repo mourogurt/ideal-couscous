@@ -1,5 +1,5 @@
-#ifndef META_INFORMATION_HPP
-#define META_INFORMATION_HPP
+#ifndef REFL_INFORMATION_HPP
+#define REFL_INFORMATION_HPP
 
 #include "../meta_utils/meta_utils.hpp"
 #include "variables/reflect_information_variable.hpp"
@@ -94,7 +94,7 @@ public:
       */
     template<class Tuple>
     constexpr static decltype (auto) generate () {
-        return metautils::generate_tuple_indices<decltype(::boost::hana::size(::std::declval<Tuple>()))>();
+        return metautils::gen_inds_tup<decltype(::boost::hana::size(::std::declval<Tuple>()))>();
     }
 };
 

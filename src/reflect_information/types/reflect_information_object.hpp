@@ -1,5 +1,5 @@
-#ifndef REFLECT_INFORMATION_OBJECT_HPP
-#define REFLECT_INFORMATION_OBJECT_HPP
+#ifndef REFL_INFORMATION_OBJECT_HPP
+#define REFL_INFORMATION_OBJECT_HPP
 
 #include "../../meta_utils/meta_utils.hpp"
 

@@ -1,5 +1,5 @@
-#ifndef TUPLE_TRAITS_HPP
-#define TUPLE_TRAITS_HPP
+#ifndef REFL_TUPLE_TRAITS_HPP
+#define REFL_TUPLE_TRAITS_HPP
 
 #include <experimental/type_traits>
 #include <boost/hana/tuple.hpp>
@@ -73,7 +73,7 @@ constexpr decltype(auto) find_values_args_impl (::std::index_sequence< Indices..
  * @param std::index_sequence<Indices...> index sequence
  */
 template<::std::size_t Offset, ::std::size_t... Indices>
-constexpr decltype (auto) generate_tuple_indices_seq_impl(::std::index_sequence<Indices...>&&) {
+constexpr decltype (auto) gen_inds_tup_seq_impl(::std::index_sequence<Indices...>&&) {
     return ::boost::hana::tuple_c<std::size_t,Indices + Offset...>;
 }
 
@@ -140,8 +140,8 @@ constexpr decltype(auto) find_value_types (T const& value, ::boost::hana::tuple<
  *
  */
 template <class N, class Offset = ::boost::hana::size_t<0>>
-constexpr decltype (auto) generate_tuple_indices() {
-    return detail::generate_tuple_indices_seq_impl<::std::decay_t<Offset>::value>(::std::make_index_sequence<::std::decay_t<N>::value>());
+constexpr decltype (auto) gen_inds_tup() {
+    return detail::gen_inds_tup_seq_impl<::std::decay_t<Offset>::value>(::std::make_index_sequence<::std::decay_t<N>::value>());
 }
 
 /**

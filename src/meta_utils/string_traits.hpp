@@ -1,5 +1,5 @@
-#ifndef STRING_TRAITS_HPP
-#define STRING_TRAITS_HPP
+#ifndef REFL_STRING_TRAITS_HPP
+#define REFL_STRING_TRAITS_HPP
 
 #include <boost/hana/size.hpp>
 #include <boost/hana/tuple.hpp>

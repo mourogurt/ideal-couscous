@@ -1,5 +1,5 @@
-#ifndef CT_COUNTER_HPP
-#define CT_COUNTER_HPP
+#ifndef REFL_CT_COUNTER_HPP
+#define REFL_CT_COUNTER_HPP
 
 #include <cstddef>
 

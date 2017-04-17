@@ -1,5 +1,5 @@
-#ifndef REFLECT_INFORMATION_VARIABLE_HPP
-#define REFLECT_INFORMATION_VARIABLE_HPP
+#ifndef REFL_INFORMATION_VARIABLE_HPP
+#define REFL_INFORMATION_VARIABLE_HPP
 
 #include "../../meta_utils/meta_utils.hpp"
 #include "../types/reflect_information_object.hpp"
@@ -68,9 +68,9 @@ public:
 
     using type = Result Obj::*; /**< Pointer type */
 
-    using arg_types = ::boost::hana::tuple<Obj&&>; /**< Tuple pointer type (Needed to unify all pointer structs) */
+    using arg_types = ::boost::hana::tuple<Obj>; /**< Tuple pointer type (Needed to unify all pointer structs) */
 
-    using return_type = Result; /**< Return type */
+    using return_type = decltype(metautils::constexpr_invoke(std::declval<type>(),std::declval<obj_type>())); /**< Return type */
 
     /**
      * @brief method that indicates that the pointer - variable
@@ -99,7 +99,7 @@ public:
      * @param obj member object
      * @return utils::constexpr_invoke object of obj_var_t::return_type
      */
-    constexpr auto operator()(Obj&& obj) -> decltype (metautils::constexpr_invoke(p, obj)) const {
+    constexpr auto operator()(obj_type&& obj) -> decltype (metautils::constexpr_invoke(p, obj)) const {
         return metautils::constexpr_invoke(p, obj);
     }
 
@@ -109,7 +109,7 @@ public:
      * @param obj member object
      * @return utils::constexpr_invoke object of obj_var_t::return_type
      */
-    constexpr auto operator()(const Obj& obj) -> decltype (metautils::constexpr_invoke(p, obj)) const {
+    constexpr auto operator()(const obj_type& obj) -> decltype (metautils::constexpr_invoke(p, obj)) const {
         return metautils::constexpr_invoke(p, obj);
     }
 
@@ -119,7 +119,7 @@ public:
      * @param obj member object
      * @return utils::constexpr_invoke object of obj_var_t::return_type
      */
-    constexpr auto operator()(Obj& obj) -> decltype (metautils::constexpr_invoke(p, obj)) const  {
+    constexpr auto operator()(obj_type& obj) -> decltype (metautils::constexpr_invoke(p, obj)) const  {
         return metautils::constexpr_invoke(p, obj);
     }
 };
@@ -139,7 +139,7 @@ public:
 
     using arg_types = ::boost::hana::tuple<>; /**< Tuple pointer type (Needed to unify all pointer structs) */
 
-    using return_type = Obj; /**< Object of pointer type */
+    using return_type = type&; /**< Object of pointer type */
 
     /**
      * @brief method that indicates that the pointer - variable
@@ -177,7 +177,7 @@ public:
      * @return object of static_var_t::return_type
      */
     template<class T>
-    constexpr auto operator()(T&&) -> ::std::enable_if_t<::std::is_same<::std::decay_t<T>,Obj_class>::value,decltype (*p)> const {
+    constexpr auto operator()(T&&) -> decltype (*p) const {
         return *p;
     }
 };
