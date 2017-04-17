@@ -11,8 +11,11 @@ Project {
         "tests/tests.qbs",
         "docs/docs.qbs"
     ]
+    property bool withAutotests: qbs.buildVariant === "debug"
+    property bool testsEnabled: Environment.getEnv("TEST") || qbs.buildVariant === "debug"
     AutotestRunner {
         Depends { name: "Qt.core" }
+        Depends { name: "Qt.test" }
     }
 }
  
