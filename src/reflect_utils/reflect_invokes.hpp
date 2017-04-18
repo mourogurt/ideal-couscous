@@ -177,7 +177,7 @@ constexpr decltype (auto) sets_tuple_args_impl(IndexTuple&& inds_tup, SetArgTupl
  */
 template<class T, class Generator, class I, class... Args>
 constexpr decltype (auto) get (I&& index, Args&&... args) {
-    if constexpr ( (info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>) &&
+    if constexpr ( (decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>) &&
                    (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<I>>::value)) {
         if constexpr (decltype(::boost::hana::equal(check_invoke<T,Generator,decltype (::std::forward<Args>(args))...>(index),::boost::hana::just(::boost::hana::bool_c<true>)))::value) {
             if constexpr (!::std::is_void<decltype (detail::get_impl(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
@@ -202,7 +202,7 @@ constexpr decltype (auto) get (I&& index, Args&&... args) {
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class I, class SetArg, class... Args>
 constexpr decltype (auto) set (I&& index, SetArg&& s_arg, Args&&... args) {
-    if constexpr ( (info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>) &&
+    if constexpr ( (decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>) &&
                    (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<I>>::value)) {
         if constexpr (decltype(::boost::hana::equal(check_invoke<T,Generator,Args...>(index),::boost::hana::just(::boost::hana::bool_c<true>)))::value) {
                 return detail::set_impl(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
@@ -219,7 +219,7 @@ constexpr decltype (auto) set (I&& index, SetArg&& s_arg, Args&&... args) {
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class IndexTuple, class... Args>
 constexpr decltype (auto) gets (IndexTuple&& inds_tup, Args&&... args) {
-    if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>)&&
+    if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>)&&
                   (::std::is_same<::boost::hana::tuple_tag,::boost::hana::tag_of_t<::std::decay_t<IndexTuple>>>::value)) {
         return detail::gets_impl<T,Generator>(::std::forward<IndexTuple>(inds_tup),::std::make_index_sequence<decltype (::boost::hana::size(inds_tup))::value>(),::std::forward<Args>(args)...);
     } else return ::boost::hana::nothing;
@@ -234,7 +234,7 @@ constexpr decltype (auto) gets (IndexTuple&& inds_tup, Args&&... args) {
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class IndexTuple, class SetArg, class... Args>
 constexpr decltype (auto) sets (IndexTuple&& inds_tup, SetArg&& s_arg, Args&&... args) {
-    if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>)&&
+    if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>)&&
                   (::std::is_same<::boost::hana::tuple_tag,::boost::hana::tag_of_t<::std::decay_t<IndexTuple>>>::value)) {
         return detail::sets_impl<T,Generator>(::std::forward<IndexTuple>(inds_tup),::std::forward<SetArg>(s_arg),
                                               ::std::make_index_sequence<decltype (::boost::hana::size(inds_tup))::value>(),::std::forward<Args>(args)...);
@@ -249,7 +249,7 @@ constexpr decltype (auto) sets (IndexTuple&& inds_tup, SetArg&& s_arg, Args&&...
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class IndexTuple, class ArgsTuple>
 constexpr decltype (auto) gets_tuple_args (IndexTuple&& inds_tup, ArgsTuple&& args_tup) {
-    if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>)&&
+    if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>)&&
                   (::std::is_same<::boost::hana::tuple_tag,::boost::hana::tag_of_t<::std::decay_t<IndexTuple>>>::value) &&
                   (::std::is_same<::boost::hana::tuple_tag,::boost::hana::tag_of_t<::std::decay_t<ArgsTuple>>>::value)) {
         if constexpr (decltype (::boost::hana::equal(::boost::hana::size(inds_tup),::boost::hana::size(args_tup)))::value) {
@@ -268,7 +268,7 @@ constexpr decltype (auto) gets_tuple_args (IndexTuple&& inds_tup, ArgsTuple&& ar
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class IndexTuple, class SetArgTuple, class ArgsTuple>
 constexpr decltype (auto) sets_tuple_args(IndexTuple&& inds_tup, SetArgTuple&& s_args_tup, ArgsTuple&& args_tup) {
-    if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>)&&
+    if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>)&&
                   (::std::is_same<::boost::hana::tuple_tag,::boost::hana::tag_of_t<::std::decay_t<IndexTuple>>>::value) &&
                   (::std::is_same<::boost::hana::tuple_tag,::boost::hana::tag_of_t<::std::decay_t<ArgsTuple>>>::value) &&
                   (::std::is_same<::boost::hana::tuple_tag,::boost::hana::tag_of_t<::std::decay_t<SetArgTuple>>>::value)) {

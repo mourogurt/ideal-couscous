@@ -12,6 +12,7 @@ public:
     using Type = MetadataTest;
     OUT_METAINFO(MetadataTest)
 private slots:
+    void check_reflected();
     void class_name_method();
     void vars_obj_names();
     void vars_static_names();
@@ -52,6 +53,11 @@ REFLECT_OBJ_MTD(foo,int)
 REFLECT_CONST_OBJ_MTD(foo,int,double)
 REFLECT_STATIC_MTD(static_foo,int,double,const std::string&)
 END_METAINFO
+
+void MetadataTest::check_reflected() {
+    QCOMPARE(reflect::utils::check_reflected<Type>(), boost::hana::bool_c<true>);
+    QCOMPARE(reflect::utils::check_reflected<int>(), boost::hana::bool_c<false>);
+}
 
 void MetadataTest::class_name_method() {
     QVERIFY(reflect::utils::class_name<Type>().value() == HANA_STR("MetadataTest"));
