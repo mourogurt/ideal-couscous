@@ -2,6 +2,7 @@
 #define REFL_TUPLE_TRAITS_HPP
 
 #include <experimental/type_traits>
+#include "type_traits.hpp"
 #include <boost/hana/tuple.hpp>
 #include <boost/hana/concat.hpp>
 #include <boost/hana/size.hpp>
@@ -137,7 +138,6 @@ constexpr decltype(auto) find_value_types (T const& value, ::boost::hana::tuple<
 /**
  * @brief Generate tuple integral constants from [Offset; N+Offset)
  * @return Ruple of intergral constants
- *
  */
 template <class N, class Offset = ::boost::hana::size_t<0>>
 constexpr decltype (auto) gen_inds_tup() {
