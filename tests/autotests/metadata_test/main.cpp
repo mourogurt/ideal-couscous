@@ -6,8 +6,8 @@ class MetadataTest : public QObject {
 public:
     int var1,var2;
     static int static_var;
-    void foo (int);
-    int foo (int,double) const;
+    int& foo (int);
+    void foo (int,double) const;
     static double static_foo(int,double, const std::string&);
     using Type = MetadataTest;
     OUT_METAINFO(MetadataTest)
@@ -43,6 +43,7 @@ private slots:
     void check_const_invoke();
     void check_static_invoke();
     void check_invoke();
+    void check_set();
 };
 
 METAINFO(MetadataTest)
@@ -218,7 +219,7 @@ void MetadataTest::get_obj_method_types() {
     auto res_tuple = reflect::metautils::for_each([this](auto&& index) {
         return reflect::utils::method_result_type<Type,reflect::ObjMethods>(index).value();
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::ObjMethods>().value())>());
-    QVERIFY (res_tuple == (::boost::hana::tuple_t<void,int>));
+    QVERIFY (res_tuple == (::boost::hana::tuple_t<int&,void>));
 }
 
 void MetadataTest::get_const_method_types() {
@@ -229,7 +230,7 @@ void MetadataTest::get_const_method_types() {
     auto res_tuple = reflect::metautils::for_each([this](auto&& index) {
         return reflect::utils::method_result_type<Type,reflect::ConstMethods>(index).value();
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::ConstMethods>().value())>());
-    QVERIFY (res_tuple == (::boost::hana::tuple_t<int>));
+    QVERIFY (res_tuple == (::boost::hana::tuple_t<void>));
 
 }
 
@@ -253,9 +254,9 @@ void MetadataTest::get_method_types() {
     auto res_tuple = reflect::metautils::for_each([this](auto&& index) {
         return reflect::utils::method_result_type<Type,reflect::AllMethods>(index).value();
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::AllMethods>().value())>());
-    QVERIFY (res_tuple == (::boost::hana::tuple_t<void,int,double>));
+    QVERIFY (res_tuple == (::boost::hana::tuple_t<int&,void,double>));
     QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::types),typeid(::boost::hana::tuple<Type,int>));
-    QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::result_type),typeid(void));
+    QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::result_type),typeid(int&));
     QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::arg0_type),typeid(Type));
     QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::arg1_type),typeid(int));
     QCOMPARE(typeid(reflect::MethodInfo<Type,reflect::utils::count<Type,reflect::AllMethods>().value(),reflect::AllMethods>::types),typeid(boost::hana::nothing));
@@ -296,6 +297,15 @@ void MetadataTest::check_invoke() {
     QVERIFY((reflect::utils::check_invoke<Type,reflect::AllMethods>(reflect::utils::count<Type,reflect::AllMethods>().value())) == ::boost::hana::nothing);
     QVERIFY((reflect::utils::check_invoke<int,reflect::AllMethods>(::boost::hana::size_c<0>)) == ::boost::hana::nothing);
     QVERIFY((reflect::utils::check_invoke<Type,int>(::boost::hana::size_c<0>)) == ::boost::hana::nothing);
+}
+
+void MetadataTest::check_set() {
+    QCOMPARE((reflect::utils::check_set<Type,reflect::AllMethods,int,Type,int>(boost::hana::size_c<0>)),boost::hana::just(boost::hana::bool_c<true>));
+    QCOMPARE((reflect::utils::check_set<Type,reflect::AllMethods,int,Type,int>(boost::hana::size_c<1>)),boost::hana::just(boost::hana::bool_c<false>));
+    QCOMPARE((reflect::utils::check_set<Type,reflect::AllMethods,int,Type,int,double>(boost::hana::size_c<1>)),boost::hana::just(boost::hana::bool_c<false>));
+    QCOMPARE((reflect::utils::check_set<Type,int,int,Type,int>(boost::hana::size_c<0>)),boost::hana::nothing);
+    QCOMPARE((reflect::utils::check_set<Type,reflect::AllMethods,int,Type,int>(0)),boost::hana::nothing);
+    QCOMPARE((reflect::utils::check_set<int,reflect::AllMethods,int,Type,int>(boost::hana::size_c<0>)),boost::hana::nothing);
 }
 
 QTEST_MAIN(MetadataTest)

@@ -29,7 +29,7 @@ namespace detail {
  */
 template<class T, class... Args>
 constexpr decltype (auto) get_impl (T&& p, Args&& ...args) {
-    if constexpr (::std::decay_t<decltype(::boost::hana::size(std::declval<typename T::arg_types>()))>::value != 0) return p(::std::forward<Args>(args)...);
+    if constexpr (::std::decay_t<decltype(::boost::hana::size(::std::declval<typename T::arg_types>()))>::value != 0) return p(::std::forward<Args>(args)...);
     else return p();
 }
 
@@ -42,17 +42,12 @@ constexpr decltype (auto) get_impl (T&& p, Args&& ...args) {
  */
 template<class T, class SetArg, class... Args>
 constexpr decltype (auto) set_impl (T&& p, SetArg&& s_arg, Args&& ...args) {
-        if constexpr (::std::decay_t<decltype(::boost::hana::size(std::declval<typename T::arg_types>()))>::value != 0) {
-            if constexpr (std::is_assignable<decltype (p(::std::forward<Args>(args)...)),decltype (s_arg)>::value) {
-                p(::std::forward<Args>(args)...) = s_arg;
-                return ::boost::hana::just(::boost::hana::bool_c<true>);
-            } else return ::boost::hana::nothing;
+        if constexpr (::std::decay_t<decltype(::boost::hana::size(::std::declval<typename T::arg_types>()))>::value != 0) {
+            p(::std::forward<Args>(args)...) = s_arg;
+            return ::boost::hana::just(::boost::hana::bool_c<true>);
         } else {
-            if constexpr (std::is_assignable<decltype (p() = s_arg),decltype (s_arg)>::value) {
-                p() = s_arg;
-                return ::boost::hana::just(::boost::hana::bool_c<true>);
-            }
-            else return ::boost::hana::nothing;
+            p() = s_arg;
+            return ::boost::hana::just(::boost::hana::bool_c<true>);
         }
 }
 
@@ -204,7 +199,7 @@ template<class T, class Generator = info::DefaultIndexGenerator, class I, class 
 constexpr decltype (auto) set (I&& index, SetArg&& s_arg, Args&&... args) {
     if constexpr ( (decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>) &&
                    (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<I>>::value)) {
-        if constexpr (decltype(::boost::hana::equal(check_invoke<T,Generator,Args...>(index),::boost::hana::just(::boost::hana::bool_c<true>)))::value) {
+        if constexpr (decltype(::boost::hana::equal(check_set<T,Generator,decltype (s_arg),decltype (::std::forward<Args>(args))...>(index),::boost::hana::just(::boost::hana::bool_c<true>)))::value) {
                 return detail::set_impl(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
                                                    Generator::template generate<decltype(MetaClass<T>::metadata)>()),index),::std::forward<SetArg>(s_arg),::std::forward<Args>(args)...);
         } else return ::boost::hana::nothing;

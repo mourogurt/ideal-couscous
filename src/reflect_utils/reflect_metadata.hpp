@@ -48,24 +48,46 @@ constexpr decltype (auto) method_args_helper_method_impl(I&& index) {
 /**
  * @brief SFINAE check whether we can call operator () with given types
  */
-template <class T,class... Args>
-struct is_invokable
+template<class T,class... Args>
+struct is_invocable
 {
     template <class C> static constexpr ::std::true_type check(::std::decay_t<decltype(::std::declval<C>()(::std::declval<Args>()...))>*);
     template <class> static constexpr ::std::false_type check(...);
     static constexpr bool value = ::std::is_same<::std::true_type, decltype(check<T>(nullptr))>::value;
 };
 
-template <class... Args> constexpr bool is_invokable_v = is_invokable<Args...>::value; /**< Helper variable template for is_invokable */
+template <class... Args> constexpr bool is_invocable_v = is_invocable<Args...>::value; /**< Helper variable template for is_invocable */
 
 /**
- * @brief Check whether we can call Item with given Args types
- * @return boost::hana::bool_c<...>
+ * @brief Struct checker if return value of invocation is assignable
  */
-template<class Item, class ... Args>
+template<class T, class SetArg, class... Args >
+struct is_invoke_assignable {
+    static constexpr bool value = ::std::is_assignable<decltype (::std::declval<T>()(::std::declval<Args>()...)),SetArg>::value;
+};
+
+template <class... Args> constexpr bool is_invoke_assignable_v = is_invoke_assignable<Args...>::value; /**< Helper variable template for is_invoke_assignable */
+
+/**
+ * @brief Implementation of check_invoke
+ * @return boost::hana::bool_c<true/false>
+ */
+template<class ... Args>
 constexpr decltype (auto) check_invoke_impl () {
-    if constexpr (is_invokable_v<Item,Args...>) return ::boost::hana::bool_c<true>;
+    if constexpr (is_invocable_v<Args...>) return ::boost::hana::bool_c<true>;
     else return ::boost::hana::bool_c<false>;
+}
+
+/**
+ * @brief Implementation of check_set
+ * @return boost::hana::bool_c<true/false>
+ */
+template<class T, class SetArg,class ... Args>
+constexpr decltype (auto) check_set_impl () {
+    if constexpr (is_invocable_v<T,Args...>) {
+        if constexpr (is_invoke_assignable_v<T,SetArg,Args...>) return ::boost::hana::bool_c<true>;
+        else return ::boost::hana::bool_c<false>;
+    } else return ::boost::hana::bool_c<false>;
 }
 
 }
@@ -104,7 +126,7 @@ constexpr decltype (auto) count() {
 
 /**
  * @brief Get name of element
- * @param index - index of number(boost::hana::size_t)
+ * @param index - index(boost::hana::size_t)
  * @return boost::hana::optional<...> of ct-string or boost::hana::nothing if error happens
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class I>
@@ -133,7 +155,7 @@ constexpr decltype (auto) find_name(String&& str) {
 
 /**
  * @brief Return args types of method
- * @param index - method index
+ * @param index - method index(boost::hana::size_t)
  * @return boost::hana::optional<...> of boost::hana::tuple_t<Types...> or boost::hana::nothing if error happens
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class I>
@@ -150,7 +172,7 @@ constexpr decltype (auto) method_args(I&& index) {
 
 /**
  * @brief Returns amount of method args
- * @param index - method index
+ * @param index - method index(boost::hana::size_t)
  * @return boost::hana::optional<...> of boost::hana::size_t<...> or boost::hana::nothing if error happens
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class I>
@@ -160,7 +182,7 @@ constexpr decltype (auto) methods_args_count (I&& index) {
 
 /**
  * @brief Returns result type of method
- * @param index - method index
+ * @param index - method index(boost::hana::size_t)
  * @return boost::hana::optional<...> of boost::hana::type_t<...> or boost::hana::nothing if error happens
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class I>
@@ -177,8 +199,8 @@ constexpr decltype (auto) method_result_type(I&& index) {
 
 /**
  * @brief Returns Jth argument type of method
- * @param index1 - method index
- * @param index2 - argument index
+ * @param index1 - method index(boost::hana::size_t)
+ * @param index2 - argument index(boost::hana::size_t)
  * @return boost::hana::optional<...> of boost::hana::type_t<...> or boost::hana::nothing if error happens
  *
  */
@@ -193,8 +215,8 @@ constexpr decltype (auto) get_method_arg(I&& index1, J&& index2) {
 }
 
 /**
- * @brief Checks whether method can be invoked by given index
- * @param index - method index
+ * @brief Checks whether method can be invoked
+ * @param index - index(boost::hana::size_t)
  * @return boost::hana::optional<...> of boost::hana::type_c<bool,...> (true or false if method can be invoked) or boost::hana::nothing if error happens
  */
 template<class T, class Generator,class... Args, class I>
@@ -204,10 +226,25 @@ constexpr decltype (auto) check_invoke(I&& index) {
                   (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<::std::decay_t<I>>>::value)) {
         if constexpr(decltype(::boost::hana::greater(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())),index))::value)
             return ::boost::hana::just(detail::check_invoke_impl<::std::decay_t<decltype(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
-                                                                      Generator::template generate<decltype(MetaClass<T>::metadata)>()),index))>,Args...>());
+                                                                 Generator::template generate<decltype(MetaClass<T>::metadata)>()),index))>,Args...>());
         else return ::boost::hana::nothing;
-    }
-    else return ::boost::hana::nothing;
+    } else return ::boost::hana::nothing;
+}
+
+/**
+ * @brief Check if we can assign to return value(or value) of method/variable
+ * @param index - index(boost::hana::size_t)
+ * @return boost::hana::optional<...> of boost::hana::type_c<bool,...> (true or false if method can be invoked) or boost::hana::nothing if error happens
+ */
+template<class T, class Generator, class SetArg, class...Args, class I>
+constexpr decltype (auto) check_set(I&& index) {
+    if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>)&&
+                  (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<::std::decay_t<I>>>::value)) {
+        if constexpr(decltype(::boost::hana::greater(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())),index))::value)
+            return ::boost::hana::just(detail::check_set_impl<::std::decay_t<decltype(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
+                                                                 Generator::template generate<decltype(MetaClass<T>::metadata)>()),index))>,SetArg,Args...>());
+        else return ::boost::hana::nothing;
+    } else return ::boost::hana::nothing;
 }
 
 }
