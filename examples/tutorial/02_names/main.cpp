@@ -17,7 +17,7 @@ struct SomeStruct{
     void bar();
     void bar(float);
     IN_METAINFO(SomeStruct)
-    REFLECT_OBJ_MTD(foo<int>,int&&)         //We can't reflect template method(becouse we can't get pointer to template method), but we can reflect specialized method
+    REFLECT_OBJ_MTD(foo<int>,int&&)         //We can't reflect template method(because we can't get pointer to template method), but we can reflect specialized method
     REFLECT_OBJ_MTD(foo<double>,double&&)
     REFLECT_OBJ_MTD(bar)
     REFLECT_OBJ_MTD(bar,float)
