@@ -1,6 +1,6 @@
 #include <iostream>
 
-#define STRING_MAXLEN 256                                            //Max length of ct-string(also this parameter specifies the max size of the name of the vars/methods)
+#define STRING_MAXLEN 128                                            //Max length of ct-string(also this parameter specifies the max size of the name of the vars/methods)
                                                                      //Default value: 64 (if STRING_MAXLEN is not defined). It's important to define it BEFORE include reflection headers
 #include <reflect.hpp>                                               //Main ideal couscous header
 
