@@ -130,7 +130,7 @@ constexpr decltype (auto) count() {
  * @return boost::hana::optional<...> of ct-string or boost::hana::nothing if error happens
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class I>
-constexpr decltype (auto) element_name (I&& index) {
+constexpr decltype (auto) member_name (I&& index) {
     if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>) &&
                   (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<I>>::value)) {
         if constexpr (decltype (::boost::hana::greater(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::names,Generator::template generate<decltype(MetaClass<T>::metadata)>())),index))::value)
@@ -146,7 +146,7 @@ constexpr decltype (auto) element_name (I&& index) {
  * @return boost::hana::optional<...> of boost::hana::size_t or boost::hana::nothing if error happens
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class String>
-constexpr decltype (auto) find_name(String&& str) {
+constexpr decltype (auto) find_by_name(String&& str) {
     if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>) &&
                   (::std::is_same<::boost::hana::string_tag,::boost::hana::tag_of_t<String>>::value))
         return ::boost::hana::just(metautils::find_value_types(str,metautils::copy_tuple_sequence(MetaClass<T>::names,Generator::template generate<decltype(MetaClass<T>::metadata)>())));
