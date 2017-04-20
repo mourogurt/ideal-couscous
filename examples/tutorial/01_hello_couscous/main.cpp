@@ -11,6 +11,7 @@ inline namespace reflect {using namespace ::reflect; }               //ideal cou
 }
 
 namespace hana = boost::hana;
+using namespace boost::hana::literals;
 
 struct InStructReflect {
     int var;
@@ -54,12 +55,17 @@ struct InTemplateStruct {
 
 template <class... Args>
 struct OutTemplateStruct {
+    int var;
     void foo(Args&&...);
     OUT_METAINFO(OutTemplateStruct)
 };
 
-TEMPLATE_METAINFO(OutTemplateStruct,class... Args,Args...)
-REFLECT_OBJ_MTD(foo,Args...)
+TEMPLATE_METAINFO(OutTemplateStruct,class... Args,Args...)  //Second parameter needed to define all templetes which will be used; third parameter - spetialization for metainformation
+REFLECT_OBJ_MTD(foo,Args&&...)
+END_METAINFO
+
+TEMPLATE_METAINFO(OutTemplateStruct,,int)                  //Spetialize Metainformation for OutTemplateStruct<int>
+REFLECT_OBJ_VAR(var)
 END_METAINFO
 
 int main () {
@@ -83,5 +89,8 @@ int main () {
     std::cout << (BOOST_HANA_STRING("Hello couscous") == HANA_STR("Hello couscous")) << std::endl;
     constexpr auto str = HANA_STR("This is ct-string\n");
     std::cout << hana::to<const char*>(str);
+    //Metainformation spetialization example
+    std::cout << couscous::get_opt_val(couscous::count<OutTemplateStruct<std::string>,couscous::AllMethods>()) << std::endl;
+    std::cout << couscous::get_opt_val(couscous::count<OutTemplateStruct<int>,couscous::AllVars>()) << std::endl;
     return 0;
 }

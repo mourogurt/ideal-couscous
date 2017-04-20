@@ -158,6 +158,15 @@ struct MetaInfo;
                 friend constexpr auto class_name_detail(const Type*, const MetaInfo_type*) -> decltype (#TYPE) { return #TYPE; } \
                 constexpr static ::reflect::metautils::counter<0> counter (::reflect::metautils::counter<0>);
 
+#define TEMPLATE_METAINFO_SPETIALIZE(TYPE,TEMPLATE) \
+    namespace reflect { \
+        namespace info { \
+            struct MetaInfo<TYPE<TEMPLATE>> { \
+                using Type = TYPE<TEMPLATE>; \
+                using MetaInfo_type = ::reflect::info::MetaInfo<Type>; \
+                friend constexpr auto class_name_detail(const Type*, const MetaInfo_type*) -> decltype (#TYPE) { return #TYPE; } \
+                constexpr static ::reflect::metautils::counter<0> counter (::reflect::metautils::counter<0>);
+
 #define END_METAINFO \
             }; \
     } }
