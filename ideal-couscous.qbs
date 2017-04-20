@@ -9,7 +9,8 @@ Project {
     references: [
         "src/src.qbs",
         "tests/tests.qbs",
-        "docs/docs.qbs"
+        "docs/docs.qbs",
+        "examples/examples.qbs"
     ]
     property bool withAutotests: qbs.buildVariant === "debug"
     property bool testsEnabled: Environment.getEnv("TEST") || qbs.buildVariant === "debug"

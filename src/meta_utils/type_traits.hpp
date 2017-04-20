@@ -33,7 +33,7 @@ constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value; /**< Hel
 template<class T>
 constexpr decltype (auto) get_opt_val (T&& t) {
     if constexpr (::std::is_same<::boost::hana::optional_tag,::boost::hana::tag_of_t<::std::decay_t<T>>>::value) {
-        if constexpr (!decltype(::boost::hana::is_nothing(t))::value) return t.value();
+        if constexpr (decltype(::boost::hana::is_just(t))::value) return t.value();
         else return ::boost::hana::nothing;
     } else return t;
 }

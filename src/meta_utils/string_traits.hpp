@@ -63,7 +63,9 @@ constexpr decltype (auto) remove_zeros_from_ct_string (const T str) {
 
 }
 
+#ifndef STRING_MAXLEN
 #define STRING_MAXLEN 64 /**< maximum length of compile-time string */
+#endif
 #define  CHECK_STR_CHAR(_, i, str) (sizeof(str) > (i) ? str[(i)] : 0),
 #define CT_STR(str) BOOST_PP_REPEAT(STRING_MAXLEN, CHECK_STR_CHAR,str) 0
 
