@@ -11,7 +11,6 @@ inline namespace reflect {using namespace ::reflect; }               //ideal cou
 }
 
 namespace hana = boost::hana;
-using namespace boost::hana::literals;
 
 struct InStructReflect {
     int var;
@@ -84,11 +83,6 @@ int main () {
     std::cout << couscous::get_opt_val(couscous::count<InStructReflect,couscous::AllMethods>()) << '\t'
               << couscous::get_opt_val(couscous::count<OutStructReflect,couscous::StaticVars>()) << std::endl; //count function returns size of selected generator(AllMethods,StaticVars)
     //get_opt_val(t) - returns: t.value() if t - is_just == true, otherwise: t
-    //String: there are two ways to create metastring. First: BOOST_HANA_STRING("...") - pros: input string can be any size; cons: only runtime creation(at least for now)
-    //Second: HANA_STR("...") - pros: compile time where it possible; cons: max size of input string limited to STRING_MAXLEN
-    std::cout << (BOOST_HANA_STRING("Hello couscous") == HANA_STR("Hello couscous")) << std::endl;
-    constexpr auto str = HANA_STR("This is ct-string\n");
-    std::cout << hana::to<const char*>(str);
     //Metainformation spetialization example
     std::cout << couscous::get_opt_val(couscous::count<OutTemplateStruct<std::string>,couscous::AllMethods>()) << std::endl;
     std::cout << couscous::get_opt_val(couscous::count<OutTemplateStruct<int>,couscous::AllVars>()) << std::endl;
