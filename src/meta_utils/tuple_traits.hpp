@@ -136,7 +136,7 @@ constexpr decltype(auto) find_value_types (T const& value, ::boost::hana::tuple<
 }
 
 /**
- * @brief Generate tuple integral constants from [Offset; N+Offset)
+ * @brief Generate tuple of integral constants from [Offset; N+Offset)
  * @return Ruple of intergral constants
  */
 template <class N, class Offset = ::boost::hana::size_t<0>>

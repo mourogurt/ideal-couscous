@@ -7,6 +7,7 @@
 
 /**
  * @brief Reflection namespace
+ * @todo move from tuple of indices to ranges
  * @todo serialization examples (console, json)
  * @todo performance benchmarks
  * @todo compile time benchmarks
