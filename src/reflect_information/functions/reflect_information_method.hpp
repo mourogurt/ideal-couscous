@@ -21,10 +21,17 @@ struct MethodInfo {
     static constexpr auto pointer_type(Ret(T::*)(Args...)) -> Ret(T::*)(Args...);
 
     template<class Ret>
-    static constexpr auto pointer_type(Ret(T::*)(Args...) const) -> Ret(T::*)(Args...) const;
-
-    template<class Ret>
     static constexpr auto return_type(Ret(T::*)(Args...)) -> Ret;
+};
+
+/**
+ * @brief Helper struct to get const object method types
+ *
+ */
+template<class T, class... Args>
+struct ConstMethodInfo {
+    template<class Ret>
+    static constexpr auto pointer_type(Ret(T::*)(Args...) const) -> Ret(T::*)(Args...) const;
 
     template<class Ret>
     static constexpr auto return_type(Ret(T::*)(Args...) const) -> Ret const;
@@ -377,7 +384,7 @@ constexpr auto make_method(R* pm) -> static_method_t<T, R, Args...> {
 
 #define REFLECT_CONST_OBJ_MTD(NAME,...) \
     TUPLE_APPEND(names_state,counter,HANA_STR(#NAME)) \
-    TUPLE_APPEND(metadata_state,counter,::reflect::info::make_const_method<decltype(::reflect::info::detail::MethodInfo<Type,##__VA_ARGS__>::return_type(&Type::NAME)) \
+    TUPLE_APPEND(metadata_state,counter,::reflect::info::make_const_method<decltype(::reflect::info::detail::ConstMethodInfo<Type,##__VA_ARGS__>::return_type(&Type::NAME)) \
                  (__VA_ARGS__) const,Type,##__VA_ARGS__>(&Type::NAME)) \
     INCREASE_COUNTER(counter)
 
