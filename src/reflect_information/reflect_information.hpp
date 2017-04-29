@@ -74,9 +74,11 @@ constexpr decltype (auto) metadata_tuple (::std::index_sequence<Indices... >&&) 
  */
 template <class T>
 struct MetaClass {
+    using Type = typename T::Type;
+    using MetaInfo_type = T;
     static constexpr auto class_name   {HANA_STR(class_name_detail(static_cast<const typename T::Type*>(nullptr),static_cast<const T*>(nullptr)))}; /**< compile-time string of class name */
-    static constexpr auto names        {detail::names_tuple<typename T::Type, T>(::std::make_index_sequence<decltype(T::counter(metautils::counter<>{}))::value>{})}; /**< tuple of all variable names */
-    static constexpr auto metadata     {detail::metadata_tuple<typename T::Type, T>(::std::make_index_sequence<decltype(T::counter(metautils::counter<>{}))::value>{})}; /**< tuple of all method names  */
+    static constexpr auto names        {detail::names_tuple<Type, MetaInfo_type>(::std::make_index_sequence<decltype(counter(metautils::counter<>{},static_cast<const MetaInfo_type*>(nullptr)))::value>{})}; /**< tuple of all variable names */
+    static constexpr auto metadata     {detail::metadata_tuple<Type, MetaInfo_type>(::std::make_index_sequence<decltype(counter(metautils::counter<>{},static_cast<const MetaInfo_type*>(nullptr)))::value>{})}; /**< tuple of all method names  */
 };
 
 class EmptyGenerator;
@@ -130,7 +132,7 @@ struct MetaInfo;
     using MetaInfo_type = TYPE; \
     static constexpr auto is_reflected () {return std::true_type();} \
     friend constexpr auto class_name_detail(const Type*, const MetaInfo_type*) -> decltype (#TYPE) { return #TYPE; } \
-    constexpr static ::reflect::metautils::counter<0> counter (::reflect::metautils::counter<0>);
+    friend constexpr ::reflect::metautils::counter<0> counter (::reflect::metautils::counter<0>, const MetaInfo_type*);
 
 #define OUT_METAINFO(TYPE) \
     friend struct reflect::info::MetaInfo<TYPE>; \
@@ -146,7 +148,7 @@ struct MetaInfo;
                 using Type = TYPE; \
                 using MetaInfo_type = ::reflect::info::MetaInfo<Type>; \
                 friend constexpr auto class_name_detail(const Type*, const MetaInfo_type*) -> decltype (#TYPE) { return #TYPE; } \
-                constexpr static ::reflect::metautils::counter<0> counter (::reflect::metautils::counter<0>);
+                friend constexpr ::reflect::metautils::counter<0> counter (::reflect::metautils::counter<0>, const MetaInfo_type*);
 
 #define TEMPLATE_METAINFO(TYPE,TEMPLATE_TYPE,TEMPLATE) \
     namespace reflect { \
@@ -156,7 +158,7 @@ struct MetaInfo;
                 using Type = TYPE<TEMPLATE>; \
                 using MetaInfo_type = ::reflect::info::MetaInfo<Type>; \
                 friend constexpr auto class_name_detail(const Type*, const MetaInfo_type*) -> decltype (#TYPE) { return #TYPE; } \
-                constexpr static ::reflect::metautils::counter<0> counter (::reflect::metautils::counter<0>);
+                friend constexpr ::reflect::metautils::counter<0> counter (::reflect::metautils::counter<0>, const MetaInfo_type*);
 
 #define TEMPLATE_METAINFO_SPETIALIZE(TYPE,TEMPLATE) \
     namespace reflect { \
@@ -165,19 +167,19 @@ struct MetaInfo;
                 using Type = TYPE<TEMPLATE>; \
                 using MetaInfo_type = ::reflect::info::MetaInfo<Type>; \
                 friend constexpr auto class_name_detail(const Type*, const MetaInfo_type*) -> decltype (#TYPE) { return #TYPE; } \
-                constexpr static ::reflect::metautils::counter<0> counter (::reflect::metautils::counter<0>);
+                friend constexpr ::reflect::metautils::counter<0> counter (::reflect::metautils::counter<0>, const MetaInfo_type*);
 
 #define END_METAINFO \
             }; \
     } }
 
 #define TUPLE_APPEND(STATE, COUNTER, ...) \
-    friend constexpr auto STATE(::reflect::metautils::counter<decltype(COUNTER(::reflect::metautils::counter<>{}))::value>, \
+    friend constexpr auto STATE(::reflect::metautils::counter<decltype(COUNTER(::reflect::metautils::counter<>{},static_cast<const MetaInfo_type*>(nullptr)))::value>, \
             const Type*, const MetaInfo_type*) -> decltype (::boost::hana::make_tuple(__VA_ARGS__)) \
         { return ::boost::hana::make_tuple(__VA_ARGS__); }
 
 #define INCREASE_COUNTER(COUNTER) \
-    constexpr static ::reflect::metautils::counter<decltype(COUNTER(::reflect::metautils::counter<>{}))::value+1u> \
-                     COUNTER (::reflect::metautils::counter<decltype(COUNTER(::reflect::metautils::counter<>{}))::value+1u>);
+    friend constexpr ::reflect::metautils::counter<decltype(COUNTER(::reflect::metautils::counter<>{},static_cast<const MetaInfo_type*>(nullptr)))::value+1u> \
+                     COUNTER (::reflect::metautils::counter<decltype(COUNTER(::reflect::metautils::counter<>{},static_cast<const MetaInfo_type*>(nullptr)))::value+1u>, const MetaInfo_type*);
 
 #endif // META_INFORMATION_HPP
