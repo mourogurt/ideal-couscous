@@ -91,7 +91,7 @@ public:
      *
      * @param p object pointer
      */
-    constexpr obj_var_t(type p) noexcept: p(p) {}
+    explicit constexpr obj_var_t(type p) noexcept: p(p) {}
 
     /**
      * @brief Invoke operator
@@ -160,7 +160,7 @@ public:
      *
      * @param p pointer
      */
-    constexpr static_var_t(type p) noexcept : p(p) {}
+    explicit constexpr static_var_t(type p) noexcept : p(p) {}
 
     /**
      * @brief Dereference of pointer (if class object is not provided)
@@ -189,9 +189,8 @@ public:
  * @return mem_fn_t<R, T>
  */
 template< class R, class T  >
-constexpr auto make_var(R T::* pm)
- -> obj_var_t<R, T> {
-    return {pm};
+constexpr decltype(auto) make_var(R T::* pm) {
+    return obj_var_t<R, T>(pm);
 }
 
 /**
@@ -201,9 +200,8 @@ constexpr auto make_var(R T::* pm)
  * @return static_var_t<T>
  */
 template <class R, class T>
-constexpr auto make_var (T* pm)
- -> static_var_t<R,T> {
-    return {pm};
+constexpr decltype(auto) make_var (T* pm) {
+    return static_var_t<R,T>(pm);
 }
 
 }

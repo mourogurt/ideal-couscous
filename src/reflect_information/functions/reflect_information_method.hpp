@@ -181,7 +181,7 @@ public:
      *
      * @param p method pointer
      */
-    constexpr obj_method_t(type p) noexcept: p(p) {}
+    explicit constexpr obj_method_t(type p) noexcept: p(p) {}
 
     /**
      * @brief Invoke function
@@ -263,7 +263,7 @@ public:
      *
      * @param p method pointer
      */
-    constexpr obj_const_method_t(type p) noexcept: p(p) {}
+    explicit constexpr obj_const_method_t(type p) noexcept: p(p) {}
 
     /**
      * @brief Invoke method
@@ -314,7 +314,7 @@ public:
      *
      * @param p function pointer
      */
-    constexpr static_method_t(type p) noexcept : p(p) {}
+    explicit constexpr static_method_t(type p) noexcept : p(p) {}
 
     /**
      * @brief Invoke method (if class object is not provided)
@@ -346,8 +346,8 @@ public:
  * @return obj_method_t<R, T, Args...>
  */
 template< class R, class T, class... Args  >
-constexpr auto make_method(R T::* pm) -> obj_method_t<R, T, Args...> {
-    return {pm};
+constexpr decltype(auto) make_method(R T::* pm) {
+    return obj_method_t<R, T, Args...>(pm);
 }
 
 /**
@@ -357,8 +357,8 @@ constexpr auto make_method(R T::* pm) -> obj_method_t<R, T, Args...> {
  * @return obj_const_method_t<R, T, Args...>
  */
 template< class R, class T, class... Args  >
-constexpr auto make_const_method(R const T::* pm) -> obj_const_method_t<R, T, Args...> {
-    return {pm};
+constexpr decltype(auto) make_const_method(R const T::* pm) {
+    return obj_const_method_t<R, T, Args...>(pm);
 }
 
 /**
@@ -368,8 +368,8 @@ constexpr auto make_const_method(R const T::* pm) -> obj_const_method_t<R, T, Ar
  * @return static_method_t<R, T, Args...>
  */
 template<class T, class R, class... Args  >
-constexpr auto make_method(R* pm) -> static_method_t<T, R, Args...> {
-    return {pm};
+constexpr decltype(auto) make_method(R* pm) {
+    return static_method_t<T, R, Args...>(pm);
 }
 
 }
