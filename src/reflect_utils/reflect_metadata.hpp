@@ -181,12 +181,12 @@ constexpr decltype (auto) methods_args_count (I&& index) {
 }
 
 /**
- * @brief Returns result type of method
+ * @brief Returns result type of method/variable
  * @param index - method index(boost::hana::size_t)
  * @return boost::hana::optional<...> of boost::hana::type_t<...> or boost::hana::nothing if error happens
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class I>
-constexpr decltype (auto) method_result_type(I&& index) {
+constexpr decltype (auto) result_type(I&& index) {
     if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>)&&
                   (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<I>>::value)) {
         if constexpr(decltype(::boost::hana::greater(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())),index))::value)

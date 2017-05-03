@@ -217,7 +217,7 @@ void MetadataTest::get_obj_method_types() {
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::ObjMethods>().value())>());
     QVERIFY (tuple == ::boost::hana::make_tuple(::boost::hana::tuple_t<Type,int>,::boost::hana::tuple_t<Type,int,double>));
     auto res_tuple = reflect::metautils::for_each([this](auto&& index) {
-        return reflect::utils::method_result_type<Type,reflect::ObjMethods>(index).value();
+        return reflect::utils::result_type<Type,reflect::ObjMethods>(index).value();
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::ObjMethods>().value())>());
     QVERIFY (res_tuple == (::boost::hana::tuple_t<int&,void>));
 }
@@ -228,7 +228,7 @@ void MetadataTest::get_const_method_types() {
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::ConstMethods>().value())>());
     QVERIFY (tuple == ::boost::hana::make_tuple(::boost::hana::tuple_t<Type,int,double>));
     auto res_tuple = reflect::metautils::for_each([this](auto&& index) {
-        return reflect::utils::method_result_type<Type,reflect::ConstMethods>(index).value();
+        return reflect::utils::result_type<Type,reflect::ConstMethods>(index).value();
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::ConstMethods>().value())>());
     QVERIFY (res_tuple == (::boost::hana::tuple_t<void>));
 
@@ -240,7 +240,7 @@ void MetadataTest::get_static_method_types() {
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::StaticMethods>().value())>());
     QVERIFY (tuple == ::boost::hana::make_tuple(::boost::hana::tuple_t<int,double,const std::string&>));
     auto res_tuple = reflect::metautils::for_each([this](auto&& index) {
-        return reflect::utils::method_result_type<Type,reflect::StaticMethods>(index).value();
+        return reflect::utils::result_type<Type,reflect::StaticMethods>(index).value();
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::StaticMethods>().value())>());
     QVERIFY (res_tuple == (::boost::hana::tuple_t<double>));
 }
@@ -252,7 +252,7 @@ void MetadataTest::get_method_types() {
     QVERIFY (tuple == ::boost::hana::make_tuple(::boost::hana::tuple_t<Type,int>,::boost::hana::tuple_t<Type,int,double>,
                                                 ::boost::hana::tuple_t<int,double,const std::string&>));
     auto res_tuple = reflect::metautils::for_each([this](auto&& index) {
-        return reflect::utils::method_result_type<Type,reflect::AllMethods>(index).value();
+        return reflect::utils::result_type<Type,reflect::AllMethods>(index).value();
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::AllMethods>().value())>());
     QVERIFY (res_tuple == (::boost::hana::tuple_t<int&,void,double>));
     QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::types),typeid(::boost::hana::tuple<Type,int>));
