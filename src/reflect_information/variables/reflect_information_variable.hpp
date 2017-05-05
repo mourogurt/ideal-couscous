@@ -139,7 +139,7 @@ public:
 
     using arg_types = ::boost::hana::tuple<>; /**< Tuple pointer type (Needed to unify all pointer structs) */
 
-    using return_type = type&; /**< Object of pointer type */
+    using return_type = decltype (*p); /**< Object of pointer type */
 
     /**
      * @brief method that indicates that the pointer - variable

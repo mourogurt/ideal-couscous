@@ -205,7 +205,7 @@ constexpr decltype (auto) result_type(I&& index) {
  *
  */
 template<class T, class Generator = info::DefaultIndexGenerator, class I, class J>
-constexpr decltype (auto) get_method_arg(I&& index1, J&& index2) {
+constexpr decltype (auto) method_arg(I&& index1, J&& index2) {
     if constexpr (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<::std::decay_t<J>>>::value) {
         if constexpr (decltype(::boost::hana::greater(::boost::hana::transform(method_args<T,Generator>(::std::forward<I>(index1)),::boost::hana::size),::boost::hana::just(index2)))::value)
             return ::boost::hana::just(::boost::hana::at(method_args<T,Generator>(::std::forward<I>(index1)).value(),index2));
