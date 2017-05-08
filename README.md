@@ -1,2 +1,2 @@
 # ideal-couscous
-Compile-time for c++1z
+Compile-time reflection for c++1z
