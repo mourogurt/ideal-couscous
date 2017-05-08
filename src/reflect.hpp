@@ -7,20 +7,20 @@
 
 /**
  * @brief Reflection namespace
- * @todo move from tuple of indices to ranges
+ * @todo add old examples
  * @todo serialization examples (console, json)
  * @todo performance benchmarks
  * @todo compile time benchmarks
+ * @todo memorization
  * @todo c++14 port
+ * @todo Inheritance
  * @todo Variable/method flags (public, private, protected)
- * @todo Runtime reflection over static
+ * @todo Runtime reflection
  * @todo Reflect constructors
  * @todo Signals
  * @todo Slots
  * @todo Parameters
  * @todo Enums
- * @todo Inheritance
- * @todo Polymorphism
  */
 namespace reflect {
 
