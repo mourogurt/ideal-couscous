@@ -255,13 +255,13 @@ void MetadataTest::get_method_types() {
         return reflect::utils::result_type<Type,reflect::AllMethods>(index).value();
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::AllMethods>().value())>());
     QVERIFY (res_tuple == (::boost::hana::tuple_t<int&,void,double>));
-    QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::types),typeid(::boost::hana::tuple<Type,int>));
-    QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::result_type),typeid(int&));
-    QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::arg0_type),typeid(Type));
-    QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::arg1_type),typeid(int));
-    QCOMPARE(typeid(reflect::MethodInfo<Type,reflect::utils::count<Type,reflect::AllMethods>().value(),reflect::AllMethods>::types),typeid(boost::hana::nothing));
-    QCOMPARE(typeid(reflect::MethodInfo<Type,reflect::utils::count<Type,reflect::AllMethods>().value(),reflect::AllMethods>::result_type),typeid(boost::hana::nothing));
-    QCOMPARE(typeid(reflect::MethodInfo<Type,0,reflect::AllMethods>::arg_type<reflect::MethodInfo<Type,0,reflect::AllMethods>::args_count>),typeid(boost::hana::nothing));
+    QCOMPARE(typeid(reflect::utils::MethodInfo<Type,0,reflect::AllMethods>::types),typeid(::boost::hana::tuple<Type,int>));
+    QCOMPARE(typeid(reflect::utils::MethodInfo<Type,0,reflect::AllMethods>::result_type),typeid(int&));
+    QCOMPARE(typeid(reflect::utils::MethodInfo<Type,0,reflect::AllMethods>::arg0_type),typeid(Type));
+    QCOMPARE(typeid(reflect::utils::MethodInfo<Type,0,reflect::AllMethods>::arg1_type),typeid(int));
+    QCOMPARE(typeid(reflect::utils::MethodInfo<Type,reflect::utils::count<Type,reflect::AllMethods>().value(),reflect::AllMethods>::types),typeid(boost::hana::nothing));
+    QCOMPARE(typeid(reflect::utils::MethodInfo<Type,reflect::utils::count<Type,reflect::AllMethods>().value(),reflect::AllMethods>::result_type),typeid(boost::hana::nothing));
+    QCOMPARE(typeid(reflect::utils::MethodInfo<Type,0,reflect::AllMethods>::arg_type<reflect::utils::MethodInfo<Type,0,reflect::AllMethods>::args_count>),typeid(boost::hana::nothing));
 
 }
 
