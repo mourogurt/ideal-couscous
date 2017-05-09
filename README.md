@@ -9,6 +9,7 @@ Apache License 2.0
 ===============
 - C++1z (clang 3.9+)
 - Boost.Hana
+- Boost.Preprocessor
 
 3 Limitations
 ==============
