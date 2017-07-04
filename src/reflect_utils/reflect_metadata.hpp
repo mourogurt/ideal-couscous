@@ -12,7 +12,7 @@ namespace reflect {
 namespace utils {
 
 template <class T>
-using MetaClass = info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type>>; /**< Helper type template to specify Metadata class */
+using MetaClass = info::MetaClass<typename ::std::decay_t<T>::MetaInfo_type>; /**< Helper type template to specify Metadata class */
 
 template<class T, class Generator = info::DefaultIndexGenerator,class... Args, class I> constexpr decltype (auto) check_invoke(I&&);
 
@@ -107,7 +107,7 @@ constexpr decltype (auto) check_reflected() {
  */
 template<class T>
 constexpr decltype (auto) class_name() {
-    if constexpr (decltype (check_reflected<T>())::value) return ::boost::hana::just(info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type> >::class_name);
+    if constexpr (decltype (check_reflected<T>())::value) return ::boost::hana::just(MetaClass<T>::class_name);
     else return ::boost::hana::nothing;
 }
 

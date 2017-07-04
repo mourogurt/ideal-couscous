@@ -11,7 +11,7 @@ namespace reflect {
 namespace utils {
 
 template <class T>
-using MetaClass = info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type>>; /**< Helper type template to specify Metadata class */
+using MetaClass = info::MetaClass<typename ::std::decay_t<T>::MetaInfo_type>; /**< Helper type template to specify Metadata class */
 
 template<class T, class Generator = info::DefaultIndexGenerator, class I, class... Args>
 constexpr decltype (auto) get (I&&, Args&&...);

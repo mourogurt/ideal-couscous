@@ -16,7 +16,7 @@ namespace utils {
 template<class T, ::std::size_t I, class Generator = info::DefaultIndexGenerator>
 struct MethodInfo {
 private:
-    using MetaClass = info::MetaClass<typename ::std::decay_t<typename T::MetaInfo_type>>; /**< Helper type template to specify Metadata class */
+    using MetaClass = info::MetaClass<typename ::std::decay_t<T>::MetaInfo_type>; /**< Helper type template to specify Metadata class */
 public:
     using types = typename ::std::decay_t<decltype(utils::detail::method_args_helper_method_impl<T,Generator>(::boost::hana::size_c<I>))>::type; /**< boost::hana::tuple<...> */
     using result_type = metautils::optional_type_helper_t<std::decay_t<decltype(metautils::get_opt_val(utils::result_type<T,Generator>(::boost::hana::size_c<I>)))>>; /**< result type of method */
