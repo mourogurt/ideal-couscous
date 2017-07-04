@@ -45,7 +45,8 @@ REFLECT_OBJ_MTD(num2_accessor)
 REFLECT_CONST_OBJ_MTD(const_method)
 REFLECT_STATIC_MTD(static_method,std::size_t,const std::string&)
 REFLECT_OBJ_MTD(method1,int)
-REFLECT_OBJ_MTD(method1,const std::string&) //Warning: Indexing of elements depends on the order of calling macroses
+//Warning: Indexing of elements depends on the order of calling macroses
+REFLECT_OBJ_MTD(method1,const std::string&)
 REFLECT_OBJ_MTD(method2,int)
 REFLECT_OBJ_MTD(method2,const std::string&)
 REFLECT_OBJ_MTD(method3,int)
@@ -53,65 +54,92 @@ REFLECT_OBJ_MTD(method3,const std::string&)
 END_METAINFO
 
 int main() {
-    //To check whether you can call method with given args types you can use check_invoke
-    std::cout << std::boolalpha << "Can be invoked: " << couscous::check_invoke<A,couscous::ObjVars,A&>(hana::size_c<0>).value()  << std::endl;
-    std::cout << "Can be invoked: " << couscous::check_invoke<A,couscous::ObjVars,const A&>(hana::size_c<0>).value()  << std::endl;
-    std::cout << "Can be invoked: " << couscous::check_invoke<A,couscous::ObjMethods,A&,int>(hana::size_c<3>).value() << std::endl; //third index: method1 with int
+    //To check whether you can call a method with given args types you can use "check_invoke".
+    std::cout << std::boolalpha << "Can be invoked: "
+              << couscous::check_invoke<A,couscous::ObjVars,A&>(hana::size_c<0>).value()  << std::endl;
+    std::cout << "Can be invoked: "
+              << couscous::check_invoke<A,couscous::ObjVars,const A&>(hana::size_c<0>).value()  << std::endl;
+    //third index: method1 with int
+    std::cout << "Can be invoked: "
+              << couscous::check_invoke<A,couscous::ObjMethods,A&,int>(hana::size_c<3>).value() << std::endl;
     //You can't call non const obj methods with const object
-    std::cout << "Can be invoked: " << couscous::check_invoke<A,couscous::ObjMethods,const A&,int>(hana::size_c<3>).value() << std::endl;
-    std::cout << "Can be invoked: " << couscous::check_invoke<A,couscous::ConstMethods,const A&>(hana::size_c<0>).value() << std::endl;
+    std::cout << "Can be invoked: "
+              << couscous::check_invoke<A,couscous::ObjMethods,const A&,int>(hana::size_c<3>).value() << std::endl;
+    std::cout << "Can be invoked: "
+              << couscous::check_invoke<A,couscous::ConstMethods,const A&>(hana::size_c<0>).value() << std::endl;
     //You can call static vars/methods with or without object parameter
-    std::cout << "Can be invoked: " << couscous::check_invoke<A,couscous::StaticVars,A&>(hana::size_c<0>).value() << std::endl;
-    std::cout << "Can be invoked: " << couscous::check_invoke<A,couscous::StaticVars>(hana::size_c<0>).value() << std::endl;
+    std::cout << "Can be invoked: "
+              << couscous::check_invoke<A,couscous::StaticVars,A&>(hana::size_c<0>).value() << std::endl;
+    std::cout << "Can be invoked: "
+              << couscous::check_invoke<A,couscous::StaticVars>(hana::size_c<0>).value() << std::endl;
     //Implicit conversion are also supported
-    std::cout << "Can be invoked: " << couscous::check_invoke<A,couscous::StaticMethods,A&,int,const std::string&>(hana::size_c<0>).value() << std::endl;
-    std::cout << "Can be invoked: " << couscous::check_invoke<A,couscous::StaticMethods,unsigned,const std::string&>(hana::size_c<0>).value() << std::endl;
-    //To check whether you can assign to variable/method you can use check_set <Type,Generator,RHS type,invokation types>
-    std::cout << "Can be assigned: " << couscous::check_set<A,couscous::ObjVars,const char*,A&>(hana::size_c<0>).value() << std::endl;
-    std::cout << "Can be assigned: " << couscous::check_set<A,couscous::StaticVars,long>(hana::size_c<0>).value() << std::endl;
-    std::cout << "Can be assigned: " << couscous::check_set<A,couscous::ObjMethods,int&&,A>(hana::size_c<0>).value() << std::endl;
+    std::cout << "Can be invoked: " << couscous::check_invoke<A,couscous::StaticMethods,A&,int,const std::string&>
+                 (hana::size_c<0>).value() << std::endl;
+    std::cout << "Can be invoked: " << couscous::check_invoke<A,couscous::StaticMethods,unsigned,const std::string&>
+                 (hana::size_c<0>).value() << std::endl;
+    //To check whether you can assign to a variable/method you can use "check_set" <Type,Generator,rhs type,invokation types>
+    std::cout << "Can be assigned: "
+              << couscous::check_set<A,couscous::ObjVars,const char*,A&>(hana::size_c<0>).value() << std::endl;
+    std::cout << "Can be assigned: "
+              << couscous::check_set<A,couscous::StaticVars,long>(hana::size_c<0>).value() << std::endl;
+    std::cout << "Can be assigned: "
+              << couscous::check_set<A,couscous::ObjMethods,int&&,A>(hana::size_c<0>).value() << std::endl;
     hana::for_each(couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("method1")).value(), [](auto&& index) {
         std::cout << "Can be invoked: " << couscous::check_invoke<A,couscous::ObjMethods,A&,int>(index).value()
-                  << "\tCan be invoked: " << couscous::check_invoke<A,couscous::ObjMethods,A&,const std::string&>(index).value() << std::endl;
+                  << "\tCan be invoked: "
+                  << couscous::check_invoke<A,couscous::ObjMethods,A&,const std::string&>(index).value() << std::endl;
     });
     hana::for_each(hana::tuple_c<std::size_t,0,1>, [](auto&& index) {
-        std::cout << "Can be assigned: " << couscous::check_set<A,couscous::ObjMethods,int&&,A&>(index).value() << std::endl;
+        std::cout << "Can be assigned: "
+                  << couscous::check_set<A,couscous::ObjMethods,int&&,A&>(index).value() << std::endl;
     });
     A obj;
-    //To get var/result value of a method you can use get
-    std::cout << hana::to<const char*>(couscous::member_name<A,couscous::ObjVars>(hana::size_c<0>).value()) << ": "
+    //To get var/result value of a method you can use "get"
+    std::cout << hana::to<const char*>
+                 (couscous::member_name<A,couscous::ObjVars>(hana::size_c<0>).value()) << ": "
               << couscous::get<A,couscous::ObjVars>(hana::size_c<0>,obj).value() << std::endl;
-    std::cout << hana::to<const char*>(couscous::member_name<A,couscous::StaticVars>(hana::size_c<0>).value()) << ": "
+    std::cout << hana::to<const char*>
+                 (couscous::member_name<A,couscous::StaticVars>(hana::size_c<0>).value()) << ": "
               << couscous::get<A,couscous::StaticVars>(hana::size_c<0>).value() << std::endl;
-    std::cout << "num_accessor: " << couscous::get<A,couscous::ObjMethods>(couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num_accessor")).value()[0_c],obj).value() << std::endl;
-    std::cout << "num2_accessor: " << couscous::get<A,couscous::ObjMethods>(couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num2_accessor")).value()[0_c],obj).value() << std::endl;
-    //You can use set function if you want to assign a variable/method
+    std::cout << "num_accessor: " << couscous::get<A,couscous::ObjMethods>
+                 (couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num_accessor")).value()[0_c],obj).value()
+              << std::endl;
+    std::cout << "num2_accessor: " << couscous::get<A,couscous::ObjMethods>
+                 (couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num2_accessor")).value()[0_c],obj).value()
+              << std::endl;
+    //You can use "set" function if you want to assign a variable/method
     couscous::set<A,couscous::ObjVars>(hana::size_c<0>,"New string",obj);
     std::cout << hana::to<const char*>(couscous::member_name<A,couscous::ObjVars>(hana::size_c<0>).value()) << ": "
               << couscous::get<A,couscous::ObjVars>(hana::size_c<0>,obj).value() << std::endl;
     couscous::set<A,couscous::StaticVars>(hana::size_c<0>,100);
     std::cout << hana::to<const char*>(couscous::member_name<A,couscous::StaticVars>(hana::size_c<0>).value()) << ": "
               << couscous::get<A,couscous::StaticVars>(hana::size_c<0>).value() << std::endl;
-    couscous::set<A,couscous::ObjMethods>(couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num_accessor")).value()[0_c],200,obj);
-    std::cout << "num_accessor: " << couscous::get<A,couscous::ObjMethods>(couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num_accessor")).value()[0_c],obj).value() << std::endl;
-    //Ideal couscous provides it's own for each implementation. Differences: you can pass aditional args to lambda function; will fold all result values in tuple
+    couscous::set<A,couscous::ObjMethods>
+            (couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num_accessor")).value()[0_c],200,obj);
+    std::cout << "num_accessor: " << couscous::get<A,couscous::ObjMethods>
+                 (couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num_accessor")).value()[0_c],obj).value()
+              << std::endl;
+    //Ideal couscous provides it's own for each implementation.
+    //Differences: you can pass aditional args to lambda function; will fold all result values in tuple
     auto tup = couscous::for_each([](auto&& x, auto&& offset) {
         return x + offset;
     },hana::tuple_c<std::size_t,1,2,3>,hana::size_c<5>);
     std::cout << (tup == hana::tuple_c<std::size_t,6,7,8>) << std::endl;
-    //To concat tuples in one you can use boost::hana::concat (which will concat only two tuples) or multiple_concat (for multiple tuples)
-    constexpr auto all_methods_indices = couscous::multiple_concat(couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("method1")).value(),
-                                                                   couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("method2")).value(),
-                                                                   couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("method3")).value());
+    //To concat tuples in one you can use "boost::hana::concat" (which will concat only two tuples)
+    //or "multiple_concat" (for multiple tuples)
+    constexpr auto all_methods_indices = couscous::multiple_concat(
+                couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("method1")).value(),
+                couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("method2")).value(),
+                couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("method3")).value());
     auto comp_indices = couscous::for_each([](auto&& index) {
         if constexpr (std::decay_t<decltype(couscous::check_invoke<A,couscous::ObjMethods,A&,int>(index).value())>::value) {
             return index;
         }
     },all_methods_indices);
-    constexpr auto accessor_inds = hana::concat(couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num_accessor")).value(),
-                                                couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num2_accessor")).value());
-    //To get multiple vars/methods you can use gets or gets_tuple_args
-    //Call boost::hana::concat to concat two tuples in one
+    constexpr auto accessor_inds = hana::concat(
+                couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num_accessor")).value(),
+                couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num2_accessor")).value());
+    //To get multiple vars/methods you can use gets or "gets_tuple_args"
     auto nums_tup = couscous::gets<A,couscous::ObjMethods>(accessor_inds,obj).value();
     std::cout << "Accessors gets: ";
     hana::for_each(nums_tup,[](auto&& x) {
@@ -120,14 +148,17 @@ int main() {
     std::cout << std::endl;
     //You can also call procedures(void return type) as well
     couscous::gets<A,couscous::ObjMethods>(comp_indices,obj,-100);
-    auto params = hana::make_tuple(hana::make_tuple(std::ref(obj),42),hana::make_tuple(std::ref(obj),"argument1"),
-                                   hana::make_tuple(std::ref(obj),666),hana::make_tuple(std::ref(obj),"argument2"),
-                                   hana::make_tuple(std::ref(obj),1337),hana::make_tuple(std::ref(obj),"argument3"));
+    auto params = hana::make_tuple(
+                hana::make_tuple(std::ref(obj),42),hana::make_tuple(std::ref(obj),"argument1"),
+                hana::make_tuple(std::ref(obj),666),hana::make_tuple(std::ref(obj),"argument2"),
+                hana::make_tuple(std::ref(obj),1337),hana::make_tuple(std::ref(obj),"argument3"));
     couscous::gets_tuple_args<A,couscous::ObjMethods>(all_methods_indices,params);
-    //For multiple assigns: sets or sets_tuple_args
-    couscous::sets<A,couscous::ObjMethods>(hana::concat(couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num_accessor")).value(),
-                                                        couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num2_accessor")).value()),1000,obj);
+    //For multiple assigns: "sets" or "sets_tuple_args" functions
+    couscous::sets<A,couscous::ObjMethods>(hana::concat(
+        couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num_accessor")).value(),
+        couscous::find_by_name<A,couscous::ObjMethods>(BOOST_HANA_STRING("num2_accessor")).value()),1000,obj);
     std::cout << "num_accessor: " << obj.num_accessor()  << "\tnum2_accessor: " << obj.num2_accessor() << std::endl;
-    couscous::sets_tuple_args<A,couscous::ObjMethods>(accessor_inds,hana::make_tuple(100,200),hana::make_tuple(hana::make_tuple(std::ref(obj)),hana::make_tuple(std::ref(obj))));
+    couscous::sets_tuple_args<A,couscous::ObjMethods>(accessor_inds,hana::make_tuple(100,200),
+         hana::make_tuple(hana::make_tuple(std::ref(obj)),hana::make_tuple(std::ref(obj))));
     std::cout << "num_accessor: " << obj.num_accessor()  << "\tnum2_accessor: " << obj.num2_accessor() << std::endl;
 }
