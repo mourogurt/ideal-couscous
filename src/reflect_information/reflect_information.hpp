@@ -76,7 +76,7 @@ template <class T>
 struct MetaClass {
     using Type = typename T::Type;
     using MetaInfo_type = T;
-    static constexpr auto class_name   {HANA_STR(class_name_detail(static_cast<const typename T::Type*>(nullptr),static_cast<const T*>(nullptr)))}; /**< compile-time string of class name */
+    static constexpr auto class_name   {BOOST_HANA_STRING(class_name_detail(static_cast<const typename T::Type*>(nullptr),static_cast<const T*>(nullptr)))}; /**< compile-time string of class name */
     static constexpr auto names        {detail::names_tuple<Type, MetaInfo_type>(::std::make_index_sequence<decltype(counter(metautils::counter<>{},static_cast<const MetaInfo_type*>(nullptr)))::value>{})}; /**< tuple of all variable names */
     static constexpr auto metadata     {detail::metadata_tuple<Type, MetaInfo_type>(::std::make_index_sequence<decltype(counter(metautils::counter<>{},static_cast<const MetaInfo_type*>(nullptr)))::value>{})}; /**< tuple of all method names  */
 };

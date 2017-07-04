@@ -61,14 +61,14 @@ void MetadataTest::check_reflected() {
 }
 
 void MetadataTest::class_name_method() {
-    QVERIFY(reflect::utils::class_name<Type>().value() == HANA_STR("MetadataTest"));
+    QVERIFY(reflect::utils::class_name<Type>().value() == BOOST_HANA_STRING("MetadataTest"));
     QVERIFY(reflect::utils::class_name<int>() == boost::hana::nothing);
 }
 void MetadataTest::vars_obj_names() {
     auto bool_tup = reflect::metautils::for_each([](auto&& index, auto&& tuple) {
         return (reflect::utils::member_name<Type,reflect::ObjVars>(index).value() == boost::hana::at(tuple,index));
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::ObjVars>().value())>(),
-    boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2")));
+    boost::hana::make_tuple(BOOST_HANA_STRING("var1"),BOOST_HANA_STRING("var2")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true,true));
     QVERIFY((reflect::utils::member_name<Type,reflect::ObjVars>(reflect::utils::count<Type,reflect::ObjVars>().value())) == boost::hana::nothing);
     QVERIFY((reflect::utils::member_name<Type,int>(boost::hana::size_c<0>)) == boost::hana::nothing);
@@ -78,7 +78,7 @@ void MetadataTest::vars_static_names() {
     auto bool_tup = reflect::metautils::for_each([](auto&& index, auto&& tuple) {
         return (reflect::utils::member_name<Type,reflect::StaticVars>(index).value() == boost::hana::at(tuple,index));
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::StaticVars>().value())>(),
-    boost::hana::make_tuple(HANA_STR("static_var")));
+    boost::hana::make_tuple(BOOST_HANA_STRING("static_var")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true));
     QVERIFY((reflect::utils::member_name<Type,reflect::StaticVars>(reflect::utils::count<Type,reflect::StaticVars>())) == boost::hana::nothing);
 }
@@ -87,7 +87,7 @@ void MetadataTest::vars_names() {
     auto bool_tup = reflect::metautils::for_each([](auto&& index, auto&& tuple) {
         return (reflect::utils::member_name<Type,reflect::AllVars>(index).value() == boost::hana::at(tuple,index));
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::AllVars>().value())>(),
-    boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2"),HANA_STR("static_var")));
+    boost::hana::make_tuple(BOOST_HANA_STRING("var1"),BOOST_HANA_STRING("var2"),BOOST_HANA_STRING("static_var")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true,true,true));
     QVERIFY((reflect::utils::member_name<Type,reflect::AllVars>(reflect::utils::count<Type,reflect::AllVars>().value())) == boost::hana::nothing);
 }
@@ -96,7 +96,7 @@ void MetadataTest::method_obj_names() {
     auto bool_tup = reflect::metautils::for_each([](auto&& index, auto&& tuple) {
         return (reflect::utils::member_name<Type,reflect::ObjMethods>(index).value() == boost::hana::at(tuple,index));
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::ObjMethods>().value())>(),
-    boost::hana::make_tuple(HANA_STR("foo"),HANA_STR("foo")));
+    boost::hana::make_tuple(BOOST_HANA_STRING("foo"),BOOST_HANA_STRING("foo")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true,true));
     QVERIFY((reflect::utils::member_name<Type,reflect::ObjMethods>(reflect::utils::count<Type,reflect::ObjMethods>().value())) == boost::hana::nothing);
 }
@@ -105,7 +105,7 @@ void MetadataTest::method_const_names() {
     auto bool_tup = reflect::metautils::for_each([](auto&& index, auto&& tuple) {
         return (reflect::utils::member_name<Type,reflect::ConstMethods>(index).value() == boost::hana::at(tuple,index));
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::ConstMethods>().value())>(),
-    boost::hana::make_tuple(HANA_STR("foo")));
+    boost::hana::make_tuple(BOOST_HANA_STRING("foo")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true));
     QVERIFY((reflect::utils::member_name<Type,reflect::ConstMethods>(reflect::utils::count<Type,reflect::ConstMethods>().value())) == boost::hana::nothing);
 }
@@ -114,7 +114,7 @@ void MetadataTest::method_static_names() {
     auto bool_tup = reflect::metautils::for_each([](auto&& index, auto&& tuple) {
         return (reflect::utils::member_name<Type,reflect::StaticMethods>(index).value() == boost::hana::at(tuple,index));
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::StaticMethods>().value())>(),
-    boost::hana::make_tuple(HANA_STR("static_foo")));
+    boost::hana::make_tuple(BOOST_HANA_STRING("static_foo")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true));
     QVERIFY((reflect::utils::member_name<Type,reflect::StaticMethods>(reflect::utils::count<Type,reflect::StaticMethods>().value())) == boost::hana::nothing);
 }
@@ -123,7 +123,7 @@ void MetadataTest::method_names() {
     auto bool_tup = reflect::metautils::for_each([](auto&& index, auto&& tuple) {
         return (reflect::utils::member_name<Type,reflect::AllMethods>(index).value() == boost::hana::at(tuple,index));
     },reflect::metautils::gen_inds_tup<decltype(reflect::utils::count<Type,reflect::AllMethods>().value())>(),
-    boost::hana::make_tuple(HANA_STR("foo"),HANA_STR("foo"),HANA_STR("static_foo")));
+    boost::hana::make_tuple(BOOST_HANA_STRING("foo"),BOOST_HANA_STRING("foo"),BOOST_HANA_STRING("static_foo")));
     QVERIFY (bool_tup == boost::hana::make_tuple(true,true,true));
     QVERIFY((reflect::utils::member_name<Type,reflect::AllMethods>(reflect::utils::count<Type,reflect::AllMethods>().value())) == boost::hana::nothing);
 }
@@ -161,31 +161,31 @@ void MetadataTest::counter_method() {
 void MetadataTest::find_obj_vars() {
     auto tuple = reflect::metautils::merge_tuple_of_tuples(reflect::metautils::for_each([](auto&& name) {
         return reflect::utils::find_by_name<Type,reflect::ObjVars>(name).value();
-    },boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2"))));
+    },boost::hana::make_tuple(BOOST_HANA_STRING("var1"),BOOST_HANA_STRING("var2"))));
     QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0,1>));
 }
 
 void MetadataTest::find_static_vars() {
     auto tuple = reflect::metautils::merge_tuple_of_tuples(reflect::metautils::for_each([](auto&& name) {
         return reflect::utils::find_by_name<Type,reflect::StaticVars>(name).value();
-    },boost::hana::make_tuple(HANA_STR("static_var"))));
+    },boost::hana::make_tuple(BOOST_HANA_STRING("static_var"))));
     QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0>));
 }
 
 void MetadataTest::find_vars() {
     auto tuple = reflect::metautils::merge_tuple_of_tuples(reflect::metautils::for_each([](auto&& name) {
         return reflect::utils::find_by_name<Type,reflect::AllVars>(name).value();
-    },boost::hana::make_tuple(HANA_STR("var1"),HANA_STR("var2"),HANA_STR("static_var"))));
+    },boost::hana::make_tuple(BOOST_HANA_STRING("var1"),BOOST_HANA_STRING("var2"),BOOST_HANA_STRING("static_var"))));
     QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0,1,2>));
-    QVERIFY((reflect::utils::find_by_name<Type,reflect::AllVars>(HANA_STR("nothing"))) == boost::hana::just(boost::hana::make_tuple()));
-    QVERIFY((reflect::utils::find_by_name<Type,int>(HANA_STR("var1"))) == boost::hana::nothing);
-    QVERIFY((reflect::utils::find_by_name<int,reflect::AllVars>(HANA_STR("var1"))) == boost::hana::nothing);
+    QVERIFY((reflect::utils::find_by_name<Type,reflect::AllVars>(BOOST_HANA_STRING("nothing"))) == boost::hana::just(boost::hana::make_tuple()));
+    QVERIFY((reflect::utils::find_by_name<Type,int>(BOOST_HANA_STRING("var1"))) == boost::hana::nothing);
+    QVERIFY((reflect::utils::find_by_name<int,reflect::AllVars>(BOOST_HANA_STRING("var1"))) == boost::hana::nothing);
 }
 
 void MetadataTest::find_obj_methods() {
     auto tuple = reflect::metautils::merge_tuple_of_tuples(reflect::metautils::for_each([](auto&& name) {
         return reflect::utils::find_by_name<Type,reflect::ObjMethods>(name).value();
-    },boost::hana::make_tuple(HANA_STR("foo"))));
+    },boost::hana::make_tuple(BOOST_HANA_STRING("foo"))));
     QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0,1>));
 
 }
@@ -193,21 +193,21 @@ void MetadataTest::find_obj_methods() {
 void MetadataTest::find_const_methods() {
     auto tuple = reflect::metautils::merge_tuple_of_tuples(reflect::metautils::for_each([](auto&& name) {
         return reflect::utils::find_by_name<Type,reflect::ConstMethods>(name).value();
-    },boost::hana::make_tuple(HANA_STR("foo"))));
+    },boost::hana::make_tuple(BOOST_HANA_STRING("foo"))));
     QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0>));
 }
 
 void MetadataTest::find_static_methods() {
     auto tuple = reflect::metautils::merge_tuple_of_tuples(reflect::metautils::for_each([](auto&& name) {
         return reflect::utils::find_by_name<Type,reflect::StaticMethods>(name).value();
-    },boost::hana::make_tuple(HANA_STR("static_foo"))));
+    },boost::hana::make_tuple(BOOST_HANA_STRING("static_foo"))));
     QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0>));
 }
 
 void MetadataTest::find_methods() {
     auto tuple = reflect::metautils::merge_tuple_of_tuples(reflect::metautils::for_each([](auto&& name) {
         return reflect::utils::find_by_name<Type,reflect::AllMethods>(name).value();
-    },boost::hana::make_tuple(HANA_STR("foo"),HANA_STR("static_foo"))));
+    },boost::hana::make_tuple(BOOST_HANA_STRING("foo"),BOOST_HANA_STRING("static_foo"))));
     QVERIFY(tuple == (boost::hana::tuple_c<std::size_t,0,1,2>));
 }
 

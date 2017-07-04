@@ -149,8 +149,8 @@ void MethodTest::gets_tuple_args_method() {
 void MethodTest::sets_tuple_args_method() {
     value = true;
     value2 = false;
-    constexpr auto indices = boost::hana::concat(reflect::utils::find_by_name<Type,reflect::AllMethods>(HANA_STR("bool_method2")).value(),
-                                                 reflect::utils::find_by_name<Type,reflect::AllMethods>(HANA_STR("bool_method3")).value());
+    constexpr auto indices = boost::hana::concat(reflect::utils::find_by_name<Type,reflect::AllMethods>(BOOST_HANA_STRING("bool_method2")).value(),
+                                                 reflect::utils::find_by_name<Type,reflect::AllMethods>(BOOST_HANA_STRING("bool_method3")).value());
     auto params = boost::hana::replicate<boost::hana::tuple_tag>(boost::hana::make_tuple(std::ref(*this)),boost::hana::size(indices));
     constexpr auto values = boost::hana::make_tuple(false,true);
     auto tup = reflect::utils::sets_tuple_args<Type,reflect::AllMethods>(indices,values,params);

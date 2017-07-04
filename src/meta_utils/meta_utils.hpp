@@ -3,9 +3,9 @@
 
 #include "function_traits.hpp"
 #include "ct_counter.hpp"
-#include "string_traits.hpp"
 #include "tuple_traits.hpp"
 #include "type_traits.hpp"
+#include "string_traits.hpp"
 
 namespace reflect {
 
