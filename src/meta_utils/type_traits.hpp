@@ -8,12 +8,27 @@ namespace reflect {
 
 namespace metautils {
 
+namespace detail {
+
+namespace optional_type_helper_impl {
+
+/**
+ * @brief Default condition (typename type doesn't contains in class)
+ */
+template <class T, bool Cond> struct checker { using type = T; };
+
+/**
+ * @brief Spetialization if typename type contains in class
+ */
+template <class T> struct checker<T, true> { using type = typename T::type; };
+}
+}
+
 /**
  * @brief Check if type is std::reference_wrapper
  *
  */
-template <class T>
-struct is_reference_wrapper : ::std::false_type {};
+template <class T> struct is_reference_wrapper : ::std::false_type {};
 
 /**
  * @brief Check if type is std::reference_wrapper
@@ -23,41 +38,48 @@ template <class U>
 struct is_reference_wrapper<::std::reference_wrapper<U>> : ::std::true_type {};
 
 template <class T>
-constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value; /**< Helper variable template for is_reference_wrapper */
+constexpr bool is_reference_wrapper_v =
+    is_reference_wrapper<T>::value; /**< Helper variable template for
+                                       is_reference_wrapper */
 
 /**
  * @brief Get value of optional
  * @param optional_value - boost::hana::optional<...>
  * @return value of optional or nothing
  */
-template<class T>
-constexpr decltype (auto) get_opt_val (T&& t) {
-    if constexpr (::std::is_same<::boost::hana::optional_tag,::boost::hana::tag_of_t<::std::decay_t<T>>>::value) {
-        if constexpr (decltype(::boost::hana::is_just(t))::value) return t.value();
-        else return ::boost::hana::nothing;
-    } else return t;
+template <class T> constexpr decltype(auto) get_opt_val(T &&t) {
+  if
+    constexpr(
+        ::std::is_same<::boost::hana::optional_tag,
+                       ::boost::hana::tag_of_t<::std::decay_t<T>>>::value) {
+      if
+        constexpr(decltype(::boost::hana::is_just(t))::value) return t.value();
+      else
+        return ::boost::hana::nothing;
+    }
+  else
+    return t;
 }
 
 /**
- * @brief Helper struct to get type of class
+ * @brief Helper struct to unpack type typename from class if it exists
  */
+template <class T> class unpack_type_typename_helper {
+  constexpr static auto hasType =
+      ::boost::hana::is_valid([](auto x) -> ::boost::hana::type<
+                                  typename decltype(x)::type>{});
+
+public:
+  using type = typename detail::optional_type_helper_impl::checker<
+      T, decltype(hasType(std::declval<T>()))::value>::type;
+};
+
 template <class T>
-struct optional_type_helper {
-    using type = typename T::type;
-};
-
-/**
- * @brief Template spetialization for boost::hana::nothing
- */
-template<>
-struct optional_type_helper<::boost::hana::optional<>> {
-    using type = ::boost::hana::optional<>;
-};
-
-template<class T> using optional_type_helper_t = typename optional_type_helper<T>::type; /**< Helper type template for optional_type_helper */
-
+using unpack_type_typename_helper_t =
+    typename unpack_type_typename_helper<T>::type; /**<
+                                   Helper type template for
+                                   unpack_type_typename_helper */
 }
-
 }
 
 #endif // TYPE_TRAITS_HPP

@@ -7,7 +7,7 @@ Project {
         consoleApplication: true
         files: ["*.cpp","*.hpp"]
         cpp.cxxLanguageVersion: "c++1z"
-        cpp.defines: ['BOOST_HANA_CONFIG_ENABLE_STRING_UDL']
+        cpp.defines: ['COUSOUS_DISABLE_MOST_CT_CHECKS','BOOST_HANA_CONFIG_ENABLE_STRING_UDL']
         Depends { name: "Basic Reflection" }
         Depends { name: "Qt.test" }
         Group {     // Properties for the produced executable
@@ -16,3 +16,4 @@ Project {
         }
     }
 }
+ 
