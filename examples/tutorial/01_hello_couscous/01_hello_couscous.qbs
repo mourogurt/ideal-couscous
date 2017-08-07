@@ -1,9 +1,7 @@
 import qbs
 
 Project {
-    minimumQbsVersion: "1.6.0"
     CppApplication {
-        type: ["application"]
         consoleApplication: true
         files: ["*.cpp","*.hpp"]
         cpp.cxxLanguageVersion: "c++1z"

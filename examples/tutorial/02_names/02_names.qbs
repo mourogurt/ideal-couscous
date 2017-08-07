@@ -1,9 +1,7 @@
 import qbs
 
 Project {
-    minimumQbsVersion: "1.6.0"
     CppApplication {
-        type: ["application"]
         consoleApplication: true
         files: ["*.cpp","*.hpp"]
         cpp.defines: ['BOOST_HANA_CONFIG_ENABLE_STRING_UDL']
