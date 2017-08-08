@@ -32,7 +32,6 @@ template <class T> constexpr bool is_generator_v = is_generator<T>::value;
 
 /**
  * @brief SFINAE check if class is reflected
- *
  */
 template <class T> class is_reflected {
 
@@ -77,7 +76,6 @@ metadata_tuple(::std::integer_sequence<long long, Indices...> &&) {
 
 /**
  * @brief Class that stores meta-information about T
- *
  */
 template <class T> struct MetaClass {
   using Type = typename T::Type;
@@ -95,11 +93,11 @@ template <class T> struct MetaClass {
                                                           variable names */
   static constexpr auto metadata{detail::metadata_tuple<Type, MetaInfo_type>(
       ::std::make_integer_sequence<
-          long long, decltype(
-                         counter(metautils::counter<>{},
-                                 static_cast<const MetaInfo_type *>(
-                                     nullptr)))::value>{})}; /**< tuple of all
-                                                                method names  */
+          long long,
+          decltype(counter(metautils::counter<>{},
+                           static_cast<const MetaInfo_type *>(
+                               nullptr)))::value>{})}; /**< tuple of all
+                                                          method names  */
 };
 
 class EmptyGenerator;
@@ -146,6 +144,11 @@ template <class... Args> struct MetaInfo;
 }
 }
 
+/**
+ *  @brief Declarating metainformation inside class. Basicly it creates
+ * is_reflected function(to check if class is reflected), class_name_detail to
+ * retrive class name c-t string, counter - c-t counter
+ */
 #define IN_METAINFO(TYPE)                                                      \
   using Type = TYPE;                                                           \
   using MetaInfo_type = TYPE;                                                  \
@@ -157,11 +160,20 @@ template <class... Args> struct MetaInfo;
   friend constexpr ::reflect::metautils::counter<0> counter(                   \
       ::reflect::metautils::counter<0>, const MetaInfo_type *);
 
+/**
+ * @brief Declarating metainformation outside of class. All staff related to
+ * reflection will be in reflect::info::MetaInfo<TYPE> except is_reflected
+ * function
+ */
 #define OUT_METAINFO(TYPE)                                                     \
   friend struct reflect::info::MetaInfo<TYPE>;                                 \
   using MetaInfo_type = ::reflect::info::MetaInfo<TYPE>;                       \
   static constexpr auto is_reflected() { return std::true_type(); }
 
+/**
+ * @brief Declarating MetaInfo spetialization for TYPE. All related to
+ * reflection staff goes here
+ */
 #define METAINFO(TYPE)                                                         \
   namespace reflect {                                                          \
   namespace info {                                                             \
@@ -176,6 +188,11 @@ template <class... Args> struct MetaInfo;
     friend constexpr ::reflect::metautils::counter<0>                          \
         counter(::reflect::metautils::counter<0>, const MetaInfo_type *);
 
+/**
+ * @brief Declarating MetaInfo spetialization for template class TYPE<TEMPLATE>.
+ * First param is template class without template, second - all types that will
+ * be needed to spetialize templat, third - template args for TYPE.
+ */
 #define TEMPLATE_METAINFO(TYPE, TEMPLATE_TYPE, TEMPLATE)                       \
   namespace reflect {                                                          \
   namespace info {                                                             \
@@ -190,12 +207,20 @@ template <class... Args> struct MetaInfo;
     friend constexpr ::reflect::metautils::counter<0>                          \
         counter(::reflect::metautils::counter<0>, const MetaInfo_type *);
 
+/**
+ * @brief Needed only to end metainformation outside class (OUT_METAINFO)
+ */
 #define END_METAINFO                                                           \
   }                                                                            \
   ;                                                                            \
   }                                                                            \
   }
 
+/**
+ * @brief Appending element to STATE. Element index will be same as current
+ * COUNTER. Creates function that will return boost::hana::tuple of element for
+ * current counter value
+ */
 #define TUPLE_APPEND(STATE, COUNTER, ...)                                      \
   friend constexpr auto STATE(                                                 \
       ::reflect::metautils::counter<decltype(                                  \
@@ -206,6 +231,10 @@ template <class... Args> struct MetaInfo;
     return ::boost::hana::make_tuple(__VA_ARGS__);                             \
   }
 
+/**
+ * @brief Increasing COUNTER by one. Create COUNTER function that will hold
+ * current counter value + 1
+ */
 #define INCREASE_COUNTER(COUNTER)                                              \
   friend constexpr ::reflect::metautils::counter<                              \
       decltype(COUNTER(::reflect::metautils::counter<>{},                      \

@@ -69,9 +69,22 @@ constexpr decltype(auto) remove_zeros_from_ct_string(const T str) {
 #ifndef STRING_MAXLEN
 #define STRING_MAXLEN 64 /**< maximum length of compile-time string */
 #endif
+
+/**
+ * @brief Checks if current index less then size of string, will return str[i]
+ * if less, otherwise 0
+ */
 #define CHECK_STR_CHAR(_, i, str) (sizeof(str) > (i) ? str[(i)] : 0),
+
+/**
+ * @brief Creates char sequence of STRING_MAXLEN length
+ */
 #define CT_STR(str) BOOST_PP_REPEAT(STRING_MAXLEN, CHECK_STR_CHAR, str) 0
 
+/**
+ * @brief Creates boost::hana::string. Firstly it creates boost::hana::string
+ * from char sequence, after that will remove all ending zeros
+ */
 #define HANA_STR(str)                                                          \
   reflect::metautils::remove_zeros_from_ct_string(                             \
       ::boost::hana::string_c<CT_STR(                                          \

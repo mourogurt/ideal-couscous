@@ -408,6 +408,10 @@ constexpr decltype(auto) make_method(R *pm) {
 }
 }
 
+/**
+ * @brief Reflect object method. Appends name to names_state, method pointer to
+ * metadata_state and increase counter
+ */
 #define REFLECT_OBJ_MTD(NAME, ...)                                             \
   TUPLE_APPEND(names_state, counter, HANA_STR(#NAME))                          \
   TUPLE_APPEND(                                                                \
@@ -418,6 +422,10 @@ constexpr decltype(auto) make_method(R *pm) {
           Type, ##__VA_ARGS__>(&Type::NAME))                                   \
   INCREASE_COUNTER(counter)
 
+/**
+ * @brief Reflect constant object method. Appends name to names_state, method
+ * pointer to metadata_state and increase counter
+ */
 #define REFLECT_CONST_OBJ_MTD(NAME, ...)                                       \
   TUPLE_APPEND(names_state, counter, HANA_STR(#NAME))                          \
   TUPLE_APPEND(metadata_state, counter,                                        \
@@ -428,6 +436,10 @@ constexpr decltype(auto) make_method(R *pm) {
                    Type, ##__VA_ARGS__>(&Type::NAME))                          \
   INCREASE_COUNTER(counter)
 
+/**
+ * @brief Reflect static method. Appends name to names_state, method pointer to
+ * metadata_state and increase counter
+ */
 #define REFLECT_STATIC_MTD(NAME, ...)                                          \
   TUPLE_APPEND(names_state, counter, HANA_STR(#NAME))                          \
   TUPLE_APPEND(                                                                \

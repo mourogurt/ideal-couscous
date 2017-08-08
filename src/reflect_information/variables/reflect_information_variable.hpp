@@ -217,12 +217,20 @@ template <class R, class T> constexpr decltype(auto) make_var(T *pm) {
 }
 }
 
+/**
+ * @brief Reflect object variable. Appends to names_state name of var, to
+ * metadata_state pointer to variable and increase counter
+ */
 #define REFLECT_OBJ_VAR(NAME)                                                  \
   TUPLE_APPEND(names_state, counter, HANA_STR(#NAME))                          \
   TUPLE_APPEND(metadata_state, counter,                                        \
                ::reflect::info::make_var(&Type::NAME))                         \
   INCREASE_COUNTER(counter)
 
+/**
+ * @brief Reflect static variable. Appends to names_state name of var, to
+ * metadata_state pointer to variable and increase counter
+ */
 #define REFLECT_STATIC_VAR(NAME)                                               \
   TUPLE_APPEND(names_state, counter, HANA_STR(#NAME))                          \
   TUPLE_APPEND(metadata_state, counter,                                        \
