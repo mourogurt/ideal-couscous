@@ -11,22 +11,15 @@ namespace info {
 
 /**
  * @brief SFINAE check if type is pointer to variable
- *
  */
-template <class T> class is_variable {
-
-  template <class C>
-  static constexpr ::std::true_type check(decltype(&C::is_variable));
-  template <class> static constexpr ::std::false_type check(...);
-
-public:
-  static constexpr bool value =
-      ::std::is_same<::std::true_type, decltype(check<T>(nullptr))>::value;
-};
+constexpr auto is_variable = ::boost::hana::is_valid(
+    [](auto &&p) -> decltype(&::std::decay_t<decltype(p)>::is_variable) {});
 
 template <class T>
 constexpr bool is_variable_v =
-    is_variable<T>::value; /**< Helper variable template for is_variable */
+    decltype(is_variable(::std::declval<T>()))::value; /**< Helper variable
+                                                          template for
+                                                          is_variable */
 
 namespace detail {}
 

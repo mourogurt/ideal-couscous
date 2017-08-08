@@ -9,22 +9,13 @@ namespace info {
 
 /**
  * @brief SFINAE check if type is pointer to object field
- *
  */
-template <class T> class is_object {
-
-  template <class C>
-  static constexpr ::std::true_type check(decltype(&C::is_object));
-  template <class> static constexpr ::std::false_type check(...);
-
-public:
-  static constexpr bool value =
-      ::std::is_same<::std::true_type, decltype(check<T>(nullptr))>::value;
-};
+constexpr auto is_object = ::boost::hana::is_valid(
+    [](auto &&p) -> decltype(&::std::decay_t<decltype(p)>::is_object) {});
 
 template <class T>
-constexpr bool is_object_v =
-    is_object<T>::value; /**< Helper variable template for is_object */
+constexpr bool is_object_v = decltype(is_object(
+    ::std::declval<T>()))::value; /**< Helper variable template for is_object */
 
 /**
  * @brief The ObjectIndexGenerator class - generate indices where object fields

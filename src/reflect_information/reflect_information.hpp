@@ -15,39 +15,28 @@ namespace info {
 /**
  * @brief SFINAE check if class is generator
  */
-template <class T> class is_generator {
-  template <class C, long long... Indices>
+constexpr auto is_generator = ::boost::hana::is_valid(
+    [](auto &&p, auto &&tup) -> decltype(
+        &::std::decay_t<decltype(p)>::template generate<decltype(tup)>) {});
 
-  static constexpr ::std::true_type
-  check(decltype(&C::template generate<
-                 ::boost::hana::tuple<::boost::hana::llong<Indices>...>>));
-  template <class> static constexpr ::std::false_type check(...);
-
-public:
-  static constexpr bool value =
-      ::std::is_same<::std::true_type, decltype(check<T>(nullptr))>::value;
-};
-
-template <class T> constexpr bool is_generator_v = is_generator<T>::value;
+template <class T>
+constexpr bool is_generator_v = decltype(is_generator(
+    ::std::declval<T>(),
+    ::std::declval<::boost::hana::tuple<>>()))::value; /**< Helper variable
+                                                          template for
+                                                          is_generator */
 
 /**
  * @brief SFINAE check if class is reflected
  */
-template <class T> class is_reflected {
-
-  template <class C>
-  static constexpr ::std::true_type check(decltype(&C::is_reflected));
-  template <class> static constexpr ::std::false_type check(...);
-
-public:
-  static constexpr bool value =
-      ::std::is_same<::std::true_type, decltype(check<T>(nullptr))>::
-          value; /**< true true if reflected, othervise false */
-};
+constexpr auto is_reflected = ::boost::hana::is_valid(
+    [](auto &&p) -> decltype(&::std::decay_t<decltype(p)>::is_reflected) {});
 
 template <class T>
 constexpr bool is_reflected_v =
-    is_reflected<T>::value; /**< Helper variable template for is_reflected */
+    decltype(is_reflected(::std::declval<T>()))::value; /**< Helper variable
+                                                         template for
+                                                         is_reflected */
 
 namespace detail {
 

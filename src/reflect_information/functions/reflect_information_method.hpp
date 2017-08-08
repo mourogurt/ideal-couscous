@@ -55,20 +55,13 @@ template <class... Args> struct MethodInfo<void, Args...> {
  * @brief SFINAE check if type is pointer to method
  *
  */
-template <class T> class is_method {
-
-  template <class C>
-  static constexpr ::std::true_type check(decltype(&C::is_method));
-  template <class> static constexpr ::std::false_type check(...);
-
-public:
-  static constexpr bool value =
-      ::std::is_same<::std::true_type, decltype(check<T>(nullptr))>::value;
-};
+constexpr auto is_method = ::boost::hana::is_valid(
+    [](auto &&p) -> decltype(&::std::decay_t<decltype(p)>::is_method) {});
 
 template <class T>
-constexpr bool is_method_v =
-    is_method<T>::value; /**< Helper variable template for is_variable */
+constexpr bool is_method_v = decltype(
+    is_method(::std::declval<T>()))::value; /**< Helper variable template for
+                                               is_variable */
 
 namespace detail {}
 

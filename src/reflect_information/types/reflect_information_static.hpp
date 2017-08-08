@@ -11,20 +11,12 @@ namespace info {
  * @brief SFINAE check if type is pointer to static field
  *
  */
-template <class T> class is_static {
-
-  template <class C>
-  static constexpr ::std::true_type check(decltype(&C::is_static));
-  template <class> static constexpr ::std::false_type check(...);
-
-public:
-  static constexpr bool value =
-      ::std::is_same<::std::true_type, decltype(check<T>(nullptr))>::value;
-};
+constexpr auto is_static = ::boost::hana::is_valid(
+    [](auto &&p) -> decltype(&::std::decay_t<decltype(p)>::is_static) {});
 
 template <class T>
-constexpr bool is_static_v =
-    is_static<T>::value; /**< Helper variable template for is_static */
+constexpr bool is_static_v = decltype(is_static(
+    ::std::declval<T>()))::value; /**< Helper variable template for is_static */
 
 /**
  * @brief The StaticIndexGenerator class - generate indices where static fields
