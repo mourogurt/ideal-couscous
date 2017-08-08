@@ -7,7 +7,7 @@ Apache License 2.0
 
 2 Prerequisites
 ===============
-- C++1z (clang 3.9+)
+- C++1z (clang 4.0+)
 - Boost.Hana
 - Boost.Preprocessor
 
