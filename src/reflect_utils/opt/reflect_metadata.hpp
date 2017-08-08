@@ -243,11 +243,17 @@ constexpr decltype(auto) find_by_name(String &&str) {
 template <class T, class Generator = info::DefaultIndexGenerator, class String>
 constexpr decltype(auto) find_by_name_first(String &&str) {
   if
-    constexpr(::boost::hana::transform(find_by_name<T, Generator>(str),
-                                       ::boost::hana::size) >
-              ::boost::hana::just(::boost::hana::size_c<0>)) {
-      return ::boost::hana::just(
-          ::boost::hana::at_c<0>(find_by_name<T, Generator>(str).value()));
+    constexpr(decltype(
+        ::boost::hana::is_just(find_by_name<T, Generator>(str)))::value) {
+      if
+        constexpr(::std::decay_t<decltype(metautils::get_opt_val(
+                      ::boost::hana::transform(find_by_name<T, Generator>(str),
+                                               ::boost::hana::size)))>::value >
+                  0) return ::boost::hana::
+            just(::boost::hana::at_c<0>(
+                find_by_name<T, Generator>(str).value()));
+      else
+        return ::boost::hana::nothing;
     }
   else
     return ::boost::hana::nothing;
