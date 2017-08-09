@@ -11,20 +11,19 @@ namespace reflect {
 namespace metautils {
 
 /**
- * @brief Concatenating multiple tuples into one
- *
+ * @brief Concatenating operator for tuples
  */
-constexpr decltype(auto) multiple_concat() {
-  return ::boost::hana::make_tuple();
+template <class... Args1, class... Args2>
+constexpr decltype(auto) operator+(const ::boost::hana::tuple<Args1...> &tup1,
+                                   const ::boost::hana::tuple<Args2...> &tup2) {
+  return ::boost::hana::concat(tup1, tup2);
 }
 
 /**
  * @brief Concatenating multiple tuples into one
- *
- * @param value boost::hana::tuple
  */
-template <class T> constexpr decltype(auto) multiple_concat(T &&value) {
-  return ::boost::hana::concat(::std::forward<T>(value), multiple_concat());
+constexpr decltype(auto) multiple_concat() {
+  return ::boost::hana::make_tuple();
 }
 
 /**
@@ -34,10 +33,9 @@ template <class T> constexpr decltype(auto) multiple_concat(T &&value) {
  * @param args template pack of boost::hana::tuple
  * @return concatenated tuple
  */
-template <class T, class... Args>
-constexpr decltype(auto) multiple_concat(T &&value, Args &&... args) {
-  return ::boost::hana::concat(::std::forward<T>(value),
-                               multiple_concat(::std::forward<Args>(args)...));
+template <class... Args>
+constexpr decltype(auto) multiple_concat(Args &&... args) {
+  return (args + ...);
 }
 
 namespace detail {
