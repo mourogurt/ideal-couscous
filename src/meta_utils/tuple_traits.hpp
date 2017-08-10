@@ -11,19 +11,14 @@ namespace reflect {
 namespace metautils {
 
 /**
- * @brief Concatenating operator for tuples
- */
-template <class... Args1, class... Args2>
-constexpr decltype(auto) operator+(const ::boost::hana::tuple<Args1...> &tup1,
-                                   const ::boost::hana::tuple<Args2...> &tup2) {
-  return ::boost::hana::concat(tup1, tup2);
-}
-
-/**
  * @brief Concatenating multiple tuples into one
  */
 constexpr decltype(auto) multiple_concat() {
   return ::boost::hana::make_tuple();
+}
+
+template <class T> constexpr decltype(auto) multiple_concat(T &&value) {
+  return ::boost::hana::concat(::std::forward<T>(value), multiple_concat());
 }
 
 /**
@@ -33,9 +28,10 @@ constexpr decltype(auto) multiple_concat() {
  * @param args template pack of boost::hana::tuple
  * @return concatenated tuple
  */
-template <class... Args>
-constexpr decltype(auto) multiple_concat(Args &&... args) {
-  return (args + ...);
+template <class T, class... Args>
+constexpr decltype(auto) multiple_concat(T &&value, Args &&... args) {
+  return ::boost::hana::concat(::std::forward<T>(value),
+                               multiple_concat(::std::forward<Args>(args)...));
 }
 
 namespace detail {
@@ -117,7 +113,8 @@ merge_tuple_of_tuples_impl(::std::integer_sequence<long long, Indices...> &&,
 template <class A, class B>
 constexpr decltype(auto) compare_types(A &&, B &&) noexcept {
   if
-    constexpr(::std::is_same_v<std::decay_t<A>, std::decay_t<B>>) return true;
+    constexpr(
+        ::std::is_same_v<::std::decay_t<A>, ::std::decay_t<B>>) return true;
   else
     return false;
 }
@@ -175,7 +172,7 @@ constexpr decltype(auto) copy_tuple_sequence(Tuple &&tup,
   return detail::copy_tuple_sequence_impl(
       ::std::make_integer_sequence<long long, decltype(::boost::hana::size(
                                                   seq_tup))::value>(),
-      std::forward<Tuple>(tup), std::forward<IndexTuple>(seq_tup));
+      ::std::forward<Tuple>(tup), ::std::forward<IndexTuple>(seq_tup));
 }
 
 /**
@@ -187,7 +184,7 @@ constexpr decltype(auto) merge_tuple_of_tuples(Tuple &&tup) {
   return detail::merge_tuple_of_tuples_impl(
       ::std::make_integer_sequence<long long,
                                    decltype(::boost::hana::size(tup))::value>(),
-      std::forward<Tuple>(tup));
+      ::std::forward<Tuple>(tup));
 }
 }
 }

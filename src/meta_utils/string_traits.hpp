@@ -23,10 +23,11 @@ namespace detail {
  */
 template <class T, ::std::size_t... Indices>
 constexpr decltype(auto)
-count_nonzero_chars_impl(std::index_sequence<Indices...> &&, const T &str) {
-  return (... + ((str[boost::hana::size_c<Indices>] != boost::hana::char_c<0>)
-                     ? 1
-                     : 0));
+count_nonzero_chars_impl(::std::index_sequence<Indices...> &&, const T &str) {
+  return (... +
+          ((str[::boost::hana::size_c<Indices>] != ::boost::hana::char_c<0>)
+               ? 1
+               : 0));
 }
 
 /**

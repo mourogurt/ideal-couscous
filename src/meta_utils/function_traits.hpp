@@ -36,7 +36,7 @@ INVOKE(T Base::*pmf, Derived &&ref,
 template <class Base, class T, class RefWrap, class... Args>
 constexpr auto INVOKE(T Base::*pmf, RefWrap &&ref, Args &&... args) noexcept(
     noexcept((ref.get().*pmf)(::std::forward<Args>(args)...)))
-    -> std::enable_if_t<
+    -> ::std::enable_if_t<
         ::std::is_function_v<T> &&
             metautils::is_reference_wrapper_v<::std::decay_t<RefWrap>>,
         decltype((ref.get().*pmf)(::std::forward<Args>(args)...))> {
@@ -52,7 +52,7 @@ constexpr auto
 INVOKE(T Base::*pmf, Pointer &&ptr,
        Args &&... args) noexcept(noexcept(((*::std::forward<Pointer>(ptr)).*
                                            pmf)(::std::forward<Args>(args)...)))
-    -> std::enable_if_t<
+    -> ::std::enable_if_t<
         ::std::is_function_v<T> &&
             !metautils::is_reference_wrapper_v<::std::decay_t<Pointer>> &&
             !::std::is_base_of_v<Base, ::std::decay_t<Pointer>>,
@@ -83,7 +83,7 @@ INVOKE(T Base::*pmd,
 template <class Base, class T, class RefWrap>
 constexpr auto INVOKE(T Base::*pmd,
                       RefWrap &&ref) noexcept(noexcept(ref.get().*pmd))
-    -> std::enable_if_t<
+    -> ::std::enable_if_t<
         !::std::is_function_v<T> &&
             metautils::is_reference_wrapper_v<::std::decay_t<RefWrap>>,
         decltype(ref.get().*pmd)> {
@@ -98,7 +98,7 @@ template <class Base, class T, class Pointer>
 constexpr auto
 INVOKE(T Base::*pmd,
        Pointer &&ptr) noexcept(noexcept((*::std::forward<Pointer>(ptr)).*pmd))
-    -> std::enable_if_t<
+    -> ::std::enable_if_t<
         !::std::is_function_v<T> &&
             !metautils::is_reference_wrapper_v<::std::decay_t<Pointer>> &&
             !::std::is_base_of_v<Base, ::std::decay_t<Pointer>>,
@@ -116,7 +116,7 @@ INVOKE(T Base::*pmd,
 template <class F, class... Args>
 constexpr auto INVOKE(F &&f, Args &&... args) noexcept(
     noexcept(::std::forward<F>(f)(::std::forward<Args>(args)...)))
-    -> std::enable_if_t<
+    -> ::std::enable_if_t<
         !::std::is_member_pointer_v<::std::decay_t<F>>,
         decltype(::std::forward<F>(f)(::std::forward<Args>(args)...))> {
   return ::std::forward<F>(f)(::std::forward<Args>(args)...);
@@ -167,7 +167,7 @@ constexpr_foreach_seq_impl(::std::integer_sequence<long long, Indices...> &&,
 template <class F, class... ArgTypes>
 constexpr auto constexpr_invoke(F &&f, ArgTypes &&... args)
     // exception specification for QoI
-    noexcept(noexcept(detail::INVOKE(std::forward<F>(f),
+    noexcept(noexcept(detail::INVOKE(::std::forward<F>(f),
                                      ::std::forward<ArgTypes>(args)...)))
         -> decltype(detail::INVOKE(::std::forward<F>(f),
                                    ::std::forward<ArgTypes>(args)...)) {
