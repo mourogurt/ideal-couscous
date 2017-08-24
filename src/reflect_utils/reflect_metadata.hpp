@@ -12,242 +12,393 @@ namespace reflect {
 namespace utils {
 
 template <class T>
-using MetaClass = info::MetaClass<typename ::std::decay_t<T>::MetaInfo_type>; /**< Helper type template to specify Metadata class */
+using MetaClass = info::MetaClass<typename ::std::decay_t<
+    T>::MetaInfo_type>; /**< Helper type template to specify Metadata class */
 
-template<class T, class Generator = info::DefaultIndexGenerator,class... Args, class I> constexpr decltype (auto) check_invoke(I&&);
+template <class T, class Generator = info::DefaultIndexGenerator, class... Args,
+          class I>
+constexpr decltype(auto) check_invoke(I &&);
 
 namespace detail {
 
 /**
  * @brief Helper struct to get tuple of types(boost::hana::tuple_t)
  */
-template <class... Args> struct method_args_helper_impl {constexpr static auto value {::boost::hana::tuple_t<Args...>};};
+template <class... Args> struct method_args_helper_impl {
+  constexpr static auto value{::boost::hana::tuple_t<Args...>};
+};
 
 /**
- * @brief Helper struct to get tuple of types(boost::hana::tuple_t) (template spetialization for boost::hana::tuple)
+ * @brief Helper struct to get tuple of types(boost::hana::tuple_t) (template
+ * spetialization for boost::hana::tuple)
  */
-template <class... Args> struct method_args_helper_impl<::boost::hana::tuple<Args...>> {constexpr static auto value {::boost::hana::tuple_t<Args...>};};
+template <class... Args>
+struct method_args_helper_impl<::boost::hana::tuple<Args...>> {
+  constexpr static auto value{::boost::hana::tuple_t<Args...>};
+};
 
 /**
  * @brief Return tuple of args type of method
  * @param index - method index
- * @return boost::hana::type_t<Tuple...> or boost::hana::type_t<boost::hana::optional<>> if out-of range, class is not reflected or Generator is not a generator class
+ * @return boost::hana::type_t<Tuple...>
  */
-template<class T, class Generator, class I>
-constexpr decltype (auto) method_args_helper_method_impl(I&& index) {
-    if constexpr ((info::is_reflected_v<::std::decay_t<T>>) && (info::is_generator_v<::std::decay_t<Generator>>)) {
-        if constexpr (::std::decay_t<decltype(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())))>::value >
-                      ::std::decay_t<I>::value)
-            return ::boost::hana::type_c<typename ::std::decay_t<decltype(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
-                                         Generator::template generate<decltype(MetaClass<T>::metadata)>()),index))>::arg_types>;
-        else return ::boost::hana::type_c<::std::decay_t<decltype(::boost::hana::nothing)>>;
-    }
-    else return ::boost::hana::type_c<::std::decay_t<decltype(::boost::hana::nothing)>>;
+template <class T, class Generator, class I>
+constexpr decltype(auto) method_args_helper_method_impl(I &&index) {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(info::is_reflected_v<::std::decay_t<T>>,
+                "Class must be reflected");
+  static_assert(info::is_generator_v<::std::decay_t<Generator>>,
+                "Generator is not a generator class");
+  static_assert(::std::decay_t<decltype(
+                        ::boost::hana::size(metautils::copy_tuple_sequence(
+                            MetaClass<T>::metadata,
+                            Generator::template generate<decltype(
+                                MetaClass<T>::metadata)>())))>::value >
+                    ::std::decay_t<I>::value,
+                "Index must be less than number of elements in the generator");
+#endif
+  return ::boost::hana::type_c<
+      typename ::std::decay_t<decltype(::boost::hana::at(
+          metautils::copy_tuple_sequence(
+              MetaClass<T>::metadata,
+              Generator::template generate<decltype(MetaClass<T>::metadata)>()),
+          index))>::arg_types>;
 }
 
 /**
  * @brief SFINAE check whether we can call operator () with given types
  */
-template<class T,class... Args>
-struct is_invocable
-{
-    template <class C> static constexpr ::std::true_type check(::std::decay_t<decltype(::std::declval<C>()(::std::declval<Args>()...))>*);
-    template <class> static constexpr ::std::false_type check(...);
-    static constexpr bool value = ::std::is_same<::std::true_type, decltype(check<T>(nullptr))>::value;
+template <class T, class... Args> struct is_invocable {
+  template <class C>
+  static constexpr ::std::true_type
+  check(::std::decay_t<decltype(::std::declval<C>()(::std::declval<Args>()...))>
+            *);
+  template <class> static constexpr ::std::false_type check(...);
+  static constexpr bool value =
+      ::std::is_same<::std::true_type, decltype(check<T>(nullptr))>::value;
 };
 
-template <class... Args> constexpr bool is_invocable_v = is_invocable<Args...>::value; /**< Helper variable template for is_invocable */
+template <class... Args>
+constexpr bool is_invocable_v = is_invocable<Args...>::value; /**< Helper
+                                                                 variable
+                                                                 template for
+                                                                 is_invocable */
 
 /**
  * @brief Struct checker if return value of invocation is assignable
  */
-template<class T, class SetArg, class... Args >
-struct is_invoke_assignable {
-    static constexpr bool value = ::std::is_assignable<decltype (::std::declval<T>()(::std::declval<Args>()...)),SetArg>::value;
+template <class T, class SetArg, class... Args> struct is_invoke_assignable {
+  static constexpr bool value = ::std::is_assignable<
+      decltype(::std::declval<T>()(::std::declval<Args>()...)), SetArg>::value;
 };
 
-template <class... Args> constexpr bool is_invoke_assignable_v = is_invoke_assignable<Args...>::value; /**< Helper variable template for is_invoke_assignable */
+template <class... Args>
+constexpr bool is_invoke_assignable_v =
+    is_invoke_assignable<Args...>::value; /**< Helper variable template for
+                                             is_invoke_assignable */
 
 /**
  * @brief Implementation of check_invoke
  * @return boost::hana::bool_c<true/false>
  */
-template<class ... Args>
-constexpr decltype (auto) check_invoke_impl () {
-    if constexpr (is_invocable_v<Args...>) return ::boost::hana::bool_c<true>;
-    else return ::boost::hana::bool_c<false>;
+template <class... Args> constexpr decltype(auto) check_invoke_impl() {
+  if
+    constexpr(is_invocable_v<Args...>) return ::boost::hana::bool_c<true>;
+  else
+    return ::boost::hana::bool_c<false>;
 }
 
 /**
  * @brief Implementation of check_set
  * @return boost::hana::bool_c<true/false>
  */
-template<class T, class SetArg,class ... Args>
-constexpr decltype (auto) check_set_impl () {
-    if constexpr (is_invocable_v<T,Args...>) {
-        if constexpr (is_invoke_assignable_v<T,SetArg,Args...>) return ::boost::hana::bool_c<true>;
-        else return ::boost::hana::bool_c<false>;
-    } else return ::boost::hana::bool_c<false>;
+template <class T, class SetArg, class... Args>
+constexpr decltype(auto) check_set_impl() {
+  if
+    constexpr(is_invocable_v<T, Args...>) {
+      if
+        constexpr(
+            is_invoke_assignable_v<T, SetArg,
+                                   Args...>) return ::boost::hana::bool_c<true>;
+      else
+        return ::boost::hana::bool_c<false>;
+    }
+  else
+    return ::boost::hana::bool_c<false>;
 }
-
 }
 
 /**
  * @brief Check if class is reflected
  * @return boost::hana::bool_c<true/false>
  */
-template<class T>
-constexpr decltype (auto) check_reflected() {
-    return ::boost::hana::bool_c<info::is_reflected_v<::std::decay_t<T>>>;
+template <class T> constexpr decltype(auto) check_reflected() {
+  return ::boost::hana::bool_c<info::is_reflected_v<::std::decay_t<T>>>;
 }
 
 /**
  * @brief Returns class name
- * @return boost::hana::optional<...> of ct-string or boost::hana::nothing if error happens
+ * @return ct-string
  */
-template<class T>
-constexpr decltype (auto) class_name() {
-    if constexpr (decltype (check_reflected<T>())::value) return ::boost::hana::just(MetaClass<T>::class_name);
-    else return ::boost::hana::nothing;
+template <class T> constexpr decltype(auto) class_name() {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(decltype(check_reflected<T>())::value,
+                "Class must be reflected");
+#endif
+  return MetaClass<T>::class_name;
 }
 
 /**
  * @brief Returns amount of elements generated by the generator
- * @return boost::hana::optional<...> of boost::hana::size_t or boost::hana::nothing if error happens
+ * @return boost::hana::llong<...>
  */
-template<class T, class Generator = info::DefaultIndexGenerator>
-constexpr decltype (auto) count() {
-    if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>))
-    //Forcing unevaluated context to not interact with data(only with types)
-        return ::boost::hana::just(::boost::hana::size_c<decltype(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
-                                   Generator::template generate<decltype(MetaClass<T>::metadata)>())))::value>);
-    else return ::boost::hana::nothing;
+template <class T, class Generator = info::DefaultIndexGenerator>
+constexpr decltype(auto) count() {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(decltype(check_reflected<T>())::value,
+                "Class must be reflected");
+  static_assert(info::is_generator_v<::std::decay_t<Generator>>,
+                "Generator is not a generator class");
+
+#endif
+  // Forcing unevaluated context to not interact with data(only with
+  // types)
+  return ::boost::hana::llong_c<decltype(
+      ::boost::hana::size(metautils::copy_tuple_sequence(
+          MetaClass<T>::metadata, Generator::template generate<decltype(
+                                      MetaClass<T>::metadata)>())))::value>;
 }
 
 /**
  * @brief Get name of element
- * @param index - index(boost::hana::size_t)
- * @return boost::hana::optional<...> of ct-string or boost::hana::nothing if error happens
+ * @param index - index(boost::hana::llong)
+ * @return boost::hana::string<...>
  */
-template<class T, class Generator = info::DefaultIndexGenerator, class I>
-constexpr decltype (auto) member_name (I&& index) {
-    if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>) &&
-                  (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<I>>::value)) {
-        if constexpr (decltype (::boost::hana::greater(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::names,Generator::template generate<decltype(MetaClass<T>::metadata)>())),index))::value)
-                return ::boost::hana::just(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::names,Generator::template generate<decltype(MetaClass<T>::metadata)>()),index));
-        else return ::boost::hana::nothing;
-    }
-    else return ::boost::hana::nothing;
+template <class T, class Generator = info::DefaultIndexGenerator, class I>
+constexpr decltype(auto) member_name(I &&index) {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(decltype(check_reflected<T>())::value,
+                "Class must be reflected");
+  static_assert(info::is_generator_v<::std::decay_t<Generator>>,
+                "Generator is not a generator class");
+  static_assert(
+      ::std::is_same_v<::boost::hana::integral_constant_tag<long long>,
+                       ::boost::hana::tag_of_t<I>>,
+      "Index must be an integral constant of long long");
+  static_assert(
+      decltype(::boost::hana::size(metautils::copy_tuple_sequence(
+          MetaClass<T>::names, Generator::template generate<decltype(
+                                   MetaClass<T>::metadata)>())))::value >
+          ::std::decay_t<I>::value,
+      "Index must be less than number of elements in the generator");
+#endif
+  return ::boost::hana::at(
+      metautils::copy_tuple_sequence(
+          MetaClass<T>::names,
+          Generator::template generate<decltype(MetaClass<T>::metadata)>()),
+      index);
 }
 
 /**
  * @brief Find element index by name
  * @param str - ct-string (boost::hana::string)
- * @return boost::hana::optional<...> of boost::hana::size_t or boost::hana::nothing if error happens
+ * @return boost::hana::tuple_c<long long,...>
  */
-template<class T, class Generator = info::DefaultIndexGenerator, class String>
-constexpr decltype (auto) find_by_name(String&& str) {
-    if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>) &&
-                  (::std::is_same<::boost::hana::string_tag,::boost::hana::tag_of_t<String>>::value))
-        return ::boost::hana::just(metautils::find_value_types(str,metautils::copy_tuple_sequence(MetaClass<T>::names,Generator::template generate<decltype(MetaClass<T>::metadata)>())));
-    else return ::boost::hana::nothing;
+template <class T, class Generator = info::DefaultIndexGenerator, class String>
+constexpr decltype(auto) find_by_name(String &&str) {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(decltype(check_reflected<T>())::value,
+                "Class must be reflected");
+  static_assert(info::is_generator_v<::std::decay_t<Generator>>,
+                "Generator is not a generator class");
+  static_assert(::std::is_same_v<::boost::hana::string_tag,
+                                 ::boost::hana::tag_of_t<String>>,
+                "str must be a ct-string");
+#endif
+  return metautils::find_value_types(
+      str,
+      metautils::copy_tuple_sequence(
+          MetaClass<T>::names,
+          Generator::template generate<decltype(MetaClass<T>::metadata)>()));
+}
+
+/**
+ * @brief Find first element index by name
+ * @param str - ct-string (boost::hana::string)
+ * @return boost::hana::llong<...>
+ */
+template <class T, class Generator = info::DefaultIndexGenerator, class String>
+constexpr decltype(auto) find_by_name_first(String &&str) {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(
+      decltype(::boost::hana::size(find_by_name<T, Generator>(str)))::value > 0,
+      "Tuple is empty");
+#endif
+  return ::boost::hana::at_c<0>(find_by_name<T, Generator>(str));
 }
 
 /**
  * @brief Return args types of method
- * @param index - method index(boost::hana::size_t)
- * @return boost::hana::optional<...> of boost::hana::tuple_t<Types...> or boost::hana::nothing if error happens
+ * @param index - method index(boost::llong)
+ * @return boost::hana::tuple_t<Types...>
  */
-template<class T, class Generator = info::DefaultIndexGenerator, class I>
-constexpr decltype (auto) method_args(I&& index) {
-    if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>)&&
-                  (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<I>>::value)) {
-        if constexpr (decltype(::boost::hana::greater(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())),index))::value)
-            return ::boost::hana::just(detail::method_args_helper_impl<typename ::std::decay_t<decltype(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
-                                                                           Generator::template generate<decltype(MetaClass<T>::metadata)>()),index))>::arg_types>::value);
-        else return ::boost::hana::nothing;
-    }
-    else return ::boost::hana::nothing;
+template <class T, class Generator = info::DefaultIndexGenerator, class I>
+constexpr decltype(auto) method_args(I &&index) {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(decltype(check_reflected<T>())::value,
+                "Class must be reflected");
+  static_assert(info::is_generator_v<::std::decay_t<Generator>>,
+                "Generator is not a generator class");
+  static_assert(
+      ::std::is_same_v<::boost::hana::integral_constant_tag<long long>,
+                       ::boost::hana::tag_of_t<I>>,
+      "Index must be an integral constant of long long");
+  static_assert(
+      decltype(::boost::hana::size(metautils::copy_tuple_sequence(
+          MetaClass<T>::names, Generator::template generate<decltype(
+                                   MetaClass<T>::metadata)>())))::value >
+          ::std::decay_t<I>::value,
+      "Index must be less than number of elements in the generator");
+#endif
+  return detail::method_args_helper_impl<
+      typename ::std::decay_t<decltype(::boost::hana::at(
+          metautils::copy_tuple_sequence(
+              MetaClass<T>::metadata,
+              Generator::template generate<decltype(MetaClass<T>::metadata)>()),
+          index))>::arg_types>::value;
 }
 
 /**
  * @brief Returns amount of method args
- * @param index - method index(boost::hana::size_t)
- * @return boost::hana::optional<...> of boost::hana::size_t<...> or boost::hana::nothing if error happens
+ * @param index - method index(boost::hana::llong)
+ * @return boost::hana::llong<...>
  */
-template<class T, class Generator = info::DefaultIndexGenerator, class I>
-constexpr decltype (auto) methods_args_count (I&& index) {
-    return ::boost::hana::transform(method_args<T,Generator>(index),::boost::hana::size);
+template <class T, class Generator = info::DefaultIndexGenerator, class I>
+constexpr decltype(auto) methods_args_count(I &&index) {
+  return ::boost::hana::size(method_args<T, Generator>(index));
 }
 
 /**
  * @brief Returns result type of method/variable
- * @param index - method index(boost::hana::size_t)
- * @return boost::hana::optional<...> of boost::hana::type_t<...> or boost::hana::nothing if error happens
+ * @param index - method index(boost::hana::llong)
+ * @return boost::hana::type_t<...>
  */
-template<class T, class Generator = info::DefaultIndexGenerator, class I>
-constexpr decltype (auto) result_type(I&& index) {
-    if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>)&&
-                  (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<I>>::value)) {
-        if constexpr(decltype(::boost::hana::greater(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())),index))::value)
-            return ::boost::hana::just(::boost::hana::type_c<typename ::std::decay_t<decltype(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
-                                       Generator::template generate<decltype(MetaClass<T>::metadata)>()),index))>::return_type>);
-        else return ::boost::hana::nothing;
-    }
-    else return ::boost::hana::nothing;
+template <class T, class Generator = info::DefaultIndexGenerator, class I>
+constexpr decltype(auto) result_type(I &&index) {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(decltype(check_reflected<T>())::value,
+                "Class must be reflected");
+  static_assert(info::is_generator_v<::std::decay_t<Generator>>,
+                "Generator is not a generator class");
+  static_assert(
+      ::std::is_same_v<::boost::hana::integral_constant_tag<long long>,
+                       ::boost::hana::tag_of_t<I>>,
+      "Index must be an integral constant of long long");
+  static_assert(
+      decltype(::boost::hana::size(metautils::copy_tuple_sequence(
+          MetaClass<T>::names, Generator::template generate<decltype(
+                                   MetaClass<T>::metadata)>())))::value >
+          ::std::decay_t<I>::value,
+      "Index must be less than number of elements in the generator");
+#endif
+  return ::boost::hana::type_c<
+      typename ::std::decay_t<decltype(::boost::hana::at(
+          metautils::copy_tuple_sequence(
+              MetaClass<T>::metadata,
+              Generator::template generate<decltype(MetaClass<T>::metadata)>()),
+          index))>::return_type>;
 }
 
 /**
  * @brief Returns N-th argument type of method
- * @param index1 - method index(boost::hana::size_t)
- * @param index2 - argument index(boost::hana::size_t)
- * @return boost::hana::optional<...> of boost::hana::type_t<...> or boost::hana::nothing if error happens
+ * @param index1 - method index(boost::hana::llong)
+ * @param index2 - argument index(boost::hana::llong)
+ * @return boost::hana::type_t<...>
  *
  */
-template<class T, class Generator = info::DefaultIndexGenerator, class I, class J>
-constexpr decltype (auto) method_arg(I&& index1, J&& index2) {
-    if constexpr (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<::std::decay_t<J>>>::value) {
-        if constexpr (decltype(::boost::hana::greater(::boost::hana::transform(method_args<T,Generator>(::std::forward<I>(index1)),::boost::hana::size),::boost::hana::just(index2)))::value)
-            return ::boost::hana::just(::boost::hana::at(method_args<T,Generator>(::std::forward<I>(index1)).value(),index2));
-        else return ::boost::hana::nothing;
-    }
-    else return ::boost::hana::nothing;
+template <class T, class Generator = info::DefaultIndexGenerator, class I,
+          class J>
+constexpr decltype(auto) method_arg(I &&index1, J &&index2) {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(
+      ::std::is_same_v<::boost::hana::integral_constant_tag<long long>,
+                       ::boost::hana::tag_of_t<J>>,
+      "Index must be an integral constant of long long");
+  constexpr auto args_count = decltype(::boost::hana::size(
+      method_args<T, Generator>(::std::forward<I>(index1))))::value;
+  static_assert(args_count > ::std::decay_t<J>::value,
+                "Index must be less than number of types in the method");
+#endif
+  return ::boost::hana::at(method_args<T, Generator>(::std::forward<I>(index1)),
+                           index2);
 }
 
 /**
  * @brief Checks whether method can be invoked
- * @param index - index(boost::hana::size_t)
- * @return boost::hana::optional<...> of boost::hana::type_c<bool,...> (true or false if method can be invoked) or boost::hana::nothing if error happens
+ * @param index - index(boost::hana::llong)
+ * @return boost::hana::type_c<bool,...> (true or
+ * false if method can be invoked)
  */
-template<class T, class Generator,class... Args, class I>
-constexpr decltype (auto) check_invoke(I&& index) {
-    if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>)&&
-                  (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<::std::decay_t<I>>>::value)) {
-        if constexpr(decltype(::boost::hana::greater(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())),index))::value)
-            return ::boost::hana::just(detail::check_invoke_impl<::std::decay_t<decltype(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
-                                                                 Generator::template generate<decltype(MetaClass<T>::metadata)>()),index))>,Args...>());
-        else return ::boost::hana::nothing;
-    } else return ::boost::hana::nothing;
+template <class T, class Generator, class... Args, class I>
+constexpr decltype(auto) check_invoke(I &&index) {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(decltype(check_reflected<T>())::value,
+                "Class must be reflected");
+  static_assert(info::is_generator_v<::std::decay_t<Generator>>,
+                "Generator is not a generator class");
+  static_assert(
+      ::std::is_same_v<::boost::hana::integral_constant_tag<long long>,
+                       ::boost::hana::tag_of_t<I>>,
+      "Index must be an integral constant of long long");
+  static_assert(
+      decltype(::boost::hana::size(metautils::copy_tuple_sequence(
+          MetaClass<T>::names, Generator::template generate<decltype(
+                                   MetaClass<T>::metadata)>())))::value >
+          ::std::decay_t<I>::value,
+      "Index must be less than number of elements in the generator");
+#endif
+  return detail::check_invoke_impl<
+      ::std::decay_t<decltype(::boost::hana::at(
+          metautils::copy_tuple_sequence(
+              MetaClass<T>::metadata,
+              Generator::template generate<decltype(MetaClass<T>::metadata)>()),
+          index))>,
+      Args...>();
 }
 
 /**
  * @brief Check if we can assign to return value(or value) of method/variable
- * @param index - index(boost::hana::size_t)
- * @return boost::hana::optional<...> of boost::hana::type_c<bool,...> (true or false if method can be invoked) or boost::hana::nothing if error happens
+ * @param index - index(boost::hana::llong)
+ * @return boost::hana::type_c<bool,...> (true or
+ * false if method can be invoked)
  */
-template<class T, class Generator, class SetArg, class...Args, class I>
-constexpr decltype (auto) check_set(I&& index) {
-    if constexpr ((decltype (check_reflected<T>())::value) && (info::is_generator_v<::std::decay_t<Generator>>)&&
-                  (::std::is_same<::boost::hana::integral_constant_tag<::std::size_t>,::boost::hana::tag_of_t<::std::decay_t<I>>>::value)) {
-        if constexpr(decltype(::boost::hana::greater(::boost::hana::size(metautils::copy_tuple_sequence(MetaClass<T>::metadata,Generator::template generate<decltype(MetaClass<T>::metadata)>())),index))::value)
-            return ::boost::hana::just(detail::check_set_impl<::std::decay_t<decltype(::boost::hana::at(metautils::copy_tuple_sequence(MetaClass<T>::metadata,
-                                                                 Generator::template generate<decltype(MetaClass<T>::metadata)>()),index))>,SetArg,Args...>());
-        else return ::boost::hana::nothing;
-    } else return ::boost::hana::nothing;
+template <class T, class Generator, class SetArg, class... Args, class I>
+constexpr decltype(auto) check_set(I &&index) {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(decltype(check_reflected<T>())::value,
+                "Class must be reflected");
+  static_assert(info::is_generator_v<::std::decay_t<Generator>>,
+                "Generator is not a generator class");
+  static_assert(
+      ::std::is_same_v<::boost::hana::integral_constant_tag<long long>,
+                       ::boost::hana::tag_of_t<I>>,
+      "Index must be an integral constant of long long");
+  static_assert(
+      decltype(::boost::hana::size(metautils::copy_tuple_sequence(
+          MetaClass<T>::names, Generator::template generate<decltype(
+                                   MetaClass<T>::metadata)>())))::value >
+          ::std::decay_t<I>::value,
+      "Index must be less than number of elements in the generator");
+#endif
+  return detail::check_set_impl<
+      ::std::decay_t<decltype(::boost::hana::at(
+          metautils::copy_tuple_sequence(
+              MetaClass<T>::metadata,
+              Generator::template generate<decltype(MetaClass<T>::metadata)>()),
+          index))>,
+      SetArg, Args...>();
 }
-
 }
-
 }
 
 #endif // REFLECT_METADDATA_HPP

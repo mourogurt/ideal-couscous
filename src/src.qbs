@@ -10,9 +10,7 @@ Product {
         "reflect_information/types/*",
         "reflect_information/variables/*",
         "reflect_information/functions/*",
-        "reflect_utils/*",
-        "reflect_utils/opt/*",
-        "reflect_utils/noopt/*"
+        "reflect_utils/*"
     ]
     Depends { name: "cpp" }
     Export {

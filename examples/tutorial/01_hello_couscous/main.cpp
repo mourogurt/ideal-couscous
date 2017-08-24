@@ -100,51 +100,27 @@ int main() {
             << couscous::check_reflected<NotReflected>()
             << "\tint reflected: " << couscous::check_reflected<int>()
             << std::endl;
-  //"class_name" returns boost::hana::optional of ct-string if type is
-  // reflected, otherwise it returns boost::hana::nothing.
-  constexpr auto something = couscous::class_name<InStructReflect>();
-  std::cout << "Optional contains something: " << hana::is_just(something)
-            << "\tOptional is empty: " << hana::is_nothing(something)
-            << std::endl;
-  constexpr auto nothing = couscous::class_name<NotReflected>();
-  std::cout << "Optional contains something: " << hana::is_just(nothing)
-            << "\tOptional is empty: " << hana::is_nothing(nothing)
-            << std::endl;
-  // get ct-string from optional and convert to const char*
-  std::cout << "Class name: " << hana::to<const char *>(something.value())
-            << std::endl;
-  // The other way to "interact" with optionals is to use hana::transform(now it
-  // returns optional of const char*).
-  constexpr auto optional_char_str =
-      hana::transform(something, hana::to<const char *>);
-  // It will return boost::hana::nothing.
-  constexpr auto still_nothing =
-      hana::transform(nothing, hana::to<const char *>);
-  std::cout << "Class name: " << optional_char_str.value() << std::endl;
-  std::cout << "Optional is empty: " << hana::is_nothing(still_nothing)
-            << std::endl;
+  //"class_name" returns ct-string if type is reflected
+  constexpr auto name = couscous::class_name<InStructReflect>();
+  // Convert ct-string to const char*
+  std::cout << "Class name: " << hana::to<const char *>(name) << std::endl;
   // Generators: responsible to select scope of
   // metainformation(all,vars/methods,obj vars/methods,static vars/methods,
   // const methods).
   // Function named "count" returns count of items in selected
   // generator(AllMethods,StaticVars).
   std::cout << "Count of all methods: "
-            << couscous::get_opt_val(
-                   couscous::count<InStructReflect, couscous::AllMethods>())
+            << couscous::count<InStructReflect, couscous::AllMethods>()
             << "\tCount of static variables: "
-            << couscous::get_opt_val(
-                   couscous::count<OutStructReflect, couscous::StaticVars>())
+            << couscous::count<OutStructReflect, couscous::StaticVars>()
             << std::endl;
-  // get_opt_val(t) - returns: t.value() if t - is_just == true, otherwise: t.
   // Metainformation spetialization example.
-  std::cout << "Count of all methods: "
-            << couscous::get_opt_val(
-                   couscous::count<OutTemplateStruct<std::string>,
-                                   couscous::AllMethods>())
-            << std::endl;
+  std::cout
+      << "Count of all methods: "
+      << couscous::count<OutTemplateStruct<std::string>, couscous::AllMethods>()
+      << std::endl;
   std::cout << "Count of all variables: "
-            << couscous::get_opt_val(
-                   couscous::count<OutTemplateStruct<int>, couscous::AllVars>())
+            << couscous::count<OutTemplateStruct<int>, couscous::AllVars>()
             << std::endl;
   return 0;
 }

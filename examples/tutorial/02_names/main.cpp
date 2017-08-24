@@ -43,34 +43,30 @@ int main() {
   std::cout << hana::equal(hana::llong_c<42>, 42_c) << std::endl;
   // member_name - get N-th name (ct-string) of member(var/method).
   std::cout << "Method name: "
-            << couscous::get_opt_val(hana::transform(
-                   couscous::member_name<SomeStruct, couscous::AllMethods>(0_c),
-                   hana::to<const char *>))
+            << hana::to<const char *>(
+                   couscous::member_name<SomeStruct, couscous::AllMethods>(0_c))
             << std::endl;
-  constexpr auto inds = couscous::gen_inds_tup<decltype(couscous::get_opt_val(
-      couscous::count<SomeStruct, couscous::AllMethods>()))>();
+  constexpr auto inds = couscous::gen_inds_tup<decltype(
+      couscous::count<SomeStruct, couscous::AllMethods>())>();
   hana::for_each(inds, [](auto &&item) {
     std::cout << "Method name: "
-              << couscous::get_opt_val(hana::transform(
+              << hana::to<const char *>(
                      couscous::member_name<SomeStruct, couscous::AllMethods>(
-                         item),
-                     hana::to<const char *>))
+                         item))
               << std::endl;
   }); // Now we generate tuple of indices by calling gen_inds_tup<N,Offset =
       // hana::llong<0>>() and call lambda for each item in tuple.
   // find_by_name - finds indices by name(ct-string) and return them in tuple.
-  constexpr auto inds_tup = couscous::get_opt_val(
-      couscous::find_by_name<SomeStruct, couscous::AllMethods>("bar"_s));
+  constexpr auto inds_tup =
+      couscous::find_by_name<SomeStruct, couscous::AllMethods>("bar"_s);
   hana::for_each(inds_tup, [](auto &&item) {
     std::cout << "Index: " << item << '\t'
-              << couscous::get_opt_val(hana::transform(
+              << hana::to<const char *>(
                      couscous::member_name<SomeStruct, couscous::AllMethods>(
-                         item),
-                     hana::to<const char *>))
+                         item))
               << std::endl;
   });
   // find_by_name_first - find first index by name (usefull for variables)
-  constexpr auto ind =
-      couscous::find_by_name_first<SomeStruct>("some_var"_s).value();
+  constexpr auto ind = couscous::find_by_name_first<SomeStruct>("some_var"_s);
   std::cout << "Index of some_var: " << ind << std::endl;
 }

@@ -43,25 +43,6 @@ constexpr bool is_reference_wrapper_v =
                                        is_reference_wrapper */
 
 /**
- * @brief Get value of optional
- * @param optional_value - boost::hana::optional<...>
- * @return value of optional or nothing
- */
-template <class T> constexpr decltype(auto) get_opt_val(T &&t) {
-  if
-    constexpr(
-        ::std::is_same<::boost::hana::optional_tag,
-                       ::boost::hana::tag_of_t<::std::decay_t<T>>>::value) {
-      if
-        constexpr(decltype(::boost::hana::is_just(t))::value) return t.value();
-      else
-        return ::boost::hana::nothing;
-    }
-  else
-    return t;
-}
-
-/**
  * @brief Helper struct to unpack type typename from class if it exists
  */
 template <class T> class unpack_type_typename_helper {

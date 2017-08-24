@@ -55,21 +55,20 @@ int main() {
   // To get a method result/variable type you can use "result_type" function,
   // whitch will return boost::hana::type_c<...>.
   std::cout << std::boolalpha << "Result type is an int&&: "
-            << (couscous::result_type<SomeStruct<int>, couscous::ObjVars>(0_c)
-                    .value() == hana::type_c<int &&>)
+            << (couscous::result_type<SomeStruct<int>, couscous::ObjVars>(
+                    0_c) == hana::type_c<int &&>)
             << std::endl;
   std::cout << "Result type is a char*: "
             << (couscous::result_type<SomeStruct<int>, couscous::ObjMethods>(
-                    0_c)
-                    .value() == hana::type_c<char *>)
+                    0_c) == hana::type_c<char *>)
             << std::endl;
   std::cout << "Result type is a int: "
-            << (couscous::result_type<OtherStruct<>, couscous::ObjMethods>(0_c)
-                    .value() == hana::type_c<int>)
+            << (couscous::result_type<OtherStruct<>, couscous::ObjMethods>(
+                    0_c) == hana::type_c<int>)
             << std::endl;
   std::cout << "Result type is a const char*: "
-            << (couscous::result_type<OtherStruct<>, couscous::ObjMethods>(1_c)
-                    .value() == hana::type_c<const char *>)
+            << (couscous::result_type<OtherStruct<>, couscous::ObjMethods>(
+                    1_c) == hana::type_c<const char *>)
             << std::endl;
   // Also we can use "result_type" in the "MethodInfo" helper struct which will
   // return types
@@ -86,7 +85,7 @@ int main() {
             << couscous::methods_args_count<
                    OtherStruct<int, std::string, double, double>,
                    couscous::ObjMethods>(0_c)
-                   .value()
+
             << std::endl;
   std::cout << "Amount of static method arguments: "
             << couscous::MethodInfo<SomeStruct<float>, 0,
@@ -101,8 +100,7 @@ int main() {
   std::cout << "Arguments type: ";
   hana::for_each(
       couscous::method_args<OtherStruct<char, int, float>,
-                            couscous::ObjMethods>(0_c)
-          .value(),
+                            couscous::ObjMethods>(0_c),
       [](auto &&x) {
         std::cout << typeid(typename std::decay_t<decltype(x)>::type).name()
                   << '\t';
@@ -116,14 +114,12 @@ int main() {
   // Also you can get each input arg type separatly by calling "method_arg" or
   // "MethodInfo::arg_type".
   std::cout << (couscous::method_arg<SomeStruct<float>, couscous::ObjMethods>(
-                    2_c, 1_c)
-                    .value() == hana::type_c<int>)
+                    2_c, 1_c) == hana::type_c<int>)
             << std::endl;
   // MethodInfo example
   std::cout << (typeid(
                     couscous::MethodInfo<OtherStruct<int, float, double>, 0,
                                          couscous::ObjMethods>::arg_type<1>) ==
-                typeid(couscous::MethodInfo<OtherStruct<int, float, double>, 0,
-                                            couscous::ObjMethods>::arg1_type))
+                typeid(int))
             << std::endl;
 }
