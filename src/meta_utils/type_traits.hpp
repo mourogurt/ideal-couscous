@@ -1,7 +1,6 @@
 #ifndef REFL_TYPE_TRAITS_HPP
 #define REFL_TYPE_TRAITS_HPP
 
-#include <boost/hana/optional.hpp>
 #include <boost/hana/type.hpp>
 
 namespace reflect {
