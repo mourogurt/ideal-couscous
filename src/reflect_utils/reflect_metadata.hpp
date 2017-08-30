@@ -15,9 +15,15 @@ template <class T>
 using MetaClass = info::MetaClass<typename ::std::decay_t<
     T>::MetaInfo_type>; /**< Helper type template to specify Metadata class */
 
+template <class T> using Parents = typename MetaClass<T>::Parent_types;
+
 template <class T, class Generator = info::DefaultIndexGenerator, class... Args,
           class I>
 constexpr decltype(auto) check_invoke(I &&);
+
+template <class T> constexpr decltype(auto) parents_count();
+
+template <class T> constexpr decltype(auto) parents_types();
 
 namespace detail {
 
@@ -36,6 +42,34 @@ template <class... Args>
 struct method_args_helper_impl<::boost::hana::tuple<Args...>> {
   constexpr static auto value{::boost::hana::tuple_t<Args...>};
 };
+
+/**
+ * @brief Helper struct to get tuple of types of all
+ * parents(boost::hana::tuple_t)
+ */
+template <class... Args> struct parents_types_helper_impl {
+  constexpr static auto value{metautils::multiple_concat(
+      ::boost::hana::tuple_t<Args...>, parents_types<Args>()...)};
+};
+
+/**
+ * @brief Helper struct to get tuple of types of all
+ * parents(boost::hana::tuple_t) (template
+ * spetialization for boost::hana::tuple)
+ */
+template <class... Args>
+struct parents_types_helper_impl<::boost::hana::tuple<Args...>> {
+  constexpr static auto value{metautils::multiple_concat(
+      ::boost::hana::tuple_t<Args...>, parents_types<Args>()...)};
+};
+
+/**
+ * @brief Counting all parents
+ */
+template <class... Args>
+constexpr decltype(auto) parents_count_unpack(::boost::hana::tuple<Args...>) {
+  return (parents_count<Args>() + ...);
+}
 
 /**
  * @brief Return tuple of args type of method
@@ -146,6 +180,61 @@ template <class T> constexpr decltype(auto) class_name() {
                 "Class must be reflected");
 #endif
   return MetaClass<T>::class_name;
+}
+
+/**
+ * @brief Returns amount of parent classes
+ * @return boost::hana::llong<...>
+ */
+template <class T> constexpr decltype(auto) parents_count() {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(decltype(check_reflected<T>())::value,
+                "Class must be reflected");
+#endif
+  constexpr auto top_parents_count =
+      decltype(::boost::hana::size(::std::declval<Parents<T>>()))::value;
+  if
+    constexpr(top_parents_count >
+              0) return ::boost::hana::llong_c<top_parents_count> +
+        ::boost::hana::llong_c<decltype(
+            detail::parents_count_unpack(::std::declval<Parents<T>>()))::value>;
+  else
+    return ::boost::hana::llong_c<0>;
+}
+
+/**
+ * @brief Return all parent types
+ * @return boost::hana::tuple_t<...>
+ */
+template <class T> constexpr decltype(auto) parents_types() {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(decltype(check_reflected<T>())::value,
+                "Class must be reflected");
+#endif
+  if
+    constexpr(parents_count<T>() > 0) return decltype(
+        detail::parents_types_helper_impl<Parents<T>>())::value;
+  else
+    return ::boost::hana::tuple_t<>;
+}
+
+/**
+ * @brief Return parent type specified by index
+ * @param index - index(boost::hana::llong)
+ * @return boost::hana::type_c<...>
+ */
+template <class T, class I> constexpr decltype(auto) parent_type(I &&index) {
+#ifndef COUSOUS_DISABLE_MOST_CT_CHECKS
+  static_assert(decltype(check_reflected<T>())::value,
+                "Class must be reflected");
+  static_assert(
+      ::std::is_same_v<::boost::hana::integral_constant_tag<long long>,
+                       ::boost::hana::tag_of_t<I>>,
+      "Index must be an integral constant of long long");
+  static_assert(decltype(parents_count<T>())::value > ::std::decay_t<I>::value,
+                "Index must be less than number of parents");
+#endif
+  return ::boost::hana::at(parents_types<T>(), index);
 }
 
 /**

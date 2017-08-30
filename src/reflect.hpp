@@ -12,8 +12,6 @@
  * @todo performance benchmarks
  * @todo compile time benchmarks
  * @todo memorization
- * @todo c++14 port
- * @todo Inheritance
  * @todo Runtime reflection
  * @todo Reflect constructors
  * @todo Signals
@@ -23,15 +21,17 @@
  */
 namespace reflect {
 
-using All = info::DefaultIndexGenerator; /**< All metainformation */
-using AllVars = info::VariableIndexGenerator<All>; /**< All vars */
+using All = info::DefaultIndexGenerator;             /**< All metainformation */
+using AllVars = info::VariableIndexGenerator<All>;   /**< All vars */
 using ObjVars = info::ObjectIndexGenerator<AllVars>; /**< Object vars */
 using StaticVars = info::StaticIndexGenerator<AllVars>; /**< Static vars */
-using AllMethods = info::MethodIndexGenerator<All>; /**< All methods */
-using ObjMethods = info::ObjectIndexGenerator<AllMethods>; /**< Object methods */
-using ConstMethods = info::ConstMethodIndexGenerator<ObjMethods>; /**< Const methods */
-using StaticMethods = info::StaticIndexGenerator<AllMethods>; /**< Static methods */
-
+using AllMethods = info::MethodIndexGenerator<All>;     /**< All methods */
+using ObjMethods =
+    info::ObjectIndexGenerator<AllMethods>; /**< Object methods */
+using ConstMethods =
+    info::ConstMethodIndexGenerator<ObjMethods>; /**< Const methods */
+using StaticMethods =
+    info::StaticIndexGenerator<AllMethods>; /**< Static methods */
 }
 
 #endif // UTILS_HPP

@@ -40,26 +40,107 @@ constexpr bool is_reflected_v =
 
 namespace detail {
 
+template <class MetaInfo_type> constexpr decltype(auto) names_tuple();
+
+template <class MetaInfo_type> constexpr decltype(auto) metadata_tuple();
+
+/**
+ * @brief Get all metadata in inheritied classes recursivly if class have
+ * parents (with index_sequence)
+ */
+template <class Tuple, ::std::size_t... indices>
+constexpr decltype(auto)
+get_class_subnames_impl(::std::index_sequence<indices...> &&) {
+  return metautils::multiple_concat(
+      names_tuple<typename ::std::decay_t<decltype(::boost::hana::at_c<indices>(
+          std::declval<Tuple>()))>::MetaInfo_type>()...);
+}
+
+/**
+ * @brief Get all names in inheritied classes recursivly if class have parents
+ * (with index_sequence)
+ */
+template <class Tuple, ::std::size_t... indices>
+constexpr decltype(auto)
+get_class_submetadata_impl(::std::index_sequence<indices...> &&) {
+  return metautils::multiple_concat(
+      metadata_tuple<
+          typename ::std::decay_t<decltype(::boost::hana::at_c<indices>(
+              std::declval<Tuple>()))>::MetaInfo_type>()...);
+}
+
+/**
+ * @brief Get all metadata in inheritied classes recursivly
+ */
+template <class Tuple> constexpr decltype(auto) get_class_subnames() {
+  constexpr auto size =
+      decltype(::boost::hana::size(::std::declval<Tuple>()))::value;
+  if
+    constexpr(size > 0) return get_class_subnames_impl<Tuple>(
+        ::std::make_index_sequence<size>());
+  else
+    return ::boost::hana::make_tuple();
+}
+
+/**
+ * @brief Get all names in inheritied classes recursivly
+ */
+template <class Tuple> constexpr decltype(auto) get_class_submetadata() {
+  constexpr auto size =
+      decltype(::boost::hana::size(::std::declval<Tuple>()))::value;
+  if
+    constexpr(size > 0) return get_class_submetadata_impl<Tuple>(
+        ::std::make_index_sequence<size>());
+  else
+    return ::boost::hana::make_tuple();
+}
+
 /**
   * @brief Concating all names in one tuple
   */
-template <class Type, class MetaInfo_type, long long... Indices>
+template <class MetaInfo_type, long long... Indices>
 constexpr decltype(auto)
-names_tuple(::std::integer_sequence<long long, Indices...> &&) {
-  return metautils::multiple_concat(names_state(
-      metautils::counter<Indices>{}, static_cast<const Type *>(nullptr),
-      static_cast<const MetaInfo_type *>(nullptr))...);
+names_tuple_impl(::std::integer_sequence<long long, Indices...> &&) {
+  return metautils::multiple_concat(
+      names_state(metautils::counter<Indices>{},
+                  static_cast<const typename MetaInfo_type::Type *>(nullptr),
+                  static_cast<const MetaInfo_type *>(nullptr))...,
+      get_class_subnames<typename MetaInfo_type::Parent_types>());
 }
 
 /**
   * @brief Concating all metadata in one tuple
   */
-template <class Type, class MetaInfo_type, long long... Indices>
+template <class MetaInfo_type, long long... Indices>
 constexpr decltype(auto)
-metadata_tuple(::std::integer_sequence<long long, Indices...> &&) {
-  return metautils::multiple_concat(metadata_state(
-      metautils::counter<Indices>{}, static_cast<const Type *>(nullptr),
-      static_cast<const MetaInfo_type *>(nullptr))...);
+metadata_tuple_impl(::std::integer_sequence<long long, Indices...> &&) {
+  return metautils::multiple_concat(
+      metadata_state(metautils::counter<Indices>{},
+                     static_cast<const typename MetaInfo_type::Type *>(nullptr),
+                     static_cast<const MetaInfo_type *>(nullptr))...,
+      get_class_submetadata<typename MetaInfo_type::Parent_types>());
+}
+
+/**
+  * @brief Concating all names in one tuple
+  */
+template <class MetaInfo_type> constexpr decltype(auto) names_tuple() {
+  return names_tuple_impl<MetaInfo_type>(
+      ::std::make_integer_sequence<
+          long long, decltype(counter(metautils::counter<>{},
+                                      static_cast<const MetaInfo_type *>(
+                                          nullptr)))::value>{});
+}
+
+/**
+  * @brief Concating all metadata in one tuple
+  */
+template <class MetaInfo_type> constexpr decltype(auto) metadata_tuple() {
+  return metadata_tuple_impl<MetaInfo_type>(
+      ::std::make_integer_sequence<
+          long long, decltype(counter(metautils::counter<>{},
+                                      static_cast<const MetaInfo_type *>(
+                                          nullptr)))::value>{});
 }
 }
 
@@ -67,26 +148,15 @@ metadata_tuple(::std::integer_sequence<long long, Indices...> &&) {
  * @brief Class that stores meta-information about T
  */
 template <class T> struct MetaClass {
-  using Type = typename T::Type;
-  using MetaInfo_type = T;
+  using Parent_types = typename T::Parent_types;
   static constexpr auto class_name{BOOST_HANA_STRING(class_name_detail(
       static_cast<const typename T::Type *>(nullptr),
       static_cast<const T *>(
           nullptr)))}; /**< compile-time string of class name */
-  static constexpr auto names{detail::names_tuple<Type, MetaInfo_type>(
-      ::std::make_integer_sequence<
-          long long,
-          decltype(counter(metautils::counter<>{},
-                           static_cast<const MetaInfo_type *>(
-                               nullptr)))::value>{})}; /**< tuple of all
-                                                          variable names */
-  static constexpr auto metadata{detail::metadata_tuple<Type, MetaInfo_type>(
-      ::std::make_integer_sequence<
-          long long,
-          decltype(counter(metautils::counter<>{},
-                           static_cast<const MetaInfo_type *>(
-                               nullptr)))::value>{})}; /**< tuple of all
-                                                          method names  */
+  static constexpr auto names{
+      detail::names_tuple<T>()}; /**< tuple of all variable names */
+  static constexpr auto metadata{
+      detail::metadata_tuple<T>()}; /**< tuple of all method names*/
 };
 
 class EmptyGenerator;
@@ -138,9 +208,10 @@ template <class... Args> struct MetaInfo;
  * is_reflected function(to check if class is reflected), class_name_detail to
  * retrive class name c-t string, counter - c-t counter
  */
-#define IN_METAINFO(TYPE)                                                      \
+#define IN_METAINFO(TYPE, ...)                                                 \
   using Type = TYPE;                                                           \
   using MetaInfo_type = TYPE;                                                  \
+  using Parent_types = ::boost::hana::tuple<__VA_ARGS__>;                      \
   static constexpr auto is_reflected() { return std::true_type(); }            \
   friend constexpr auto class_name_detail(const Type *, const MetaInfo_type *) \
       ->decltype(#TYPE) {                                                      \
@@ -163,11 +234,12 @@ template <class... Args> struct MetaInfo;
  * @brief Declarating MetaInfo spetialization for TYPE. All related to
  * reflection staff goes here
  */
-#define METAINFO(TYPE)                                                         \
+#define METAINFO(TYPE, ...)                                                    \
   namespace reflect {                                                          \
   namespace info {                                                             \
   template <> struct MetaInfo<TYPE> {                                          \
     using Type = TYPE;                                                         \
+    using Parent_types = ::boost::hana::tuple<__VA_ARGS__>;                    \
     using MetaInfo_type = ::reflect::info::MetaInfo<Type>;                     \
     friend constexpr auto class_name_detail(const Type *,                      \
                                             const MetaInfo_type *)             \
@@ -182,11 +254,12 @@ template <class... Args> struct MetaInfo;
  * First param is template class without template, second - all types that will
  * be needed to spetialize templat, third - template args for TYPE.
  */
-#define TEMPLATE_METAINFO(TYPE, TEMPLATE_TYPE, TEMPLATE)                       \
+#define TEMPLATE_METAINFO(TYPE, TEMPLATE_TYPE, TEMPLATE, ...)                  \
   namespace reflect {                                                          \
   namespace info {                                                             \
   template <TEMPLATE_TYPE> struct MetaInfo<TYPE<TEMPLATE>> {                   \
     using Type = TYPE<TEMPLATE>;                                               \
+    using Parent_types = ::boost::hana::tuple<__VA_ARGS__>;                    \
     using MetaInfo_type = ::reflect::info::MetaInfo<Type>;                     \
     friend constexpr auto class_name_detail(const Type *,                      \
                                             const MetaInfo_type *)             \

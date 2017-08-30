@@ -1,5 +1,4 @@
 #include <QtTest>
-#include <iostream>
 #include <reflect.hpp>
 
 using namespace boost::hana::literals;
