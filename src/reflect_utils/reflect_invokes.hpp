@@ -295,8 +295,7 @@ constexpr decltype(auto) set(I &&index, SetArg &&s_arg, Args &&... args) {
 #endif
   if
     constexpr(decltype(::boost::hana::equal(
-        check_set<T, Generator, decltype(s_arg),
-                  decltype(::std::forward<Args>(args))...>(index),
+        check_set<T, Generator, decltype(s_arg), decltype(args)...>(index),
         ::boost::hana::bool_c<true>))::value) {
       return detail::set_impl(
           ::boost::hana::at(

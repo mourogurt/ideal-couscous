@@ -7,22 +7,23 @@ class Base {
 public:
   OUT_METAINFO(Base)
   int a{0};
-  void foo();
 };
 
 class ConstChild : public Base {
 public:
   OUT_METAINFO(ConstChild)
   const int c = 100;
-  void bar() const;
+  int bar() const { return c; }
 };
 
 class StaticChild : public ConstChild {
 public:
   OUT_METAINFO(StaticChild)
-  static std::string name;
-  static int baz(int);
+  static std::string static_var;
+  static std::string &baz() { return static_var; }
 };
+
+std::string StaticChild::static_var = "";
 
 class InClassChild : public StaticChild {
 public:
@@ -31,15 +32,14 @@ public:
 
 METAINFO(Base)
 REFLECT_OBJ_VAR(a)
-REFLECT_OBJ_MTD(foo)
 END_METAINFO
 METAINFO(ConstChild, Base)
 REFLECT_OBJ_VAR(c)
 REFLECT_CONST_OBJ_MTD(bar)
 END_METAINFO
 METAINFO(StaticChild, ConstChild)
-REFLECT_STATIC_VAR(name)
-REFLECT_STATIC_MTD(baz, int)
+REFLECT_STATIC_VAR(static_var)
+REFLECT_STATIC_MTD(baz)
 END_METAINFO
 
 class InheritanceTest : public QObject {
@@ -51,6 +51,8 @@ private slots:
   void parents_types();
   void vars_types();
   void parents_names();
+  void get_from_parents();
+  void set_from_parents();
 };
 
 void InheritanceTest::parents_count() {
@@ -66,10 +68,10 @@ void InheritanceTest::vars_count() {
   QCOMPARE((reflect::utils::count<InClassChild, reflect::AllVars>()), 3_c);
 }
 void InheritanceTest::methods_count() {
-  QCOMPARE((reflect::utils::count<Base, reflect::AllMethods>()), 1_c);
-  QCOMPARE((reflect::utils::count<ConstChild, reflect::AllMethods>()), 2_c);
-  QCOMPARE((reflect::utils::count<StaticChild, reflect::AllMethods>()), 3_c);
-  QCOMPARE((reflect::utils::count<InClassChild, reflect::AllMethods>()), 3_c);
+  QCOMPARE((reflect::utils::count<Base, reflect::AllMethods>()), 0_c);
+  QCOMPARE((reflect::utils::count<ConstChild, reflect::AllMethods>()), 1_c);
+  QCOMPARE((reflect::utils::count<StaticChild, reflect::AllMethods>()), 2_c);
+  QCOMPARE((reflect::utils::count<InClassChild, reflect::AllMethods>()), 2_c);
 }
 void InheritanceTest::parents_types() {
   QCOMPARE(reflect::utils::parents_types<Base>(), ::boost::hana::tuple_t<>);
@@ -90,9 +92,10 @@ void InheritanceTest::vars_types() {
   QCOMPARE(reflect::utils::result_type<StaticChild>(
                reflect::utils::find_by_name_first<StaticChild>("c"_s)),
            ::boost::hana::type_c<const int &&>);
-  QCOMPARE(reflect::utils::result_type<InClassChild>(
-               reflect::utils::find_by_name_first<InClassChild>("name"_s)),
-           ::boost::hana::type_c<std::string &&>);
+  QCOMPARE(
+      reflect::utils::result_type<InClassChild>(
+          reflect::utils::find_by_name_first<InClassChild>("static_var"_s)),
+      ::boost::hana::type_c<std::string &&>);
 }
 
 void InheritanceTest::parents_names() {
@@ -112,6 +115,37 @@ void InheritanceTest::parents_names() {
   QCOMPARE(tup3, boost::hana::make_tuple("ConstChild"_s, "Base"_s));
   QCOMPARE(tup4,
            boost::hana::make_tuple("StaticChild"_s, "ConstChild"_s, "Base"_s));
+}
+
+void InheritanceTest::get_from_parents() {
+  InClassChild obj;
+  obj.a = 10;
+  QCOMPARE(
+      (reflect::utils::get<InClassChild, reflect::AllVars>(
+          reflect::utils::find_by_name_first<InClassChild, reflect::AllVars>(
+              "a"_s),
+          obj)),
+      10);
+  QCOMPARE(
+      (reflect::utils::get<InClassChild, reflect::ConstMethods>(
+          reflect::utils::find_by_name_first<InClassChild,
+                                             reflect::ConstMethods>("bar"_s),
+          obj)),
+      100);
+}
+
+void InheritanceTest::set_from_parents() {
+  InClassChild obj;
+  reflect::utils::set<InClassChild, reflect::AllVars>(
+      reflect::utils::find_by_name_first<InClassChild, reflect::AllVars>("a"_s),
+      20, obj);
+  QCOMPARE(obj.a, 20);
+  auto res = reflect::utils::set<InClassChild, reflect::StaticMethods>(
+      reflect::utils::find_by_name_first<InClassChild, reflect::StaticMethods>(
+          "baz"_s),
+      "Hello test");
+  QCOMPARE(res, boost::hana::bool_c<true>);
+  QCOMPARE(InClassChild::static_var, std::string("Hello test"));
 }
 
 QTEST_MAIN(InheritanceTest)
