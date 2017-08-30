@@ -13,7 +13,6 @@ Apache License 2.0
 
 3 Limitations
 ==============
-- No inheritance
 - No variable/method flags (public, private, protected). Reflected private/protected methods/vars can be called outside of class
 - Constructors can't be reflected
 - No signals/slots
