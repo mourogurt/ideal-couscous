@@ -71,9 +71,10 @@ public:
 
   using type = Result Obj::*; /**< Pointer type */
 
-  using arg_types =
-      ::boost::hana::tuple<Obj>; /**< Tuple pointer type (Needed to unify all
-                                    pointer structs) */
+  using arg_types = ::std::decay_t<decltype(::boost::hana::tuple_t<Obj>)>; /**<
+                                                     Tuple pointer type (Needed
+                                                     to unify all
+                                                     pointer structs) */
 
   using return_type = decltype(metautils::constexpr_invoke(
       std::declval<type>(), std::declval<obj_type>())); /**< Return type */
@@ -144,8 +145,9 @@ public:
 
   using type = Obj *; /**< Pointer type */
 
-  using arg_types = ::boost::hana::tuple<>; /**< Tuple pointer type (Needed to
-                                               unify all pointer structs) */
+  using arg_types = ::std::decay_t<decltype(
+      ::boost::hana::tuple_t<>)>; /**< Tuple pointer type (Needed to
+        unify all pointer structs) */
 
   using return_type = std::add_rvalue_reference_t<
       std::remove_reference_t<decltype(*p)>>; /**< Object of pointer type */

@@ -75,7 +75,7 @@ constexpr decltype(auto) parents_count_unpack(::boost::hana::tuple<Args...>) {
 /**
  * @brief Return tuple of args type of method
  * @param index - method index
- * @return boost::hana::type_t<Tuple...>
+ * @return boost::hana::tuple_t<...>
  */
 template <class T, class Generator, class I>
 constexpr decltype(auto) method_args_helper_method_impl(I &&index) {
@@ -92,12 +92,11 @@ constexpr decltype(auto) method_args_helper_method_impl(I &&index) {
                     ::std::decay_t<I>::value,
                 "Index must be less than number of elements in the generator");
 #endif
-  return ::boost::hana::type_c<
-      typename ::std::decay_t<decltype(::boost::hana::at(
-          metautils::copy_tuple_sequence(
-              MetaClass<T>::metadata,
-              Generator::template generate<decltype(MetaClass<T>::metadata)>()),
-          index))>::arg_types>;
+  return typename ::std::decay_t<decltype(::boost::hana::at(
+      metautils::copy_tuple_sequence(
+          MetaClass<T>::metadata,
+          Generator::template generate<decltype(MetaClass<T>::metadata)>()),
+      index))>::arg_types{};
 }
 
 /**
@@ -350,12 +349,11 @@ constexpr decltype(auto) method_args(I &&index) {
           ::std::decay_t<I>::value,
       "Index must be less than number of elements in the generator");
 #endif
-  return detail::method_args_helper_impl<
-      typename ::std::decay_t<decltype(::boost::hana::at(
-          metautils::copy_tuple_sequence(
-              MetaClass<T>::metadata,
-              Generator::template generate<decltype(MetaClass<T>::metadata)>()),
-          index))>::arg_types>::value;
+  return typename ::std::decay_t<decltype(::boost::hana::at(
+      metautils::copy_tuple_sequence(
+          MetaClass<T>::metadata,
+          Generator::template generate<decltype(MetaClass<T>::metadata)>()),
+      index))>::arg_types{};
 }
 
 /**

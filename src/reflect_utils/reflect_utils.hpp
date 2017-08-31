@@ -19,9 +19,9 @@ private:
   using MetaClass = info::MetaClass<typename ::std::decay_t<
       T>::MetaInfo_type>; /**< Helper type template to specify Metadata class */
 public:
-  using types = typename ::std::decay_t<decltype(
+  using types = ::std::decay_t<decltype(
       utils::detail::method_args_helper_method_impl<T, Generator>(
-          ::boost::hana::llong_c<I>))>::type; /**< boost::hana::tuple<...> */
+          ::boost::hana::llong_c<I>))>; /**< boost::hana::tuple_t<...> */
   using result_type = metautils::unpack_type_typename_helper_t<
       std::decay_t<decltype(utils::result_type<T, Generator>(
           ::boost::hana::llong_c<I>))>>; /**< result type of method */

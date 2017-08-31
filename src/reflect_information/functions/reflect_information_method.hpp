@@ -169,8 +169,8 @@ public:
 
   using type = Result Obj::*; /**< Method type */
 
-  using arg_types =
-      ::boost::hana::tuple<Obj, Args...>; /**< Method arguments type */
+  using arg_types = ::std::decay_t<decltype(
+      ::boost::hana::tuple_t<Obj, Args...>)>; /**< Method arguments type */
 
   using return_type = decltype(metautils::constexpr_invoke(
       std::declval<type>(), std::declval<obj_type>(),
@@ -252,8 +252,8 @@ public:
 
   using type = Result const Obj::*; /**< Method type */
 
-  using arg_types =
-      ::boost::hana::tuple<Obj, Args...>; /**< Method arguments type */
+  using arg_types = ::std::decay_t<decltype(
+      ::boost::hana::tuple_t<Obj, Args...>)>; /**< Method arguments type */
 
   using return_type = decltype(metautils::constexpr_invoke(
       std::declval<type>(), std::declval<obj_type>(),
@@ -314,7 +314,8 @@ public:
 
   using type = Obj *; /**< Method type */
 
-  using arg_types = ::boost::hana::tuple<Args...>; /**< Method arguments type */
+  using arg_types = ::std::decay_t<decltype(
+      ::boost::hana::tuple_t<Args...>)>; /**< Method arguments type */
 
   using return_type = decltype(metautils::constexpr_invoke(
       std::declval<type>(),

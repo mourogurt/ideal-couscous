@@ -317,7 +317,7 @@ void MetadataTest::get_method_types() {
   QVERIFY(res_tuple == (::boost::hana::tuple_t<int &, void, double>));
   QCOMPARE(
       typeid(reflect::utils::MethodInfo<Type, 0, reflect::AllMethods>::types),
-      typeid(::boost::hana::tuple<Type, int>));
+      typeid(::boost::hana::tuple_t<Type, int>));
   QCOMPARE(typeid(reflect::utils::MethodInfo<Type, 0,
                                              reflect::AllMethods>::result_type),
            typeid(int &));
