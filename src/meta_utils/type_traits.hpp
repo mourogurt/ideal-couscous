@@ -23,6 +23,8 @@ template <class T> struct checker<T, true> { using type = typename T::type; };
 }
 }
 
+template <class T> struct Type { using type = T; };
+
 /**
  * @brief Check if type is std::reference_wrapper
  *

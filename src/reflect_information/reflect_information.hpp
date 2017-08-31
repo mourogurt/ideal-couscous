@@ -53,7 +53,7 @@ constexpr decltype(auto)
 get_class_subnames_impl(::std::index_sequence<indices...> &&) {
   return metautils::multiple_concat(
       names_tuple<typename ::std::decay_t<decltype(::boost::hana::at_c<indices>(
-          std::declval<Tuple>()))>::MetaInfo_type>()...);
+          std::declval<Tuple>()))>::type::MetaInfo_type>()...);
 }
 
 /**
@@ -66,7 +66,7 @@ get_class_submetadata_impl(::std::index_sequence<indices...> &&) {
   return metautils::multiple_concat(
       metadata_tuple<
           typename ::std::decay_t<decltype(::boost::hana::at_c<indices>(
-              std::declval<Tuple>()))>::MetaInfo_type>()...);
+              std::declval<Tuple>()))>::type::MetaInfo_type>()...);
 }
 
 /**
@@ -211,7 +211,8 @@ template <class... Args> struct MetaInfo;
 #define IN_METAINFO(TYPE, ...)                                                 \
   using Type = TYPE;                                                           \
   using MetaInfo_type = TYPE;                                                  \
-  using Parent_types = ::boost::hana::tuple<__VA_ARGS__>;                      \
+  using Parent_types =                                                         \
+      ::std::decay_t<decltype(::boost::hana::tuple_t<__VA_ARGS__>)>;           \
   static constexpr auto is_reflected() { return std::true_type(); }            \
   friend constexpr auto class_name_detail(const Type *, const MetaInfo_type *) \
       ->decltype(#TYPE) {                                                      \
@@ -239,7 +240,8 @@ template <class... Args> struct MetaInfo;
   namespace info {                                                             \
   template <> struct MetaInfo<TYPE> {                                          \
     using Type = TYPE;                                                         \
-    using Parent_types = ::boost::hana::tuple<__VA_ARGS__>;                    \
+    using Parent_types =                                                       \
+        ::std::decay_t<decltype(::boost::hana::tuple_t<__VA_ARGS__>)>;         \
     using MetaInfo_type = ::reflect::info::MetaInfo<Type>;                     \
     friend constexpr auto class_name_detail(const Type *,                      \
                                             const MetaInfo_type *)             \
@@ -259,7 +261,8 @@ template <class... Args> struct MetaInfo;
   namespace info {                                                             \
   template <TEMPLATE_TYPE> struct MetaInfo<TYPE<TEMPLATE>> {                   \
     using Type = TYPE<TEMPLATE>;                                               \
-    using Parent_types = ::boost::hana::tuple<__VA_ARGS__>;                    \
+    using Parent_types =                                                       \
+        ::std::decay_t<decltype(::boost::hana::tuple_t<__VA_ARGS__>)>;         \
     using MetaInfo_type = ::reflect::info::MetaInfo<Type>;                     \
     friend constexpr auto class_name_detail(const Type *,                      \
                                             const MetaInfo_type *)             \

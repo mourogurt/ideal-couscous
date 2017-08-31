@@ -60,7 +60,8 @@ template <class... Args> struct parents_types_helper_impl {
 template <class... Args>
 struct parents_types_helper_impl<::boost::hana::tuple<Args...>> {
   constexpr static auto value{metautils::multiple_concat(
-      ::boost::hana::tuple_t<Args...>, parents_types<Args>()...)};
+      ::boost::hana::tuple<::std::decay_t<Args>>{}...,
+      parents_types<typename Args::type>()...)};
 };
 
 /**
@@ -68,7 +69,7 @@ struct parents_types_helper_impl<::boost::hana::tuple<Args...>> {
  */
 template <class... Args>
 constexpr decltype(auto) parents_count_unpack(::boost::hana::tuple<Args...>) {
-  return (parents_count<Args>() + ...);
+  return (parents_count<typename ::std::decay_t<Args>::type>() + ...);
 }
 
 /**
