@@ -121,13 +121,13 @@ void InheritanceTest::get_from_parents() {
   InClassChild obj;
   obj.a = 10;
   QCOMPARE(
-      (reflect::utils::get<InClassChild, reflect::AllVars>(
+      (reflect::utils::invoke<InClassChild, reflect::AllVars>(
           reflect::utils::find_by_name_first<InClassChild, reflect::AllVars>(
               "a"_s),
           obj)),
       10);
   QCOMPARE(
-      (reflect::utils::get<InClassChild, reflect::ConstMethods>(
+      (reflect::utils::invoke<InClassChild, reflect::ConstMethods>(
           reflect::utils::find_by_name_first<InClassChild,
                                              reflect::ConstMethods>("bar"_s),
           obj)),
@@ -136,15 +136,14 @@ void InheritanceTest::get_from_parents() {
 
 void InheritanceTest::set_from_parents() {
   InClassChild obj;
-  reflect::utils::set<InClassChild, reflect::AllVars>(
+  reflect::utils::invoke<InClassChild, reflect::AllVars>(
       reflect::utils::find_by_name_first<InClassChild, reflect::AllVars>("a"_s),
-      20, obj);
+      obj) = 20;
   QCOMPARE(obj.a, 20);
-  auto res = reflect::utils::set<InClassChild, reflect::StaticMethods>(
+  auto res = reflect::utils::invoke<InClassChild, reflect::StaticMethods>(
       reflect::utils::find_by_name_first<InClassChild, reflect::StaticMethods>(
-          "baz"_s),
-      "Hello test");
-  QCOMPARE(res, boost::hana::bool_c<true>);
+          "baz"_s)) = "Hello test";
+  // QCOMPARE(res, boost::hana::bool_c<true>);
   QCOMPARE(InClassChild::static_var, std::string("Hello test"));
 }
 

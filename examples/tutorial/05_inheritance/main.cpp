@@ -79,7 +79,7 @@ int main() {
   Child2 obj;
   obj.base_var = 100;
   std::cout << "base_var from Base class:\t"
-            << couscous::get<Child2, couscous::AllVars>(
+            << couscous::invoke<Child2, couscous::AllVars>(
                    couscous::find_by_name_first<Child2, couscous::AllVars>(
                        "base_var"_s),
                    obj)
