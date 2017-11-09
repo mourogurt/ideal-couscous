@@ -51,7 +51,7 @@ constexpr decltype(auto) copy_string_from_tupl_impl(
     const boost::hana::tuple<boost::hana::char_<s>...> &) {
   return boost::hana::string_c<s...>;
 }
-}
+} // namespace detail
 /**
  * @brief remove ending zero chars from ct-string
  * @param str - ct-string with ending zero chars
@@ -64,8 +64,8 @@ constexpr decltype(auto) remove_zeros_from_ct_string(const T str) {
       (boost::hana::size(str) -
        boost::hana::size_c<detail::real_string_size_impl(str)>)));
 }
-}
-}
+} // namespace metautils
+} // namespace reflect
 
 #ifndef STRING_MAXLEN
 #define STRING_MAXLEN 64 /**< maximum length of compile-time string */

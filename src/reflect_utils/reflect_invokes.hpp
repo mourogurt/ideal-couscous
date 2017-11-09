@@ -31,14 +31,13 @@ namespace detail {
  */
 template <class T, class... Args>
 constexpr decltype(auto) invoke_impl(T &&p, Args &&... args) {
-  if
-    constexpr(::std::decay_t<decltype(::boost::hana::size(
-                  ::std::declval<typename T::arg_types>()))>::value !=
-              0) return p(::std::forward<Args>(args)...);
+  if constexpr (::std::decay_t<decltype(::boost::hana::size(
+                    ::std::declval<typename T::arg_types>()))>::value != 0)
+    return p(::std::forward<Args>(args)...);
   else
     return p();
 }
-}
+} // namespace detail
 
 /**
  * @brief invoke a method/variable
@@ -68,7 +67,7 @@ constexpr decltype(auto) invoke(I &&index, Args &&... args) {
           index),
       ::std::forward<Args>(args)...);
 }
-}
-}
+} // namespace utils
+} // namespace reflect
 
 #endif // REFLECT_INVOKES_HPP

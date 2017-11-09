@@ -16,7 +16,7 @@ inline namespace utils { using namespace ::reflect::utils; }
 inline namespace metautils { using namespace ::reflect::metautils; }
 // Ideal couscous' namespace.
 inline namespace reflect { using namespace ::reflect; }
-}
+} // namespace couscous
 
 namespace hana = boost::hana;
 

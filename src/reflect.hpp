@@ -32,6 +32,7 @@ using ConstMethods =
     info::ConstMethodIndexGenerator<ObjMethods>; /**< Const methods */
 using StaticMethods =
     info::StaticIndexGenerator<AllMethods>; /**< Static methods */
-}
+
+} // namespace reflect
 
 #endif // UTILS_HPP

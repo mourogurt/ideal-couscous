@@ -131,12 +131,10 @@ constexpr auto INVOKE(F &&f, Args &&... args) noexcept(
  */
 template <long long I, class Tuple, class F>
 constexpr decltype(auto) constexpr_foreach_index_impl(Tuple &&tup, F &&func) {
-  if
-    constexpr(::std::is_void_v<decltype(func(::boost::hana::at_c<I>(tup)))>) {
-      func(::boost::hana::at_c<I>(tup));
-      return ::boost::hana::make_tuple();
-    }
-  else
+  if constexpr (::std::is_void_v<decltype(func(::boost::hana::at_c<I>(tup)))>) {
+    func(::boost::hana::at_c<I>(tup));
+    return ::boost::hana::make_tuple();
+  } else
     return ::boost::hana::make_tuple(func(::boost::hana::at_c<I>(tup)));
 }
 
@@ -155,7 +153,7 @@ constexpr_foreach_seq_impl(::std::integer_sequence<long long, Indices...> &&,
   return metautils::multiple_concat(constexpr_foreach_index_impl<Indices>(
       ::std::forward<Tuple>(tup), ::std::forward<F>(func))...);
 }
-}
+} // namespace detail
 
 /**
  * @brief Constexpr implementation of std::invoke
@@ -190,7 +188,7 @@ constexpr decltype(auto) for_each(Tuple &&tup, F &&func) {
                                    decltype(::boost::hana::size(tup))::value>(),
       ::std::forward<Tuple>(tup), ::std::forward<F>(func));
 }
-}
-}
+} // namespace metautils
+} // namespace reflect
 
 #endif // FUNCTION_TRAITS_HPP

@@ -7,7 +7,7 @@ namespace couscous {
 inline namespace utils { using namespace ::reflect::utils; }
 inline namespace metautils { using namespace ::reflect::metautils; }
 inline namespace reflect { using namespace ::reflect; }
-}
+} // namespace couscous
 
 namespace hana = boost::hana;
 using namespace hana::literals;
@@ -48,14 +48,17 @@ int main() {
             << std::endl;
   constexpr auto inds = couscous::gen_inds_tup<decltype(
       couscous::count<SomeStruct, couscous::AllMethods>())>();
-  hana::for_each(inds, [](auto &&item) {
-    std::cout << "Method name: "
-              << hana::to<const char *>(
-                     couscous::member_name<SomeStruct, couscous::AllMethods>(
-                         item))
-              << std::endl;
-  }); // Now we generate tuple of indices by calling gen_inds_tup<N,Offset =
-      // hana::llong<0>>() and call lambda for each item in tuple.
+  hana::for_each(
+      inds,
+      [](auto &&item) {
+        std::cout
+            << "Method name: "
+            << hana::to<const char *>(
+                   couscous::member_name<SomeStruct, couscous::AllMethods>(
+                       item))
+            << std::endl;
+      }); // Now we generate tuple of indices by calling gen_inds_tup<N,Offset =
+          // hana::llong<0>>() and call lambda for each item in tuple.
   // find_by_name - finds indices by name(ct-string) and return them in tuple.
   constexpr auto inds_tup =
       couscous::find_by_name<SomeStruct, couscous::AllMethods>("bar"_s);

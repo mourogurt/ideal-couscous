@@ -31,9 +31,8 @@ template <class ParentGenerator, bool condition = true>
 class VariableIndexGenerator final {
   template <class Item, long long Index>
   constexpr static decltype(auto) check_metadata_variable() {
-    if
-      constexpr(is_variable_v<::std::decay_t<Item>> == condition) return ::
-          boost::hana::make_tuple(::boost::hana::llong_c<Index>);
+    if constexpr (is_variable_v<::std::decay_t<Item>> == condition)
+      return ::boost::hana::make_tuple(::boost::hana::llong_c<Index>);
     else
       return ::boost::hana::make_tuple();
   }
@@ -209,8 +208,8 @@ template <class R, class T> constexpr decltype(auto) make_var(R T::*pm) {
 template <class R, class T> constexpr decltype(auto) make_var(T *pm) {
   return static_var_t<R, T>(pm);
 }
-}
-}
+} // namespace info
+} // namespace reflect
 
 /**
  * @brief Reflect object variable. Appends to names_state name of var, to

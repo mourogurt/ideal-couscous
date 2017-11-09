@@ -26,9 +26,8 @@ template <class ParentGenerator, bool condition = true>
 class StaticIndexGenerator final {
   template <class Item, long long Index>
   constexpr static decltype(auto) check_metadata_variable() {
-    if
-      constexpr(is_static_v<::std::decay_t<Item>> == condition) return ::boost::
-          hana::make_tuple(::boost::hana::llong_c<Index>);
+    if constexpr (is_static_v<::std::decay_t<Item>> == condition)
+      return ::boost::hana::make_tuple(::boost::hana::llong_c<Index>);
     else
       return ::boost::hana::make_tuple();
   }
@@ -54,7 +53,7 @@ public:
     return generate_impl<Tuple>(ParentGenerator::template generate<Tuple>());
   }
 };
-}
-}
+} // namespace info
+} // namespace reflect
 
 #endif // REFLECT_INFORMATION_STATIC_COMMON_HPP

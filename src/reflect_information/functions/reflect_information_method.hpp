@@ -34,7 +34,7 @@ template <class T, class... Args> struct ConstMethodInfo {
       -> Ret (T::*)(Args...) const;
 
   template <class Ret>
-  static constexpr auto return_type(Ret (T::*)(Args...) const) -> Ret const;
+  static constexpr auto return_type(Ret (T::*)(Args...) const) -> Ret;
 };
 
 /**
@@ -49,7 +49,7 @@ template <class... Args> struct MethodInfo<void, Args...> {
   template <class Ret>
   static constexpr auto return_type(Ret (*)(Args...)) -> Ret;
 };
-}
+} // namespace detail
 
 /**
  * @brief SFINAE check if type is pointer to method
@@ -73,9 +73,8 @@ template <class ParentGenerator, bool condition = true>
 class MethodIndexGenerator final {
   template <class Item, long long Index>
   constexpr static decltype(auto) check_metadata_variable() {
-    if
-      constexpr(is_method_v<::std::decay_t<Item>> == condition) return ::boost::
-          hana::make_tuple(::boost::hana::llong_c<Index>);
+    if constexpr (is_method_v<::std::decay_t<Item>> == condition)
+      return ::boost::hana::make_tuple(::boost::hana::llong_c<Index>);
     else
       return ::boost::hana::make_tuple();
   }
@@ -128,9 +127,8 @@ template <class ParentGenerator, bool condition = true>
 class ConstMethodIndexGenerator final {
   template <class Item, long long Index>
   constexpr static decltype(auto) check_metadata_variable() {
-    if
-      constexpr(is_const_method_v<::std::decay_t<Item>> == condition) return ::
-          boost::hana::make_tuple(::boost::hana::llong_c<Index>);
+    if constexpr (is_const_method_v<::std::decay_t<Item>> == condition)
+      return ::boost::hana::make_tuple(::boost::hana::llong_c<Index>);
     else
       return ::boost::hana::make_tuple();
   }
@@ -399,8 +397,8 @@ template <class T, class R, class... Args>
 constexpr decltype(auto) make_method(R *pm) {
   return static_method_t<T, R, Args...>(pm);
 }
-}
-}
+} // namespace info
+} // namespace reflect
 
 /**
  * @brief Reflect object method. Appends name to names_state, method pointer to
@@ -439,9 +437,9 @@ constexpr decltype(auto) make_method(R *pm) {
   TUPLE_APPEND(                                                                \
       metadata_state, counter,                                                 \
       ::reflect::info::make_method<                                            \
-          Type, decltype(::reflect::info::detail::MethodInfo<                  \
-                         void, ##__VA_ARGS__>::return_type(&Type::NAME))(      \
-                    __VA_ARGS__),                                              \
+          Type,                                                                \
+          decltype(::reflect::info::detail::MethodInfo<void, ##__VA_ARGS__>::  \
+                       return_type(&Type::NAME))(__VA_ARGS__),                 \
           ##__VA_ARGS__>(&Type::NAME))                                         \
   INCREASE_COUNTER(counter)
 

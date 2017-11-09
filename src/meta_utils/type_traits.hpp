@@ -20,8 +20,8 @@ template <class T, bool Cond> struct checker { using type = T; };
  * @brief Spetialization if typename type contains in class
  */
 template <class T> struct checker<T, true> { using type = typename T::type; };
-}
-}
+} // namespace optional_type_helper_impl
+} // namespace detail
 
 template <class T> struct Type { using type = T; };
 
@@ -49,7 +49,7 @@ constexpr bool is_reference_wrapper_v =
 template <class T> class unpack_type_typename_helper {
   constexpr static auto hasType =
       ::boost::hana::is_valid([](auto x) -> ::boost::hana::type<
-                                  typename decltype(x)::type>{});
+                                             typename decltype(x)::type>{});
 
 public:
   using type = typename detail::optional_type_helper_impl::checker<
@@ -61,7 +61,7 @@ using unpack_type_typename_helper_t =
     typename unpack_type_typename_helper<T>::type; /**<
                                    Helper type template for
                                    unpack_type_typename_helper */
-}
-}
+} // namespace metautils
+} // namespace reflect
 
 #endif // TYPE_TRAITS_HPP

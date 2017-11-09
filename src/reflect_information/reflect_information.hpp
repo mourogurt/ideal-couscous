@@ -16,8 +16,9 @@ namespace info {
  * @brief SFINAE check if class is generator
  */
 constexpr auto is_generator = ::boost::hana::is_valid(
-    [](auto &&p, auto &&tup) -> decltype(
-        &::std::decay_t<decltype(p)>::template generate<decltype(tup)>) {});
+    [](auto &&p, auto &&tup)
+        -> decltype(
+            &::std::decay_t<decltype(p)>::template generate<decltype(tup)>) {});
 
 template <class T>
 constexpr bool is_generator_v = decltype(is_generator(
@@ -75,9 +76,8 @@ get_class_submetadata_impl(::std::index_sequence<indices...> &&) {
 template <class Tuple> constexpr decltype(auto) get_class_subnames() {
   constexpr auto size =
       decltype(::boost::hana::size(::std::declval<Tuple>()))::value;
-  if
-    constexpr(size > 0) return get_class_subnames_impl<Tuple>(
-        ::std::make_index_sequence<size>());
+  if constexpr (size > 0)
+    return get_class_subnames_impl<Tuple>(::std::make_index_sequence<size>());
   else
     return ::boost::hana::make_tuple();
 }
@@ -88,16 +88,16 @@ template <class Tuple> constexpr decltype(auto) get_class_subnames() {
 template <class Tuple> constexpr decltype(auto) get_class_submetadata() {
   constexpr auto size =
       decltype(::boost::hana::size(::std::declval<Tuple>()))::value;
-  if
-    constexpr(size > 0) return get_class_submetadata_impl<Tuple>(
+  if constexpr (size > 0)
+    return get_class_submetadata_impl<Tuple>(
         ::std::make_index_sequence<size>());
   else
     return ::boost::hana::make_tuple();
 }
 
 /**
-  * @brief Concating all names in one tuple
-  */
+ * @brief Concating all names in one tuple
+ */
 template <class MetaInfo_type, long long... Indices>
 constexpr decltype(auto)
 names_tuple_impl(::std::integer_sequence<long long, Indices...> &&) {
@@ -109,8 +109,8 @@ names_tuple_impl(::std::integer_sequence<long long, Indices...> &&) {
 }
 
 /**
-  * @brief Concating all metadata in one tuple
-  */
+ * @brief Concating all metadata in one tuple
+ */
 template <class MetaInfo_type, long long... Indices>
 constexpr decltype(auto)
 metadata_tuple_impl(::std::integer_sequence<long long, Indices...> &&) {
@@ -122,8 +122,8 @@ metadata_tuple_impl(::std::integer_sequence<long long, Indices...> &&) {
 }
 
 /**
-  * @brief Concating all names in one tuple
-  */
+ * @brief Concating all names in one tuple
+ */
 template <class MetaInfo_type> constexpr decltype(auto) names_tuple() {
   return names_tuple_impl<MetaInfo_type>(
       ::std::make_integer_sequence<
@@ -133,8 +133,8 @@ template <class MetaInfo_type> constexpr decltype(auto) names_tuple() {
 }
 
 /**
-  * @brief Concating all metadata in one tuple
-  */
+ * @brief Concating all metadata in one tuple
+ */
 template <class MetaInfo_type> constexpr decltype(auto) metadata_tuple() {
   return metadata_tuple_impl<MetaInfo_type>(
       ::std::make_integer_sequence<
@@ -142,7 +142,7 @@ template <class MetaInfo_type> constexpr decltype(auto) metadata_tuple() {
                                       static_cast<const MetaInfo_type *>(
                                           nullptr)))::value>{});
 }
-}
+} // namespace detail
 
 /**
  * @brief Class that stores meta-information about T
@@ -170,9 +170,9 @@ public:
   using reverse = EmptyGenerator;
 
   /**
-    * @brief Generate tuple of indices
-    * @return  ::boost::hana::tuple<0...N-1>
-    */
+   * @brief Generate tuple of indices
+   * @return  ::boost::hana::tuple<0...N-1>
+   */
   template <class Tuple> constexpr static decltype(auto) generate() {
     return metautils::gen_inds_tup<decltype(
         ::boost::hana::size(::std::declval<Tuple>()))>();
@@ -200,8 +200,8 @@ public:
  * @brief Class that stores meta-functions
  */
 template <class... Args> struct MetaInfo;
-}
-}
+} // namespace info
+} // namespace reflect
 
 /**
  *  @brief Declarating metainformation inside class. Basicly it creates

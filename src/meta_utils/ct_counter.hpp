@@ -19,7 +19,7 @@ template <::std::size_t N = 255> struct counter : public counter<N - 1> {
  *
  */
 template <> struct counter<0> { static constexpr ::std::size_t value = 0; };
-}
-}
+} // namespace metautils
+} // namespace reflect
 
 #endif // CT_COUNTER_HPP

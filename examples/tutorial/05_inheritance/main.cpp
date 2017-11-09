@@ -7,7 +7,7 @@ namespace couscous {
 inline namespace utils { using namespace ::reflect::utils; }
 inline namespace metautils { using namespace ::reflect::metautils; }
 inline namespace reflect { using namespace ::reflect; }
-}
+} // namespace couscous
 
 namespace hana = boost::hana;
 using namespace hana::literals;

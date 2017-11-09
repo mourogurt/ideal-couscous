@@ -17,6 +17,6 @@ Product {
             Depends { name: "cpp" }
             cpp.includePaths: base.concat(product.sourceDirectory)
             cpp.cxxLanguageVersion: "c++1z"
-            cpp.cxxFlags: base.concat("-Wno-non-template-friend")
+            cpp.cxxFlags: ["-Wno-non-template-friend"]
     }
 }

@@ -136,8 +136,8 @@ constexpr bool is_invoke_assignable_v =
  * @return boost::hana::bool_c<true/false>
  */
 template <class... Args> constexpr decltype(auto) check_invoke_impl() {
-  if
-    constexpr(is_invocable_v<Args...>) return ::boost::hana::bool_c<true>;
+  if constexpr (is_invocable_v<Args...>)
+    return ::boost::hana::bool_c<true>;
   else
     return ::boost::hana::bool_c<false>;
 }
@@ -148,19 +148,15 @@ template <class... Args> constexpr decltype(auto) check_invoke_impl() {
  */
 template <class T, class SetArg, class... Args>
 constexpr decltype(auto) check_set_impl() {
-  if
-    constexpr(is_invocable_v<T, Args...>) {
-      if
-        constexpr(
-            is_invoke_assignable_v<T, SetArg,
-                                   Args...>) return ::boost::hana::bool_c<true>;
-      else
-        return ::boost::hana::bool_c<false>;
-    }
-  else
+  if constexpr (is_invocable_v<T, Args...>) {
+    if constexpr (is_invoke_assignable_v<T, SetArg, Args...>)
+      return ::boost::hana::bool_c<true>;
+    else
+      return ::boost::hana::bool_c<false>;
+  } else
     return ::boost::hana::bool_c<false>;
 }
-}
+} // namespace detail
 
 /**
  * @brief Check if class is reflected
@@ -193,11 +189,10 @@ template <class T> constexpr decltype(auto) parents_count() {
 #endif
   constexpr auto top_parents_count =
       decltype(::boost::hana::size(::std::declval<Parents<T>>()))::value;
-  if
-    constexpr(top_parents_count >
-              0) return ::boost::hana::llong_c<top_parents_count> +
-        ::boost::hana::llong_c<decltype(
-            detail::parents_count_unpack(::std::declval<Parents<T>>()))::value>;
+  if constexpr (top_parents_count > 0)
+    return ::boost::hana::llong_c<top_parents_count> +
+           ::boost::hana::llong_c<decltype(detail::parents_count_unpack(
+               ::std::declval<Parents<T>>()))::value>;
   else
     return ::boost::hana::llong_c<0>;
 }
@@ -211,9 +206,8 @@ template <class T> constexpr decltype(auto) parents_types() {
   static_assert(decltype(check_reflected<T>())::value,
                 "Class must be reflected");
 #endif
-  if
-    constexpr(parents_count<T>() > 0) return decltype(
-        detail::parents_types_helper_impl<Parents<T>>())::value;
+  if constexpr (parents_count<T>() > 0)
+    return decltype(detail::parents_types_helper_impl<Parents<T>>())::value;
   else
     return ::boost::hana::tuple_t<>;
 }
@@ -486,7 +480,7 @@ constexpr decltype(auto) check_set(I &&index) {
           index))>,
       SetArg, Args...>();
 }
-}
-}
+} // namespace utils
+} // namespace reflect
 
 #endif // REFLECT_METADDATA_HPP

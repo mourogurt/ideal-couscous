@@ -45,9 +45,8 @@ namespace detail {
  */
 template <long long Index, class A, class B>
 constexpr decltype(auto) compare_types_index_impl(A &&, B &&) {
-  if
-    constexpr(::std::is_same_v<::std::decay_t<A>, ::std::decay_t<B>>) return ::
-        boost::hana::tuple_c<long long, Index>;
+  if constexpr (::std::is_same_v<::std::decay_t<A>, ::std::decay_t<B>>)
+    return ::boost::hana::tuple_c<long long, Index>;
   else
     return ::boost::hana::make_tuple();
 }
@@ -104,7 +103,7 @@ merge_tuple_of_tuples_impl(::std::integer_sequence<long long, Indices...> &&,
                            Tuple &&tup) {
   return multiple_concat(::boost::hana::at_c<Indices>(tup)...);
 }
-}
+} // namespace detail
 
 /**
  * @brief compare types
@@ -112,9 +111,8 @@ merge_tuple_of_tuples_impl(::std::integer_sequence<long long, Indices...> &&,
  */
 template <class A, class B>
 constexpr decltype(auto) compare_types(A &&, B &&) noexcept {
-  if
-    constexpr(
-        ::std::is_same_v<::std::decay_t<A>, ::std::decay_t<B>>) return true;
+  if constexpr (::std::is_same_v<::std::decay_t<A>, ::std::decay_t<B>>)
+    return true;
   else
     return false;
 }
@@ -186,7 +184,7 @@ constexpr decltype(auto) merge_tuple_of_tuples(Tuple &&tup) {
                                    decltype(::boost::hana::size(tup))::value>(),
       ::std::forward<Tuple>(tup));
 }
-}
-}
+} // namespace metautils
+} // namespace reflect
 
 #endif // TUPLE_TRAITS_HPP

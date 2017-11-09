@@ -34,7 +34,7 @@ public:
   constexpr static auto args_count{utils::methods_args_count<T, Generator>(
       ::boost::hana::llong_c<I>)}; /**< args count */
 };
-}
-}
+} // namespace utils
+} // namespace reflect
 
 #endif // REFLECT_UTILS_HPP
